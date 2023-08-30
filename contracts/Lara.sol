@@ -19,7 +19,7 @@ contract Lara is Ownable {
         address _apyOracle,
         address _continuityOracle
     ) {
-        sttaraToken = IERC20(_sttaraToken);
+        sttaraToken = ERC20(_sttaraToken);
         dposContract = DposInterface(_dposContract);
         apyOracle = IApyOracle(_apyOracle);
         continuityOracle = INodeContinuityOracle(_continuityOracle);
