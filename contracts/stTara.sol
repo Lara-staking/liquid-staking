@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol"; // Import the ERC20 contract here
-import "./interfaces/IApyOracle.sol"; // Import the ApyOracle interface here
 
 contract stTARA is ERC20 {
     address public owner;

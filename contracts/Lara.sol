@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./interfaces/IDPOS.sol";
 import "./interfaces/IApyOracle.sol";
 import "./interfaces/INodeContinuityOracle.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Lara is Ownable {
-    IERC20 public sttaraToken; // Replace with actual ERC20 token interface
+    ERC20 public sttaraToken; // Replace with actual ERC20 token interface
     DposInterface public dposContract;
     IApyOracle public apyOracle;
     INodeContinuityOracle public continuityOracle;
