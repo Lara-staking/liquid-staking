@@ -17,6 +17,10 @@ contract stTARA is ERC20 {
         _;
     }
 
+    function setMinDelegateAmount(uint256 amount) external onlyOwner {
+        minDelegateAmount = amount;
+    }
+
     function mint() external payable {
         uint256 amount = msg.value;
         require(
