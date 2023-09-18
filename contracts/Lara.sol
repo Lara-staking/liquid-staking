@@ -8,10 +8,39 @@ import "./interfaces/INodeContinuityOracle.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Lara is Ownable {
-    ERC20 public sttaraToken; // Replace with actual ERC20 token interface
+    uint256 public MAX_DELEGATION = 80000000 ether;
+
+    ERC20 public sttaraToken;
     DposInterface public dposContract;
     IApyOracle public apyOracle;
     INodeContinuityOracle public continuityOracle;
+
+    struct IndividualDelegation {
+        address user;
+        uint256 amount;
+        uint256 timestamp;
+    }
+
+    struct ValidatorDelegation {
+        address validator;
+        uint256 amount;
+        uint256 lastClaimedTimestamp;
+    }
+
+    struct DelegationDetail {
+        address validator;
+        uint256 amount;
+    }
+    // enum DelegationStrategy {
+    //     MAX_APY,
+    //     CONTINUITY
+    // }
+
+    mapping(address => uint256) public stakedAmounts;
+    mapping(address => mapping(address => uint256))
+        public stakedAmountsByValidator;
+    mapping(address => IndividualDelegation[]) public individualDelegations;
+    mapping(address => ValidatorDelegation[]) public validatorDelegations;
 
     constructor(
         address _sttaraToken,
@@ -25,30 +54,53 @@ contract Lara is Ownable {
         continuityOracle = INodeContinuityOracle(_continuityOracle);
     }
 
-    function stake(uint256 amount) external {
-        require(amount >= 1000, "Minimum stake is 1000 TARA");
+    function setMaxStakePerValdiator(
+        uint256 newMaxDelegation
+    ) external onlyOwner {
+        MAX_DELEGATION = newMaxDelegation;
+    }
 
-        // Transfer TARA tokens from user to contract
-        sttaraToken.transferFrom(msg.sender, address(this), amount);
+    function stake(uint256 amount) external payable {
+        require(amount >= 1000 ether, "Minimum stake is 1000 TARA");
+        require(msg.value >= 1000 ether, "Minimum stake is 1000 TARA");
 
         // Mint stTARA tokens to user
 
         // Update stakedAmounts mapping
 
         // Delegate to the highest APY validator
-        address highestAPYValidator = getHighestAPYValidator();
-        delegateToValidator(highestAPYValidator, amount);
+        DelegationDetail[]
+            memory highestAPYValidators = getHighestAPYValidators(amount);
+        delegateToValidators(highestAPYValidators, amount);
 
         emit Staked(msg.sender, amount);
     }
 
-    function getHighestAPYValidator() internal view returns (address) {
-        // Fetch validator data from the apyOracle
-        // Find the validator with the highest APY
-        // Return the address of the highest APY validator
+    function getHighestAPYValidators(
+        uint256 amount
+    ) internal view returns (DelegationDetail[] memory) {
+        DelegationDetail[] memory validators;
+        uint256 nodeCount = apyOracle.getNodeCount();
+        IApyOracle.NodeData[] memory nodeData = new IApyOracle.NodeData[](
+            nodeCount
+        );
+        address[] memory nodesList = apyOracle.getNodesList();
+        for (uint256 i = 0; i < nodeCount; i++) {
+            nodeData[i] = apyOracle.getNodeData(nodesList[i]);
+            DposInterface.ValidatorBasicInfo memory validatorInfo = dposContract
+                .getValidator(nodeData[i].account);
+            if (amount < MAX_DELEGATION) {
+                validators = new DelegationDetail[](1);
+                validators[0] = DelegationDetail(nodeData[i].account, amount);
+                break;
+            }
+        }
     }
 
-    function delegateToValidator(address validator, uint256 amount) internal {
+    function delegateToValidators(
+        address[] memory validators,
+        uint256 amount
+    ) internal {
         // Call the delegate function on the Dpos contract
         // with the specified validator and amount
         // dposContract.delegate(validator);

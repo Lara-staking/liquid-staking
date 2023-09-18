@@ -10,6 +10,8 @@ contract ApyOracle is IApyOracle {
     }
 
     address private immutable _dataFeed;
+    uint256 public nodeCount;
+    address[] public nodesList;
     mapping(address => IApyOracle.NodeData) public nodes;
 
     modifier OnlyDataFeed() {
@@ -18,6 +20,18 @@ contract ApyOracle is IApyOracle {
             "ApyOracle: caller is not the data feed"
         );
         _;
+    }
+
+    function getNodeCount() external view override returns (uint256) {
+        return nodeCount;
+    }
+
+    function getNodesList() external view override returns (address[] memory) {
+        return nodesList;
+    }
+
+    function updateNodeCount(uint256 count) external override OnlyDataFeed {
+        nodeCount = count;
     }
 
     function getDataFeedAddress() external view returns (address) {
@@ -42,6 +56,10 @@ contract ApyOracle is IApyOracle {
             data.fromBlock < data.toBlock,
             "ApyOracle: fromBlock must be less than toBlock"
         );
+        if (nodes[node].account == address(0)) {
+            nodeCount++;
+            nodesList.push(node);
+        }
         nodes[node] = data;
         emit NodeDataUpdated(node, data.apy, data.pbftCount);
     }

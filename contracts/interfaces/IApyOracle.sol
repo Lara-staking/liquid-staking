@@ -14,6 +14,12 @@ interface IApyOracle {
 
     event NodeDataUpdated(address indexed node, uint16 apy, uint256 pbftCount);
 
+    function getNodeCount() external view returns (uint256);
+
+    function getNodesList() external view returns (address[] memory);
+
+    function updateNodeCount(uint256 count) external;
+
     function getNodeData(address node) external view returns (NodeData memory);
 
     function updateNodeData(address node, NodeData memory data) external;
