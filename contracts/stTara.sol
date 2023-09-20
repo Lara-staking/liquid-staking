@@ -1,38 +1,39 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol"; // Import the ERC20 contract here
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract stTARA is ERC20 {
-    address public owner;
-    uint256 public minDelegateAmount = 1000 ether;
+contract stTARA is ERC20, Ownable {
+    // Errors
+    error DepositAmountTooLow(uint256 amount, uint256 minAmount);
+    error InsufficientBalanceForBurn(uint256 amount, uint256 senderBalance);
 
-    constructor() ERC20("Staked TARA", "stTARA") {
-        owner = msg.sender;
-    }
+    // Events
+    event Minted(address indexed user, uint256 amount);
+    event Burned(address indexed user, uint256 amount);
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only the owner can call this function");
-        _;
-    }
+    // State variables
+    uint256 public minDepositAmount = 1000 ether;
 
-    function setMinDelegateAmount(uint256 amount) external onlyOwner {
-        minDelegateAmount = amount;
+    constructor() ERC20("Staked TARA", "stTARA") {}
+
+    function setMinDepositAmount(uint256 _minDepositAmount) external onlyOwner {
+        minDepositAmount = _minDepositAmount;
     }
 
     function mint() external payable {
         uint256 amount = msg.value;
-        require(
-            amount >= minDelegateAmount,
-            "Needs to be at least equal to minDelegateAmount"
-        );
+        if(amount < minDepositAmount)
+            revert DepositAmountTooLow(amount, minDepositAmount);
         _mint(msg.sender, amount);
 
         emit Minted(msg.sender, amount);
     }
 
     function burn(uint256 amount) external {
-        require(balanceOf(msg.sender) >= amount, "Insufficient stTARA balance");
+        if(balanceOf(msg.sender) < amount) 
+            revert InsufficientBalanceForBurn(amount, balanceOf(msg.sender));
 
         // Burn stTARA tokens
         _burn(msg.sender, amount);
@@ -42,8 +43,4 @@ contract stTARA is ERC20 {
 
         emit Burned(msg.sender, amount);
     }
-
-    // Events
-    event Minted(address indexed user, uint256 amount);
-    event Burned(address indexed user, uint256 amount);
 }

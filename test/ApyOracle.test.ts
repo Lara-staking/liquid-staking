@@ -1,8 +1,8 @@
 import { expect } from "chai";
-import { ethers } from "hardhat";
 import { ApyOracle } from "../typechain";
 import { Signer } from "ethers";
 import * as dotenv from "dotenv";
+import { ethers } from "hardhat";
 
 dotenv.config();
 

@@ -10,9 +10,10 @@
     "deploy-stats:testnet": "yarn run hardhat run --network testnet scripts/deploy_stats_oracle.ts"
   },
   "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^1.0.5",
     "@nomiclabs/hardhat-ethers": "^2.2.3",
     "@nomiclabs/hardhat-etherscan": "^3.1.7",
-    "@nomiclabs/hardhat-waffle": "^2.0.6",
+    "@nomicfoundation/hardhat-ethers": "^3.0.4",
     "@typechain/ethers-v5": "^7.2.0",
     "@typechain/hardhat": "^2.3.1",
     "@types/chai": "^4.3.5",
@@ -27,9 +28,9 @@
     "eslint-config-standard": "^16.0.3",
     "eslint-plugin-import": "^2.28.0",
     "eslint-plugin-node": "^11.1.0",
+    "hardhat-contract-sizer": "^2.10.0",
     "eslint-plugin-prettier": "^3.4.1",
     "eslint-plugin-promise": "^5.2.0",
-    "ethereum-waffle": "^3.4.4",
     "ethers": "^5.7.2",
     "hardhat": "^2.17.1",
     "hardhat-gas-reporter": "^1.0.9",

@@ -1,18 +1,22 @@
 import { ethers, network } from "hardhat";
 import { expect } from "chai";
-import { Contract, Signer } from "ethers";
+import { BigNumber, Contract, Signer } from "ethers";
+import { ContractsNames } from "../util/ContractsNames";
+import { ErrorsNames } from "./util/ErrorsNames";
 
-describe("stTARA", () => {
-  let contract: Contract;
+describe(ContractsNames.stTara, () => {
+  let stTara: Contract;
+  let initialMinDepositAmount: BigNumber;
   let minter: Signer;
   let burner: Signer;
   let recipient: Signer;
   let finalTarget: Signer;
 
   before(async () => {
-    const contractF = await ethers.getContractFactory("stTARA");
-    contract = await contractF.deploy();
+    const StTara = await ethers.getContractFactory(ContractsNames.stTara);
+    stTara = await StTara.deploy();
 
+    initialMinDepositAmount = ethers.utils.parseEther('1000');
     const signers = await ethers.getSigners();
     minter = signers[0];
     burner = signers[1];
@@ -34,7 +38,7 @@ describe("stTARA", () => {
 
     await network.provider.send("hardhat_setBalance", [
       await recipient.getAddress(),
-      "0x0",
+      ethers.utils.parseEther("2").toHexString(),
     ]);
 
     await network.provider.send("hardhat_setBalance", [
@@ -52,50 +56,48 @@ describe("stTARA", () => {
     ).to.equal(ethers.utils.parseEther("1001"));
   });
 
-  it("should not mint stTARA tokens when the minDelegateAmount is not met", async () => {
+  it("should not mint stTARA tokens when the minDepositAmount is not met", async () => {
     const amount = ethers.utils.parseEther("999");
     await expect(
-      contract.connect(minter).mint({ value: amount })
-    ).to.be.revertedWith("Needs to be at least equal to minDelegateAmount");
+      stTara.connect(minter).mint({ value: amount })
+    ).to.be.revertedWithCustomError(stTara, ErrorsNames.DepositAmountTooLow).withArgs(amount, initialMinDepositAmount);
   });
 
-  it("should mint stTARA tokens when the minDelegateAmount is met", async () => {
+  it("should mint stTARA tokens when the minDepositAmount is met", async () => {
     const amount = ethers.utils.parseEther("1000");
-    await contract.connect(minter).mint({ value: amount });
     const minterAddress = await minter.getAddress();
-    const balanceAfter = await contract.balanceOf(minterAddress);
-    expect(balanceAfter).to.equal(amount);
-    expect(balanceAfter)
-      .to.emit(contract, "Minted")
-      .withArgs(minterAddress, amount);
+    expect(
+      await stTara.connect(minter).mint({ value: amount })
+    ).to.emit(stTara, "Minted")
+      .withArgs(minterAddress, amount)
+      .changeTokenBalance(stTara, minterAddress, amount)
+      .changeEtherBalance(minterAddress, amount.mul(-1));
   });
 
   it("should backswap stTARA tokens for TARA tokens", async () => {
     const amount = ethers.utils.parseEther("1000");
-    await contract.connect(burner).mint({ value: amount });
-
-    await contract.connect(burner).burn(amount);
+    await stTara.connect(burner).mint({ value: amount });
     const burnerAddress = await burner.getAddress();
-    const burnerBalanceAfter = await contract.balanceOf(burnerAddress);
-    expect(burnerBalanceAfter).to.equal(0);
-    expect(await ethers.provider.getBalance(await burner.getAddress()))
-      .to.be.lt(ethers.utils.parseEther("1001"))
-      .and.gt(ethers.utils.parseEther("1000"));
+    expect(
+      await stTara.connect(burner).burn(amount)
+    ).to.emit(stTara, "Burned").withArgs(burnerAddress, amount)
+    .to.changeTokenBalance(stTara, burner, amount.mul(-1))
+    .to.changeEtherBalance(burner, amount);
   });
 
   it("should allow the transfer of stTARA tokens", async () => {
     const amount = ethers.utils.parseEther("1000");
-    await contract.connect(burner).mint({ value: amount });
+    await stTara.connect(burner).mint({ value: amount });
 
-    await contract
+    await stTara
       .connect(burner)
       .transfer(await recipient.getAddress(), amount);
 
-    const recipientBalanceAfter = await contract.balanceOf(
+    const recipientBalanceAfter = await stTara.balanceOf(
       await recipient.getAddress()
     );
 
-    const burnerBalanceAfter = await contract.balanceOf(
+    const burnerBalanceAfter = await stTara.balanceOf(
       await burner.getAddress()
     );
     expect(burnerBalanceAfter).to.equal(0);
@@ -109,7 +111,7 @@ describe("stTARA", () => {
 
     const recipientAddress = await recipient.getAddress();
     await expect(
-      contract.connect(minter).transferFrom(recipientAddress, target, amount)
+      stTara.connect(minter).transferFrom(recipientAddress, target, amount)
     ).to.be.revertedWith("ERC20: insufficient allowance");
   });
 
@@ -121,23 +123,23 @@ describe("stTARA", () => {
       ethers.utils.parseEther("5").toHexString(),
     ]);
 
-    const balance = await contract.balanceOf(await recipient.getAddress());
+    const balance = await stTara.balanceOf(await recipient.getAddress());
     expect(balance).to.equal(amount);
 
-    await contract
+    await stTara
       .connect(recipient)
       .approve(await minter.getAddress(), amount);
 
     const recipientAddress = await recipient.getAddress();
     const finalTargetAddress = await finalTarget.getAddress();
-    await contract
+    await stTara
       .connect(minter)
       .transferFrom(recipientAddress, finalTargetAddress, amount);
 
-    const targetBalanceAfter = await contract.balanceOf(finalTargetAddress);
+    const targetBalanceAfter = await stTara.balanceOf(finalTargetAddress);
     expect(targetBalanceAfter).to.equal(amount);
 
-    const recipientBalanceAfter = await contract.balanceOf(
+    const recipientBalanceAfter = await stTara.balanceOf(
       await recipient.getAddress()
     );
     expect(recipientBalanceAfter).to.equal(0);
@@ -146,22 +148,20 @@ describe("stTARA", () => {
   it("Should not allow recipient to backswap stTARA tokens for TARA tokens", async () => {
     const amount = ethers.utils.parseEther("1000");
 
-    await expect(contract.connect(recipient).burn(amount)).to.be.revertedWith(
-      "Insufficient stTARA balance"
-    );
+    await expect(stTara.connect(recipient).burn(amount)).to.be.revertedWithCustomError(stTara, ErrorsNames.InsufficientBalanceForBurn).withArgs(amount, 0);
   });
 
   it("Should allow finalTarget to backswap stTARA tokens for TARA tokens", async () => {
     const amount = ethers.utils.parseEther("1000");
 
     const finalTargetAddress = await finalTarget.getAddress();
-    const balance = await contract.balanceOf(finalTargetAddress);
+    const balance = await stTara.balanceOf(finalTargetAddress);
     expect(balance).to.equal(amount);
-    await expect(contract.connect(finalTarget).burn(amount))
-      .to.emit(contract, "Burned")
+    await expect(stTara.connect(finalTarget).burn(amount))
+      .to.emit(stTara, "Burned")
       .withArgs(finalTargetAddress, amount);
 
-    const finalstTaraBalanceAfter = await contract.balanceOf(
+    const finalstTaraBalanceAfter = await stTara.balanceOf(
       finalTargetAddress
     );
     expect(finalstTaraBalanceAfter).to.equal(0);
