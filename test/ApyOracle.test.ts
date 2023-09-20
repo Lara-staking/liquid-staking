@@ -1,25 +1,23 @@
 import { expect } from "chai";
 import { ApyOracle } from "../typechain";
-import { Signer } from "ethers";
 import * as dotenv from "dotenv";
 import { ethers } from "hardhat";
+import { ContractsNames } from "../util/ContractsNames";
+import { deployApyOracle } from "./util/ContractsUtils";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 dotenv.config();
 
-describe("ApyOracle", () => {
+describe(ContractsNames.apyOracle, () => {
   let apyOracle: ApyOracle;
-  let dataFeedAddress: Signer;
-  let secondSignerAddress: Signer;
+  let dataFeedAddress: SignerWithAddress;
+  let secondSignerAddress: SignerWithAddress;
 
   before(async () => {
     const signers = await ethers.getSigners();
     dataFeedAddress = signers[0];
     secondSignerAddress = signers[1];
-    const ApyOracleFactory = await ethers.getContractFactory("ApyOracle");
-    const apyOracleProm = await ApyOracleFactory.deploy(
-      await dataFeedAddress.getAddress() // Your data feed address
-    );
-    apyOracle = await apyOracleProm.deployed();
+    apyOracle = await deployApyOracle(dataFeedAddress.address)
   });
 
   it("should deploy ApyOracle and set the data feed address", async () => {

@@ -1,32 +1,28 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { NodeContinuityOracle } from "../typechain";
-import { Signer } from "ethers";
 import * as dotenv from "dotenv";
+import { ContractsNames } from "../util/ContractsNames";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { deployNodeContinuityOracle } from "./util/ContractsUtils";
 
 dotenv.config();
 
-describe("NodeContinuityOracle", () => {
+describe(ContractsNames.nodeContinuityOracle, () => {
   let nodeOracle: NodeContinuityOracle;
-  let dataFeedAddress: Signer;
-  let secondSignerAddress: Signer;
+  let dataFeed: SignerWithAddress;
+  let secondSignerAddress: SignerWithAddress;
 
   before(async () => {
     const signers = await ethers.getSigners();
-    dataFeedAddress = signers[0];
+    dataFeed = signers[0];
     secondSignerAddress = signers[1];
-    const NodeOracleFactory = await ethers.getContractFactory(
-      "NodeContinuityOracle"
-    );
-    const nodeOracleProm = await NodeOracleFactory.deploy(
-      await dataFeedAddress.getAddress() // Your data feed address
-    );
-    nodeOracle = await nodeOracleProm.deployed();
+    nodeOracle = await deployNodeContinuityOracle(dataFeed.address);
   });
 
   it("should deploy NodeOracle and set the data feed address", async () => {
     expect(await nodeOracle.getDataFeedAddress()).to.equal(
-      await dataFeedAddress.getAddress()
+      dataFeed.address
     );
   });
 
@@ -43,7 +39,7 @@ describe("NodeContinuityOracle", () => {
     };
 
     await nodeOracle
-      .connect(dataFeedAddress)
+      .connect(dataFeed)
       .updateNodeStats(nodeAddress, timestamp, updatedNodeData);
 
     const registeredUpdateTimestamps = await nodeOracle.getNodeUpdateTimestamps(

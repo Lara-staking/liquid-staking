@@ -3,18 +3,19 @@ import { expect } from "chai";
 import { BigNumber, Contract, Signer } from "ethers";
 import { ContractsNames } from "../util/ContractsNames";
 import { ErrorsNames } from "./util/ErrorsNames";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { deploystTara } from "./util/ContractsUtils";
 
 describe(ContractsNames.stTara, () => {
   let stTara: Contract;
   let initialMinDepositAmount: BigNumber;
-  let minter: Signer;
-  let burner: Signer;
-  let recipient: Signer;
-  let finalTarget: Signer;
+  let minter: SignerWithAddress;
+  let burner: SignerWithAddress;
+  let recipient: SignerWithAddress;
+  let finalTarget: SignerWithAddress;
 
   before(async () => {
-    const StTara = await ethers.getContractFactory(ContractsNames.stTara);
-    stTara = await StTara.deploy();
+    stTara = await deploystTara();
 
     initialMinDepositAmount = ethers.utils.parseEther('1000');
     const signers = await ethers.getSigners();
@@ -65,22 +66,20 @@ describe(ContractsNames.stTara, () => {
 
   it("should mint stTARA tokens when the minDepositAmount is met", async () => {
     const amount = ethers.utils.parseEther("1000");
-    const minterAddress = await minter.getAddress();
     expect(
       await stTara.connect(minter).mint({ value: amount })
     ).to.emit(stTara, "Minted")
-      .withArgs(minterAddress, amount)
-      .changeTokenBalance(stTara, minterAddress, amount)
-      .changeEtherBalance(minterAddress, amount.mul(-1));
+      .withArgs(minter.address, amount)
+      .changeTokenBalance(stTara, minter.address, amount)
+      .changeEtherBalance(minter.address, amount.mul(-1));
   });
 
   it("should backswap stTARA tokens for TARA tokens", async () => {
     const amount = ethers.utils.parseEther("1000");
     await stTara.connect(burner).mint({ value: amount });
-    const burnerAddress = await burner.getAddress();
     expect(
       await stTara.connect(burner).burn(amount)
-    ).to.emit(stTara, "Burned").withArgs(burnerAddress, amount)
+    ).to.emit(stTara, "Burned").withArgs(burner.address, amount)
     .to.changeTokenBalance(stTara, burner, amount.mul(-1))
     .to.changeEtherBalance(burner, amount);
   });
@@ -91,14 +90,14 @@ describe(ContractsNames.stTara, () => {
 
     await stTara
       .connect(burner)
-      .transfer(await recipient.getAddress(), amount);
+      .transfer(recipient.address, amount);
 
     const recipientBalanceAfter = await stTara.balanceOf(
-      await recipient.getAddress()
+      recipient.address
     );
 
     const burnerBalanceAfter = await stTara.balanceOf(
-      await burner.getAddress()
+      burner.address
     );
     expect(burnerBalanceAfter).to.equal(0);
     expect(recipientBalanceAfter).to.equal(amount);
@@ -109,9 +108,8 @@ describe(ContractsNames.stTara, () => {
 
     const target = ethers.utils.hexlify(ethers.utils.randomBytes(20));
 
-    const recipientAddress = await recipient.getAddress();
     await expect(
-      stTara.connect(minter).transferFrom(recipientAddress, target, amount)
+      stTara.connect(minter).transferFrom(recipient.address, target, amount)
     ).to.be.revertedWith("ERC20: insufficient allowance");
   });
 
@@ -119,28 +117,26 @@ describe(ContractsNames.stTara, () => {
     const amount = ethers.utils.parseEther("1000");
 
     await network.provider.send("hardhat_setBalance", [
-      await recipient.getAddress(),
+      recipient.address,
       ethers.utils.parseEther("5").toHexString(),
     ]);
 
-    const balance = await stTara.balanceOf(await recipient.getAddress());
+    const balance = await stTara.balanceOf(recipient.address);
     expect(balance).to.equal(amount);
 
     await stTara
       .connect(recipient)
-      .approve(await minter.getAddress(), amount);
+      .approve(minter.address, amount);
 
-    const recipientAddress = await recipient.getAddress();
-    const finalTargetAddress = await finalTarget.getAddress();
     await stTara
       .connect(minter)
-      .transferFrom(recipientAddress, finalTargetAddress, amount);
+      .transferFrom(recipient.address, finalTarget.address, amount);
 
-    const targetBalanceAfter = await stTara.balanceOf(finalTargetAddress);
+    const targetBalanceAfter = await stTara.balanceOf(finalTarget.address);
     expect(targetBalanceAfter).to.equal(amount);
 
     const recipientBalanceAfter = await stTara.balanceOf(
-      await recipient.getAddress()
+      recipient.address
     );
     expect(recipientBalanceAfter).to.equal(0);
   });
@@ -154,18 +150,17 @@ describe(ContractsNames.stTara, () => {
   it("Should allow finalTarget to backswap stTARA tokens for TARA tokens", async () => {
     const amount = ethers.utils.parseEther("1000");
 
-    const finalTargetAddress = await finalTarget.getAddress();
-    const balance = await stTara.balanceOf(finalTargetAddress);
+    const balance = await stTara.balanceOf(finalTarget.address);
     expect(balance).to.equal(amount);
     await expect(stTara.connect(finalTarget).burn(amount))
       .to.emit(stTara, "Burned")
-      .withArgs(finalTargetAddress, amount);
+      .withArgs(finalTarget.address, amount);
 
     const finalstTaraBalanceAfter = await stTara.balanceOf(
-      finalTargetAddress
+      finalTarget.address
     );
     expect(finalstTaraBalanceAfter).to.equal(0);
-    expect(await ethers.provider.getBalance(finalTargetAddress))
+    expect(await ethers.provider.getBalance(finalTarget.address))
       .to.be.lt(ethers.utils.parseEther("1002"))
       .and.gt(ethers.utils.parseEther("1001"));
   });
