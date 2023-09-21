@@ -68,6 +68,7 @@ contract stTARA is ERC20, Ownable {
         } else { //lara == msg.sender. In this case the protocol will pay back the user also with the rewards
             if(amount > protocolBalances[user])
                 revert InsufficientBalanceForBurn(amount, protocolBalances[user]);
+            protocolBalances[user] -= amount;
         }
         // Burn stTARA tokens
         _burn(user, amount);
