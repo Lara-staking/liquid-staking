@@ -81,8 +81,7 @@ contract Lara is Ownable {
             amount -= remainingAmount;
         }
         // Mint stTARA tokens to user
-        sttaraToken.mint{value: msg.value}();
-        sttaraToken.transfer(msg.sender, amount);
+        sttaraToken.mint(msg.sender, amount);
 
         // Update stakedAmounts mapping
         stakedAmounts[msg.sender] += amount;
