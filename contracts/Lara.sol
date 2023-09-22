@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "./interfaces/IstTara.sol";
-import "./interfaces/IDPOS.sol";
-import "./interfaces/IApyOracle.sol";
-import "./interfaces/INodeContinuityOracle.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IstTara} from "./interfaces/IstTara.sol";
+import {DposInterface} from "./interfaces/IDPOS.sol";
+import {IApyOracle} from "./interfaces/IApyOracle.sol";
+import {INodeContinuityOracle} from "./interfaces/INodeContinuityOracle.sol";
 
 contract Lara is Ownable {
     // Errors
@@ -69,14 +69,13 @@ contract Lara is Ownable {
     }
 
     function stake(uint256 amount) external payable {
-        if(amount < minStakeAmount)
+        if (amount < minStakeAmount)
             revert StakeAmountTooLow(amount, minStakeAmount);
-        if(msg.value < amount)
-            revert StakeValueTooLow(msg.value, amount);
+        if (msg.value < amount) revert StakeValueTooLow(msg.value, amount);
 
         // Delegate to the highest APY validators and return if there is any remaining amount
         uint256 remainingAmount = delegateToValidators(amount);
-        if(remainingAmount != 0) {
+        if (remainingAmount != 0) {
             payable(msg.sender).transfer(remainingAmount);
             amount -= remainingAmount;
         }
@@ -101,14 +100,16 @@ contract Lara is Ownable {
             nodeData[i] = apyOracle.getNodeData(nodesList[i]);
             DposInterface.ValidatorBasicInfo memory validatorInfo = dposContract
                 .getValidator(nodeData[i].account);
-            uint256 nodeCapacity = maxValidatorStakeCapacity - validatorInfo.total_stake;
-            if(amount <= nodeCapacity) {
+            uint256 nodeCapacity = maxValidatorStakeCapacity -
+                validatorInfo.total_stake;
+            if (amount <= nodeCapacity) {
                 //delegate the amount
                 dposContract.delegate{value: amount}(nodeData[i].account);
                 return 0;
-            } else { //amount > nodeCapacity
+            } else {
+                //amount > nodeCapacity
                 //delegate nodeCapacity
-                dposContract.delegate{value: nodeCapacity}(nodeData[i].account); 
+                dposContract.delegate{value: nodeCapacity}(nodeData[i].account);
                 amount -= nodeCapacity;
             }
         }

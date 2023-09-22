@@ -24,6 +24,7 @@ describe(ContractsNames.lara, function() {
         await setupApyOracle(apyOracle, dataFeed);
         stTara = await deploystTara();
         lara = await deployLara(stTara.address, mockDpos.address, apyOracle.address, nodeContinuityOracle.address);
+        await stTara.setLaraAddress(lara.address);
     });
 
     describe('Getters/Setters', function() {
@@ -72,11 +73,30 @@ describe(ContractsNames.lara, function() {
             .withArgs(ethers.utils.parseEther('2'), amountToStake);
         });
 
-        it.only('Should allow staking if values are correct', async() => {
-            const [,,,,staker] = await ethers.getSigners();
+        it('Should allow staking if values are correct for one validator', async() => {
+            const [,v1,,,staker] = await ethers.getSigners();
             const amountToStake = ethers.utils.parseEther('1001');
+            const stakedAmountBefore = await lara.stakedAmounts(staker.address);
+            const protocolBalanceBefore = await stTara.protocolBalances(staker.address);
             await expect(lara.connect(staker).stake(amountToStake, {value: amountToStake}))
-            .to.emit(lara, 'Staked').withArgs(staker.address, amountToStake);
+            .to.emit(lara, 'Staked')
+            .withArgs(staker.address, amountToStake)
+            .to.emit(mockDpos, 'Delegated')
+            .withArgs(lara.address, v1.address, amountToStake)
+            .to.changeTokenBalance(stTara, staker, amountToStake);
+            
+            const stakedAmountAfter = await lara.stakedAmounts(staker.address);
+            const protocolBalanceAfter = await stTara.protocolBalances(staker.address);
+            expect(stakedAmountAfter).to.equal(stakedAmountBefore.add(amountToStake));
+            expect(protocolBalanceAfter).to.equal(protocolBalanceBefore.add(amountToStake));
+
+            //Test that the user cannot burn the protocol balance
+            const mintAmount = ethers.utils.parseEther('1010');
+            await stTara.connect(staker).mint(staker.address, mintAmount, {value: mintAmount});
+            await expect(
+                stTara.connect(staker).burn(staker.address, amountToStake.add(mintAmount))
+            ).to.be.revertedWithCustomError(stTara, ErrorsNames.InsufficientBalanceForBurn)
+            .withArgs(amountToStake.add(mintAmount), amountToStake.add(mintAmount));
         });
     });
 });
