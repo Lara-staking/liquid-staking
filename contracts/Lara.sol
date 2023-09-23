@@ -107,8 +107,7 @@ contract Lara is Ownable {
                 dposContract.delegate{value: amount}(nodeData[i].account);
                 return 0;
             } else {
-                //amount > nodeCapacity
-                //delegate nodeCapacity
+                //amount > nodeCapacity, delegate nodeCapacity
                 dposContract.delegate{value: nodeCapacity}(nodeData[i].account);
                 amount -= nodeCapacity;
             }

@@ -1,6 +1,7 @@
 export enum ErrorsNames {
     DepositAmountTooLow = 'DepositAmountTooLow',
-    InsufficientBalanceForBurn = 'InsufficientBalanceForBurn',
+    InsufficientProtocolBalanceForBurn = 'InsufficientProtocolBalanceForBurn',
+    InsufficientUserBalanceForBurn = 'InsufficientUserBalanceForBurn',
     StakeAmountTooLow = 'StakeAmountTooLow',
     StakeValueTooLow = 'StakeValueTooLow',
 }

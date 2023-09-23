@@ -38,27 +38,27 @@ const config: HardhatUserConfig = {
               },
               {
                 privateKey: process.env.TEST_KEY_2!,
-                balance: ethers.utils.parseEther("80000000").toString(),
+                balance: ethers.utils.parseEther("1000000000").toString(),
               },
               {
                 privateKey: process.env.TEST_KEY_3!,
-                balance: ethers.utils.parseEther("80000000").toString(),
+                balance: ethers.utils.parseEther("1000000000").toString(),
               },
               {
                 privateKey: process.env.TEST_KEY_4!,
-                balance: ethers.utils.parseEther("80000000").toString(),
+                balance: ethers.utils.parseEther("1000000000").toString(),
               },
               {
                 privateKey: process.env.TEST_KEY_5!,
-                balance: ethers.utils.parseEther("80000000").toString(),
+                balance: ethers.utils.parseEther("1000000000").toString(),
               },
               {
                 privateKey: process.env.TEST_KEY_6!,
-                balance: ethers.utils.parseEther("80000000").toString(),
+                balance: ethers.utils.parseEther("1000000000").toString(),
               },
               {
                 privateKey: process.env.TEST_KEY_7!,
-                balance: ethers.utils.parseEther("80000000").toString(),
+                balance: ethers.utils.parseEther("1000000000").toString(),
               },
             ]
           : [],

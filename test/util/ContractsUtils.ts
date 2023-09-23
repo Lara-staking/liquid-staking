@@ -29,7 +29,6 @@ export async function deploystTara() {
 
 export async function setupApyOracle(apyOracle: ApyOracle, dataFeed: SignerWithAddress) {
     const [,v1, v2, v3] = await ethers.getSigners();
-    await apyOracle.connect(dataFeed).updateNodeCount(BigNumber.from(3));
     await apyOracle.connect(dataFeed).updateNodeData(v1.address, {
         account: v1.address,
         rank: 1,

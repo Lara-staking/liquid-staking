@@ -16,7 +16,11 @@ contract stTARA is ERC20, Ownable {
     // Thrown when the burn caller is not the user or the lara protocol
     error WrongBurnAddress(address wrongAddress);
 
-    error InsufficientBalanceForBurn(uint256 amount, uint256 senderBalance);
+    // Thrown when the user does not have sufficient balance outside of protocol to burn
+    error InsufficientUserBalanceForBurn(uint256 amount, uint256 senderBalance, uint256 protocolBalance);
+
+    // Thrown when Lara burns too many tokens for an user
+    error InsufficientProtocolBalanceForBurn(uint256 amount, uint256 protocolBalance);
 
     // Events
     event Minted(address indexed user, uint256 amount);
@@ -58,16 +62,16 @@ contract stTARA is ERC20, Ownable {
     }
 
     function burn(address user, uint256 amount) external {
-        if (user != msg.sender && user != lara) revert WrongBurnAddress(user);
+        if (user != msg.sender && lara != msg.sender) revert WrongBurnAddress(user);
         if (user == msg.sender) {
             if (balanceOf(user) - protocolBalances[user] < amount)
-                revert InsufficientBalanceForBurn(amount, balanceOf(user));
+                revert InsufficientUserBalanceForBurn(amount, balanceOf(user), protocolBalances[user]);
             // Transfer TARA tokens to the user
             payable(msg.sender).transfer(amount);
         } else {
             //lara == msg.sender. In this case the protocol will pay back the user also with the rewards
             if (amount > protocolBalances[user])
-                revert InsufficientBalanceForBurn(
+                revert InsufficientProtocolBalanceForBurn(
                     amount,
                     protocolBalances[user]
                 );

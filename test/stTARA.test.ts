@@ -131,7 +131,7 @@ describe(ContractsNames.stTara, () => {
   it("should not allow recipient to backswap stTARA tokens for TARA tokens", async () => {
     const amount = ethers.utils.parseEther("1000");
 
-    await expect(stTara.connect(recipient).burn(recipient.address, amount)).to.be.revertedWithCustomError(stTara, ErrorsNames.InsufficientBalanceForBurn).withArgs(amount, 0);
+    await expect(stTara.connect(recipient).burn(recipient.address, amount)).to.be.revertedWithCustomError(stTara, ErrorsNames.InsufficientUserBalanceForBurn).withArgs(amount, 0, 0);
   });
 
   it("should allow finalTarget to backswap stTARA tokens for TARA tokens", async () => {
