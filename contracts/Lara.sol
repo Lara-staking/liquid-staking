@@ -18,16 +18,28 @@ contract Lara is Ownable {
 
     // State variables
 
+    // Reference timestamp for computing epoch number
+    uint256 public startTimestamp;
+
+    // Duration of an epoch in seconds, initially 1 week
+    uint256 public epochDuration = 1 weeks;
+
+    // Maximum staking capacity for a validator
     uint256 public maxValidatorStakeCapacity = 80000000 ether;
 
+    // Minimum amount allowed for staking
     uint256 public minStakeAmount = 1000 ether;
 
-    IstTara public sttaraToken;
+    // StTARA token contract
+    IstTara public stTaraToken;
 
+    // DPOS contract
     DposInterface public dposContract;
 
+    // APY oracle contract
     IApyOracle public apyOracle;
 
+    // Node continuity contract
     INodeContinuityOracle public continuityOracle;
 
     struct IndividualDelegation {
@@ -62,10 +74,26 @@ contract Lara is Ownable {
         address _apyOracle,
         address _continuityOracle
     ) {
-        sttaraToken = IstTara(_sttaraToken);
+        stTaraToken = IstTara(_sttaraToken);
         dposContract = DposInterface(_dposContract);
         apyOracle = IApyOracle(_apyOracle);
         continuityOracle = INodeContinuityOracle(_continuityOracle);
+        startTimestamp = block.timestamp;
+    }
+
+    /**
+     * @notice Function for computing current epoch number
+     */
+    function getEpoch() public view returns(uint256 epoch) {
+        epoch = (block.timestamp - startTimestamp) / epochDuration + 1;
+    }
+
+    /**
+     * @notice Setter for epochDuration
+     * @param _epochDuration new epoch duration (in seconds)
+     */
+    function setEpochDuration(uint256 _epochDuration) public onlyOwner {
+        epochDuration = _epochDuration;
     }
 
     function stake(uint256 amount) external payable {
@@ -80,7 +108,7 @@ contract Lara is Ownable {
             amount -= remainingAmount;
         }
         // Mint stTARA tokens to user
-        sttaraToken.mint(msg.sender, amount);
+        stTaraToken.mint(msg.sender, amount);
 
         // Update stakedAmounts mapping
         stakedAmounts[msg.sender] += amount;
