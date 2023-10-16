@@ -7,9 +7,9 @@ import "@nomicfoundation/hardhat-chai-matchers";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "hardhat-contract-sizer";
+import "@nomicfoundation/hardhat-foundry";
 import "solidity-coverage";
 import { ethers } from "ethers";
-
 dotenv.config();
 
 // This is a sample Hardhat task. To learn how to create your own go to
@@ -52,14 +52,14 @@ const config: HardhatUserConfig = {
                 privateKey: process.env.TEST_KEY_5!,
                 balance: ethers.utils.parseEther("1000000000").toString(),
               },
-              {
-                privateKey: process.env.TEST_KEY_6!,
-                balance: ethers.utils.parseEther("1000000000").toString(),
-              },
-              {
-                privateKey: process.env.TEST_KEY_7!,
-                balance: ethers.utils.parseEther("1000000000").toString(),
-              },
+              // {
+              //   privateKey: process.env.TEST_KEY_6!,
+              //   balance: ethers.utils.parseEther("1000000000").toString(),
+              // },
+              // {
+              //   privateKey: process.env.TEST_KEY_7!,
+              //   balance: ethers.utils.parseEther("1000000000").toString(),
+              // },
             ]
           : [],
     },
@@ -109,7 +109,7 @@ const config: HardhatUserConfig = {
     disambiguatePaths: false,
     runOnCompile: true,
     strict: true,
-  }
+  },
 };
 
 export default config;

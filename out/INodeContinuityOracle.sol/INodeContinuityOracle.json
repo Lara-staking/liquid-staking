@@ -1,0 +1,1086 @@
+{
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "node",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint64",
+          "name": "timestamp",
+          "type": "uint64"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "pbftCount",
+          "type": "uint256"
+        }
+      ],
+      "name": "NodeDataUpdated",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "getDataFeedAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint64",
+          "name": "timestamp",
+          "type": "uint64"
+        }
+      ],
+      "name": "getNodeStatsFrom",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint64",
+              "name": "dagsCount",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "lastDagTimestamp",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "lastPbftTimestamp",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "lastTransactionTimestamp",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "pbftCount",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "transactionsCount",
+              "type": "uint64"
+            }
+          ],
+          "internalType": "struct INodeContinuityOracle.NodeStats",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "node",
+          "type": "address"
+        }
+      ],
+      "name": "getNodeUpdateTimestamps",
+      "outputs": [
+        {
+          "internalType": "uint64[]",
+          "name": "timestamps",
+          "type": "uint64[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "node",
+          "type": "address"
+        },
+        {
+          "internalType": "uint64",
+          "name": "timestamp",
+          "type": "uint64"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint64",
+              "name": "dagsCount",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "lastDagTimestamp",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "lastPbftTimestamp",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "lastTransactionTimestamp",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "pbftCount",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "transactionsCount",
+              "type": "uint64"
+            }
+          ],
+          "internalType": "struct INodeContinuityOracle.NodeStats",
+          "name": "stats",
+          "type": "tuple"
+        }
+      ],
+      "name": "updateNodeStats",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "getDataFeedAddress()": "a50d1850",
+    "getNodeStatsFrom(uint64)": "fc4ec1c2",
+    "getNodeUpdateTimestamps(address)": "42564141",
+    "updateNodeStats(address,uint64,(uint64,uint64,uint64,uint64,uint64,uint64))": "e8578b36"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.17+commit.8df45f5f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"node\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"timestamp\",\"type\":\"uint64\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"pbftCount\",\"type\":\"uint256\"}],\"name\":\"NodeDataUpdated\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"getDataFeedAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint64\",\"name\":\"timestamp\",\"type\":\"uint64\"}],\"name\":\"getNodeStatsFrom\",\"outputs\":[{\"components\":[{\"internalType\":\"uint64\",\"name\":\"dagsCount\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"lastDagTimestamp\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"lastPbftTimestamp\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"lastTransactionTimestamp\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"pbftCount\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"transactionsCount\",\"type\":\"uint64\"}],\"internalType\":\"struct INodeContinuityOracle.NodeStats\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"node\",\"type\":\"address\"}],\"name\":\"getNodeUpdateTimestamps\",\"outputs\":[{\"internalType\":\"uint64[]\",\"name\":\"timestamps\",\"type\":\"uint64[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"node\",\"type\":\"address\"},{\"internalType\":\"uint64\",\"name\":\"timestamp\",\"type\":\"uint64\"},{\"components\":[{\"internalType\":\"uint64\",\"name\":\"dagsCount\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"lastDagTimestamp\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"lastPbftTimestamp\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"lastTransactionTimestamp\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"pbftCount\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"transactionsCount\",\"type\":\"uint64\"}],\"internalType\":\"struct INodeContinuityOracle.NodeStats\",\"name\":\"stats\",\"type\":\"tuple\"}],\"name\":\"updateNodeStats\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/interfaces/INodeContinuityOracle.sol\":\"INodeContinuityOracle\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":@openzeppelin/=node_modules/@openzeppelin/\",\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":eth-gas-reporter/=node_modules/eth-gas-reporter/\",\":forge-std/=lib/forge-std/src/\",\":hardhat/=node_modules/hardhat/\"]},\"sources\":{\"contracts/interfaces/INodeContinuityOracle.sol\":{\"keccak256\":\"0xf145f98359ba3fc3b547f95ed73e2f0e5c73c4f7d4d1f51ad1a558f88c0bc1ce\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://a956386d08729365e7260f74845dc9de89b285e194ecb2a1277c29774ac3b6f9\",\"dweb:/ipfs/QmXpycc8W1UyTP8Pus7Dczd5jaYJdAbPhq2d4LNrbpnyFK\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.17+commit.8df45f5f"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "node",
+              "type": "address",
+              "indexed": true
+            },
+            {
+              "internalType": "uint64",
+              "name": "timestamp",
+              "type": "uint64",
+              "indexed": false
+            },
+            {
+              "internalType": "uint256",
+              "name": "pbftCount",
+              "type": "uint256",
+              "indexed": false
+            }
+          ],
+          "type": "event",
+          "name": "NodeDataUpdated",
+          "anonymous": false
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getDataFeedAddress",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint64",
+              "name": "timestamp",
+              "type": "uint64"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getNodeStatsFrom",
+          "outputs": [
+            {
+              "internalType": "struct INodeContinuityOracle.NodeStats",
+              "name": "",
+              "type": "tuple",
+              "components": [
+                {
+                  "internalType": "uint64",
+                  "name": "dagsCount",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "lastDagTimestamp",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "lastPbftTimestamp",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "lastTransactionTimestamp",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "pbftCount",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "transactionsCount",
+                  "type": "uint64"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "node",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getNodeUpdateTimestamps",
+          "outputs": [
+            {
+              "internalType": "uint64[]",
+              "name": "timestamps",
+              "type": "uint64[]"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "node",
+              "type": "address"
+            },
+            {
+              "internalType": "uint64",
+              "name": "timestamp",
+              "type": "uint64"
+            },
+            {
+              "internalType": "struct INodeContinuityOracle.NodeStats",
+              "name": "stats",
+              "type": "tuple",
+              "components": [
+                {
+                  "internalType": "uint64",
+                  "name": "dagsCount",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "lastDagTimestamp",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "lastPbftTimestamp",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "lastTransactionTimestamp",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "pbftCount",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "transactionsCount",
+                  "type": "uint64"
+                }
+              ]
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "updateNodeStats"
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        ":@openzeppelin/=node_modules/@openzeppelin/",
+        ":ds-test/=lib/forge-std/lib/ds-test/src/",
+        ":eth-gas-reporter/=node_modules/eth-gas-reporter/",
+        ":forge-std/=lib/forge-std/src/",
+        ":hardhat/=node_modules/hardhat/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "contracts/interfaces/INodeContinuityOracle.sol": "INodeContinuityOracle"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "contracts/interfaces/INodeContinuityOracle.sol": {
+        "keccak256": "0xf145f98359ba3fc3b547f95ed73e2f0e5c73c4f7d4d1f51ad1a558f88c0bc1ce",
+        "urls": [
+          "bzz-raw://a956386d08729365e7260f74845dc9de89b285e194ecb2a1277c29774ac3b6f9",
+          "dweb:/ipfs/QmXpycc8W1UyTP8Pus7Dczd5jaYJdAbPhq2d4LNrbpnyFK"
+        ],
+        "license": "MIT"
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "contracts/interfaces/INodeContinuityOracle.sol",
+    "id": 1160,
+    "exportedSymbols": {
+      "INodeContinuityOracle": [
+        1159
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "84:818:7",
+    "nodes": [
+      {
+        "id": 1106,
+        "nodeType": "PragmaDirective",
+        "src": "84:23:7",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          "0.8",
+          ".17"
+        ]
+      },
+      {
+        "id": 1159,
+        "nodeType": "ContractDefinition",
+        "src": "109:792:7",
+        "nodes": [
+          {
+            "id": 1119,
+            "nodeType": "StructDefinition",
+            "src": "147:218:7",
+            "nodes": [],
+            "canonicalName": "INodeContinuityOracle.NodeStats",
+            "members": [
+              {
+                "constant": false,
+                "id": 1108,
+                "mutability": "mutable",
+                "name": "dagsCount",
+                "nameLocation": "181:9:7",
+                "nodeType": "VariableDeclaration",
+                "scope": 1119,
+                "src": "174:16:7",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint64",
+                  "typeString": "uint64"
+                },
+                "typeName": {
+                  "id": 1107,
+                  "name": "uint64",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "174:6:7",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint64",
+                    "typeString": "uint64"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 1110,
+                "mutability": "mutable",
+                "name": "lastDagTimestamp",
+                "nameLocation": "207:16:7",
+                "nodeType": "VariableDeclaration",
+                "scope": 1119,
+                "src": "200:23:7",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint64",
+                  "typeString": "uint64"
+                },
+                "typeName": {
+                  "id": 1109,
+                  "name": "uint64",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "200:6:7",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint64",
+                    "typeString": "uint64"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 1112,
+                "mutability": "mutable",
+                "name": "lastPbftTimestamp",
+                "nameLocation": "240:17:7",
+                "nodeType": "VariableDeclaration",
+                "scope": 1119,
+                "src": "233:24:7",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint64",
+                  "typeString": "uint64"
+                },
+                "typeName": {
+                  "id": 1111,
+                  "name": "uint64",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "233:6:7",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint64",
+                    "typeString": "uint64"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 1114,
+                "mutability": "mutable",
+                "name": "lastTransactionTimestamp",
+                "nameLocation": "274:24:7",
+                "nodeType": "VariableDeclaration",
+                "scope": 1119,
+                "src": "267:31:7",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint64",
+                  "typeString": "uint64"
+                },
+                "typeName": {
+                  "id": 1113,
+                  "name": "uint64",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "267:6:7",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint64",
+                    "typeString": "uint64"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 1116,
+                "mutability": "mutable",
+                "name": "pbftCount",
+                "nameLocation": "315:9:7",
+                "nodeType": "VariableDeclaration",
+                "scope": 1119,
+                "src": "308:16:7",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint64",
+                  "typeString": "uint64"
+                },
+                "typeName": {
+                  "id": 1115,
+                  "name": "uint64",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "308:6:7",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint64",
+                    "typeString": "uint64"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 1118,
+                "mutability": "mutable",
+                "name": "transactionsCount",
+                "nameLocation": "341:17:7",
+                "nodeType": "VariableDeclaration",
+                "scope": 1119,
+                "src": "334:24:7",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint64",
+                  "typeString": "uint64"
+                },
+                "typeName": {
+                  "id": 1117,
+                  "name": "uint64",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "334:6:7",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint64",
+                    "typeString": "uint64"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "NodeStats",
+            "nameLocation": "154:9:7",
+            "scope": 1159,
+            "visibility": "public"
+          },
+          {
+            "id": 1127,
+            "nodeType": "EventDefinition",
+            "src": "371:111:7",
+            "nodes": [],
+            "anonymous": false,
+            "eventSelector": "5ca455ba0dd919bfb0153648c9b44a706c8f7640acdd22269337eb84938473ab",
+            "name": "NodeDataUpdated",
+            "nameLocation": "377:15:7",
+            "parameters": {
+              "id": 1126,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1121,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "node",
+                  "nameLocation": "418:4:7",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1127,
+                  "src": "402:20:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1120,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "402:7:7",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1123,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "timestamp",
+                  "nameLocation": "439:9:7",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1127,
+                  "src": "432:16:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint64",
+                    "typeString": "uint64"
+                  },
+                  "typeName": {
+                    "id": 1122,
+                    "name": "uint64",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "432:6:7",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint64",
+                      "typeString": "uint64"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1125,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "pbftCount",
+                  "nameLocation": "466:9:7",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1127,
+                  "src": "458:17:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1124,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "458:7:7",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "392:89:7"
+            }
+          },
+          {
+            "id": 1135,
+            "nodeType": "FunctionDefinition",
+            "src": "488:112:7",
+            "nodes": [],
+            "functionSelector": "42564141",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getNodeUpdateTimestamps",
+            "nameLocation": "497:23:7",
+            "parameters": {
+              "id": 1130,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1129,
+                  "mutability": "mutable",
+                  "name": "node",
+                  "nameLocation": "538:4:7",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1135,
+                  "src": "530:12:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1128,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "530:7:7",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "520:28:7"
+            },
+            "returnParameters": {
+              "id": 1134,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1133,
+                  "mutability": "mutable",
+                  "name": "timestamps",
+                  "nameLocation": "588:10:7",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1135,
+                  "src": "572:26:7",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_uint64_$dyn_memory_ptr",
+                    "typeString": "uint64[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 1131,
+                      "name": "uint64",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "572:6:7",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint64",
+                        "typeString": "uint64"
+                      }
+                    },
+                    "id": 1132,
+                    "nodeType": "ArrayTypeName",
+                    "src": "572:8:7",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_uint64_$dyn_storage_ptr",
+                      "typeString": "uint64[]"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "571:28:7"
+            },
+            "scope": 1159,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 1143,
+            "nodeType": "FunctionDefinition",
+            "src": "606:99:7",
+            "nodes": [],
+            "functionSelector": "fc4ec1c2",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getNodeStatsFrom",
+            "nameLocation": "615:16:7",
+            "parameters": {
+              "id": 1138,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1137,
+                  "mutability": "mutable",
+                  "name": "timestamp",
+                  "nameLocation": "648:9:7",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1143,
+                  "src": "641:16:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint64",
+                    "typeString": "uint64"
+                  },
+                  "typeName": {
+                    "id": 1136,
+                    "name": "uint64",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "641:6:7",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint64",
+                      "typeString": "uint64"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "631:32:7"
+            },
+            "returnParameters": {
+              "id": 1142,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1141,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1143,
+                  "src": "687:16:7",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_NodeStats_$1119_memory_ptr",
+                    "typeString": "struct INodeContinuityOracle.NodeStats"
+                  },
+                  "typeName": {
+                    "id": 1140,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 1139,
+                      "name": "NodeStats",
+                      "nameLocations": [
+                        "687:9:7"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 1119,
+                      "src": "687:9:7"
+                    },
+                    "referencedDeclaration": 1119,
+                    "src": "687:9:7",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_NodeStats_$1119_storage_ptr",
+                      "typeString": "struct INodeContinuityOracle.NodeStats"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "686:18:7"
+            },
+            "scope": 1159,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 1153,
+            "nodeType": "FunctionDefinition",
+            "src": "711:120:7",
+            "nodes": [],
+            "functionSelector": "e8578b36",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "updateNodeStats",
+            "nameLocation": "720:15:7",
+            "parameters": {
+              "id": 1151,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1145,
+                  "mutability": "mutable",
+                  "name": "node",
+                  "nameLocation": "753:4:7",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1153,
+                  "src": "745:12:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1144,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "745:7:7",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1147,
+                  "mutability": "mutable",
+                  "name": "timestamp",
+                  "nameLocation": "774:9:7",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1153,
+                  "src": "767:16:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint64",
+                    "typeString": "uint64"
+                  },
+                  "typeName": {
+                    "id": 1146,
+                    "name": "uint64",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "767:6:7",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint64",
+                      "typeString": "uint64"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1150,
+                  "mutability": "mutable",
+                  "name": "stats",
+                  "nameLocation": "810:5:7",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1153,
+                  "src": "793:22:7",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_NodeStats_$1119_memory_ptr",
+                    "typeString": "struct INodeContinuityOracle.NodeStats"
+                  },
+                  "typeName": {
+                    "id": 1149,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 1148,
+                      "name": "NodeStats",
+                      "nameLocations": [
+                        "793:9:7"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 1119,
+                      "src": "793:9:7"
+                    },
+                    "referencedDeclaration": 1119,
+                    "src": "793:9:7",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_NodeStats_$1119_storage_ptr",
+                      "typeString": "struct INodeContinuityOracle.NodeStats"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "735:86:7"
+            },
+            "returnParameters": {
+              "id": 1152,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "830:0:7"
+            },
+            "scope": 1159,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 1158,
+            "nodeType": "FunctionDefinition",
+            "src": "837:62:7",
+            "nodes": [],
+            "functionSelector": "a50d1850",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getDataFeedAddress",
+            "nameLocation": "846:18:7",
+            "parameters": {
+              "id": 1154,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "864:2:7"
+            },
+            "returnParameters": {
+              "id": 1157,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1156,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1158,
+                  "src": "890:7:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1155,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "890:7:7",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "889:9:7"
+            },
+            "scope": 1159,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "INodeContinuityOracle",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": false,
+        "linearizedBaseContracts": [
+          1159
+        ],
+        "name": "INodeContinuityOracle",
+        "nameLocation": "119:21:7",
+        "scope": 1160,
+        "usedErrors": []
+      }
+    ],
+    "license": "MIT"
+  },
+  "id": 7
+}

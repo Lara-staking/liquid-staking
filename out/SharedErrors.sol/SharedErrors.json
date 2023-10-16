@@ -1,0 +1,59 @@
+{
+  "abi": [],
+  "bytecode": {
+    "object": "0x",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "linkReferences": {}
+  },
+  "ast": {
+    "absolutePath": "contracts/errors/SharedErrors.sol",
+    "id": 754,
+    "exportedSymbols": {
+      "NotAuthorized": [
+        753
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "32:114:4",
+    "nodes": [
+      {
+        "id": 750,
+        "nodeType": "PragmaDirective",
+        "src": "32:23:4",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".0"
+        ]
+      },
+      {
+        "id": 753,
+        "nodeType": "ErrorDefinition",
+        "src": "123:22:4",
+        "nodes": [],
+        "documentation": {
+          "id": 751,
+          "nodeType": "StructuredDocumentation",
+          "src": "57:65:4",
+          "text": " @notice It is returned if the caller is not authorized"
+        },
+        "errorSelector": "ea8e4eb5",
+        "name": "NotAuthorized",
+        "nameLocation": "129:13:4",
+        "parameters": {
+          "id": 752,
+          "nodeType": "ParameterList",
+          "parameters": [],
+          "src": "142:2:4"
+        }
+      }
+    ],
+    "license": "MIT"
+  },
+  "id": 4
+}

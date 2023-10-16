@@ -1,0 +1,5342 @@
+{
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "CommissionRewardsClaimed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "commission",
+          "type": "uint16"
+        }
+      ],
+      "name": "CommissionSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "delegator",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Delegated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "delegator",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Redelegated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "RewardsClaimed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "delegator",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "UndelegateCanceled",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "delegator",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "UndelegateConfirmed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "delegator",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Undelegated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        }
+      ],
+      "name": "ValidatorInfoSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        }
+      ],
+      "name": "ValidatorRegistered",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        }
+      ],
+      "name": "cancelUndelegate",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "batch",
+          "type": "uint32"
+        }
+      ],
+      "name": "claimAllRewards",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "end",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        }
+      ],
+      "name": "claimCommissionRewards",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        }
+      ],
+      "name": "claimRewards",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        }
+      ],
+      "name": "confirmUndelegate",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        }
+      ],
+      "name": "delegate",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "delegator",
+          "type": "address"
+        },
+        {
+          "internalType": "uint32",
+          "name": "batch",
+          "type": "uint32"
+        }
+      ],
+      "name": "getDelegations",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "stake",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "rewards",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct DposInterface.DelegatorInfo",
+              "name": "delegation",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct DposInterface.DelegationData[]",
+          "name": "delegations",
+          "type": "tuple[]"
+        },
+        {
+          "internalType": "bool",
+          "name": "end",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "delegator",
+          "type": "address"
+        }
+      ],
+      "name": "getTotalDelegation",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "total_delegation",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getTotalEligibleVotesCount",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "delegator",
+          "type": "address"
+        },
+        {
+          "internalType": "uint32",
+          "name": "batch",
+          "type": "uint32"
+        }
+      ],
+      "name": "getUndelegations",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "stake",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint64",
+              "name": "block",
+              "type": "uint64"
+            },
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "validator_exists",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct DposInterface.UndelegationData[]",
+          "name": "undelegations",
+          "type": "tuple[]"
+        },
+        {
+          "internalType": "bool",
+          "name": "end",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        }
+      ],
+      "name": "getValidator",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "total_stake",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "commission_reward",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint16",
+              "name": "commission",
+              "type": "uint16"
+            },
+            {
+              "internalType": "uint64",
+              "name": "last_commission_change",
+              "type": "uint64"
+            },
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "endpoint",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct DposInterface.ValidatorBasicInfo",
+          "name": "validator_info",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        }
+      ],
+      "name": "getValidatorEligibleVotesCount",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint32",
+          "name": "batch",
+          "type": "uint32"
+        }
+      ],
+      "name": "getValidators",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "total_stake",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "commission_reward",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint16",
+                  "name": "commission",
+                  "type": "uint16"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "last_commission_change",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "address",
+                  "name": "owner",
+                  "type": "address"
+                },
+                {
+                  "internalType": "string",
+                  "name": "description",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "endpoint",
+                  "type": "string"
+                }
+              ],
+              "internalType": "struct DposInterface.ValidatorBasicInfo",
+              "name": "info",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct DposInterface.ValidatorData[]",
+          "name": "validators",
+          "type": "tuple[]"
+        },
+        {
+          "internalType": "bool",
+          "name": "end",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "internalType": "uint32",
+          "name": "batch",
+          "type": "uint32"
+        }
+      ],
+      "name": "getValidatorsFor",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "total_stake",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "commission_reward",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint16",
+                  "name": "commission",
+                  "type": "uint16"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "last_commission_change",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "address",
+                  "name": "owner",
+                  "type": "address"
+                },
+                {
+                  "internalType": "string",
+                  "name": "description",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "endpoint",
+                  "type": "string"
+                }
+              ],
+              "internalType": "struct DposInterface.ValidatorBasicInfo",
+              "name": "info",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct DposInterface.ValidatorData[]",
+          "name": "validators",
+          "type": "tuple[]"
+        },
+        {
+          "internalType": "bool",
+          "name": "end",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        }
+      ],
+      "name": "isValidatorEligible",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "validator_from",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "validator_to",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "reDelegate",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "proof",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "vrf_key",
+          "type": "bytes"
+        },
+        {
+          "internalType": "uint16",
+          "name": "commission",
+          "type": "uint16"
+        },
+        {
+          "internalType": "string",
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "endpoint",
+          "type": "string"
+        }
+      ],
+      "name": "registerValidator",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        },
+        {
+          "internalType": "uint16",
+          "name": "commission",
+          "type": "uint16"
+        }
+      ],
+      "name": "setCommission",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "endpoint",
+          "type": "string"
+        }
+      ],
+      "name": "setValidatorInfo",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "validator",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "undelegate",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "cancelUndelegate(address)": "399ff554",
+    "claimAllRewards(uint32)": "09b72e00",
+    "claimCommissionRewards(address)": "d0eebfe2",
+    "claimRewards(address)": "ef5cfb8c",
+    "confirmUndelegate(address)": "45a02561",
+    "delegate(address)": "5c19a95c",
+    "getDelegations(address,uint32)": "8b49d394",
+    "getTotalDelegation(address)": "fc5e7e09",
+    "getTotalEligibleVotesCount()": "de8e4b50",
+    "getUndelegations(address,uint32)": "4edd9943",
+    "getValidator(address)": "1904bb2e",
+    "getValidatorEligibleVotesCount(address)": "618e3862",
+    "getValidators(uint32)": "19d8024f",
+    "getValidatorsFor(address,uint32)": "724ac6b0",
+    "isValidatorEligible(address)": "f3094e90",
+    "reDelegate(address,address,uint256)": "703812cc",
+    "registerValidator(address,bytes,bytes,uint16,string,string)": "d6fdc127",
+    "setCommission(address,uint16)": "f000322c",
+    "setValidatorInfo(address,string,string)": "0babea4c",
+    "undelegate(address,uint256)": "4d99dd16"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.17+commit.8df45f5f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"CommissionRewardsClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint16\",\"name\":\"commission\",\"type\":\"uint16\"}],\"name\":\"CommissionSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Delegated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Redelegated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"RewardsClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"UndelegateCanceled\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"UndelegateConfirmed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Undelegated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"}],\"name\":\"ValidatorInfoSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"}],\"name\":\"ValidatorRegistered\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"}],\"name\":\"cancelUndelegate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"batch\",\"type\":\"uint32\"}],\"name\":\"claimAllRewards\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"end\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"}],\"name\":\"claimCommissionRewards\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"}],\"name\":\"claimRewards\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"}],\"name\":\"confirmUndelegate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"}],\"name\":\"delegate\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"uint32\",\"name\":\"batch\",\"type\":\"uint32\"}],\"name\":\"getDelegations\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"rewards\",\"type\":\"uint256\"}],\"internalType\":\"struct DposInterface.DelegatorInfo\",\"name\":\"delegation\",\"type\":\"tuple\"}],\"internalType\":\"struct DposInterface.DelegationData[]\",\"name\":\"delegations\",\"type\":\"tuple[]\"},{\"internalType\":\"bool\",\"name\":\"end\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"}],\"name\":\"getTotalDelegation\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"total_delegation\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getTotalEligibleVotesCount\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"delegator\",\"type\":\"address\"},{\"internalType\":\"uint32\",\"name\":\"batch\",\"type\":\"uint32\"}],\"name\":\"getUndelegations\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\"},{\"internalType\":\"uint64\",\"name\":\"block\",\"type\":\"uint64\"},{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"validator_exists\",\"type\":\"bool\"}],\"internalType\":\"struct DposInterface.UndelegationData[]\",\"name\":\"undelegations\",\"type\":\"tuple[]\"},{\"internalType\":\"bool\",\"name\":\"end\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"}],\"name\":\"getValidator\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"total_stake\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"commission_reward\",\"type\":\"uint256\"},{\"internalType\":\"uint16\",\"name\":\"commission\",\"type\":\"uint16\"},{\"internalType\":\"uint64\",\"name\":\"last_commission_change\",\"type\":\"uint64\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"description\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"}],\"internalType\":\"struct DposInterface.ValidatorBasicInfo\",\"name\":\"validator_info\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"}],\"name\":\"getValidatorEligibleVotesCount\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"batch\",\"type\":\"uint32\"}],\"name\":\"getValidators\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"total_stake\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"commission_reward\",\"type\":\"uint256\"},{\"internalType\":\"uint16\",\"name\":\"commission\",\"type\":\"uint16\"},{\"internalType\":\"uint64\",\"name\":\"last_commission_change\",\"type\":\"uint64\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"description\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"}],\"internalType\":\"struct DposInterface.ValidatorBasicInfo\",\"name\":\"info\",\"type\":\"tuple\"}],\"internalType\":\"struct DposInterface.ValidatorData[]\",\"name\":\"validators\",\"type\":\"tuple[]\"},{\"internalType\":\"bool\",\"name\":\"end\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"uint32\",\"name\":\"batch\",\"type\":\"uint32\"}],\"name\":\"getValidatorsFor\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"components\":[{\"internalType\":\"uint256\",\"name\":\"total_stake\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"commission_reward\",\"type\":\"uint256\"},{\"internalType\":\"uint16\",\"name\":\"commission\",\"type\":\"uint16\"},{\"internalType\":\"uint64\",\"name\":\"last_commission_change\",\"type\":\"uint64\"},{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"description\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"}],\"internalType\":\"struct DposInterface.ValidatorBasicInfo\",\"name\":\"info\",\"type\":\"tuple\"}],\"internalType\":\"struct DposInterface.ValidatorData[]\",\"name\":\"validators\",\"type\":\"tuple[]\"},{\"internalType\":\"bool\",\"name\":\"end\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"}],\"name\":\"isValidatorEligible\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator_from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"validator_to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"reDelegate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"proof\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"vrf_key\",\"type\":\"bytes\"},{\"internalType\":\"uint16\",\"name\":\"commission\",\"type\":\"uint16\"},{\"internalType\":\"string\",\"name\":\"description\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"}],\"name\":\"registerValidator\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"uint16\",\"name\":\"commission\",\"type\":\"uint16\"}],\"name\":\"setCommission\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"description\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"endpoint\",\"type\":\"string\"}],\"name\":\"setValidatorInfo\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"undelegate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"claimAllRewards(uint32)\":{\"params\":{\"batch\":\"Batch number - there is a limit of 10 validators per batch that delegator can claim rewards from in single tranaction\"},\"returns\":{\"end\":\" Flag if there are no more validators left that delegator can claim rewards from*\"}},\"getDelegations(address,uint32)\":{\"params\":{\"batch\":\"Batch number to be fetched. If the list is too big it cannot return all delegations in one call. Instead, users are fetching batches of 50 delegations at a time\",\"delegator\":\"delegator account address\"},\"returns\":{\"delegations\":\" Batch of N delegations\",\"end\":\"         Flag if there are no more delegations left. To get all delegations, caller should fetch all batches until he sees end == true*\"}},\"getTotalDelegation(address)\":{\"params\":{\"delegator\":\"delegator account address\"}},\"getUndelegations(address,uint32)\":{\"params\":{\"batch\":\"Batch number to be fetched. If the list is too big it cannot return all undelegations in one call. Instead, users are fetching batches of 50 undelegations at a time\",\"delegator\":\"delegator account address\"},\"returns\":{\"end\":\"           Flag if there are no more undelegations left. To get all undelegations, caller should fetch all batches until he sees end == true*\",\"undelegations\":\" Batch of N undelegations\"}},\"getValidatorsFor(address,uint32)\":{\"params\":{\"batch\":\"Batch number to be fetched. If the list is too big it cannot return all validators in one call. Instead, users are fetching batches of 100 account at a time\",\"owner\":\"Owner address\"},\"returns\":{\"end\":\"        Flag if there are no more accounts left. To get all accounts, caller should fetch all batches until he sees end == true*\",\"validators\":\" Batch of N validators basic info\"}},\"setValidatorInfo(address,string,string)\":{\"params\":{\"description\":\"New description (e.g name, short purpose description, etc...)\",\"endpoint\":\"New endpoint, might be a validator's website*\"}}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"claimAllRewards(uint32)\":{\"notice\":\"Claims staking rewards from all validators (limited by batch) that caller has delegated to\"},\"getDelegations(address,uint32)\":{\"notice\":\"Returns list of delegations for specified delegator - which validators delegator delegated to\"},\"getUndelegations(address,uint32)\":{\"notice\":\"Returns list of undelegations for specified delegator\"},\"getValidatorsFor(address,uint32)\":{\"notice\":\"Returns list of validators owned by an address\"},\"setValidatorInfo(address,string,string)\":{\"notice\":\"Sets some of the static validator details.\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/interfaces/IDPOS.sol\":\"DposInterface\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":@openzeppelin/=node_modules/@openzeppelin/\",\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":eth-gas-reporter/=node_modules/eth-gas-reporter/\",\":forge-std/=lib/forge-std/src/\",\":hardhat/=node_modules/hardhat/\"]},\"sources\":{\"contracts/interfaces/IDPOS.sol\":{\"keccak256\":\"0xbfbdad3d3e0fc755e49d47229101edcde2371cf44f37199c23890da539a9127a\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://f1cf4fd46b573f7fa5f1682cad652a645ecdf2c198ce50822afd402bae0f8e4a\",\"dweb:/ipfs/QmUSWT5EFuxC54JxJ4ayJN7G1pKDPqZ8nv7uU5Ea3hqXgg\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.17+commit.8df45f5f"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address",
+              "indexed": true
+            },
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address",
+              "indexed": true
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256",
+              "indexed": false
+            }
+          ],
+          "type": "event",
+          "name": "CommissionRewardsClaimed",
+          "anonymous": false
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address",
+              "indexed": true
+            },
+            {
+              "internalType": "uint16",
+              "name": "commission",
+              "type": "uint16",
+              "indexed": false
+            }
+          ],
+          "type": "event",
+          "name": "CommissionSet",
+          "anonymous": false
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "delegator",
+              "type": "address",
+              "indexed": true
+            },
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address",
+              "indexed": true
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256",
+              "indexed": false
+            }
+          ],
+          "type": "event",
+          "name": "Delegated",
+          "anonymous": false
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "delegator",
+              "type": "address",
+              "indexed": true
+            },
+            {
+              "internalType": "address",
+              "name": "from",
+              "type": "address",
+              "indexed": true
+            },
+            {
+              "internalType": "address",
+              "name": "to",
+              "type": "address",
+              "indexed": true
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256",
+              "indexed": false
+            }
+          ],
+          "type": "event",
+          "name": "Redelegated",
+          "anonymous": false
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address",
+              "indexed": true
+            },
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address",
+              "indexed": true
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256",
+              "indexed": false
+            }
+          ],
+          "type": "event",
+          "name": "RewardsClaimed",
+          "anonymous": false
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "delegator",
+              "type": "address",
+              "indexed": true
+            },
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address",
+              "indexed": true
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256",
+              "indexed": false
+            }
+          ],
+          "type": "event",
+          "name": "UndelegateCanceled",
+          "anonymous": false
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "delegator",
+              "type": "address",
+              "indexed": true
+            },
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address",
+              "indexed": true
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256",
+              "indexed": false
+            }
+          ],
+          "type": "event",
+          "name": "UndelegateConfirmed",
+          "anonymous": false
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "delegator",
+              "type": "address",
+              "indexed": true
+            },
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address",
+              "indexed": true
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256",
+              "indexed": false
+            }
+          ],
+          "type": "event",
+          "name": "Undelegated",
+          "anonymous": false
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address",
+              "indexed": true
+            }
+          ],
+          "type": "event",
+          "name": "ValidatorInfoSet",
+          "anonymous": false
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address",
+              "indexed": true
+            }
+          ],
+          "type": "event",
+          "name": "ValidatorRegistered",
+          "anonymous": false
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "cancelUndelegate"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint32",
+              "name": "batch",
+              "type": "uint32"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "claimAllRewards",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "end",
+              "type": "bool"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "claimCommissionRewards"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "claimRewards"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "confirmUndelegate"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "payable",
+          "type": "function",
+          "name": "delegate"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "delegator",
+              "type": "address"
+            },
+            {
+              "internalType": "uint32",
+              "name": "batch",
+              "type": "uint32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getDelegations",
+          "outputs": [
+            {
+              "internalType": "struct DposInterface.DelegationData[]",
+              "name": "delegations",
+              "type": "tuple[]",
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "account",
+                  "type": "address"
+                },
+                {
+                  "internalType": "struct DposInterface.DelegatorInfo",
+                  "name": "delegation",
+                  "type": "tuple",
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "stake",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "rewards",
+                      "type": "uint256"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "internalType": "bool",
+              "name": "end",
+              "type": "bool"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "delegator",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getTotalDelegation",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "total_delegation",
+              "type": "uint256"
+            }
+          ]
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getTotalEligibleVotesCount",
+          "outputs": [
+            {
+              "internalType": "uint64",
+              "name": "",
+              "type": "uint64"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "delegator",
+              "type": "address"
+            },
+            {
+              "internalType": "uint32",
+              "name": "batch",
+              "type": "uint32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getUndelegations",
+          "outputs": [
+            {
+              "internalType": "struct DposInterface.UndelegationData[]",
+              "name": "undelegations",
+              "type": "tuple[]",
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "stake",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "block",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "address",
+                  "name": "validator",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "validator_exists",
+                  "type": "bool"
+                }
+              ]
+            },
+            {
+              "internalType": "bool",
+              "name": "end",
+              "type": "bool"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getValidator",
+          "outputs": [
+            {
+              "internalType": "struct DposInterface.ValidatorBasicInfo",
+              "name": "validator_info",
+              "type": "tuple",
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "total_stake",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "commission_reward",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint16",
+                  "name": "commission",
+                  "type": "uint16"
+                },
+                {
+                  "internalType": "uint64",
+                  "name": "last_commission_change",
+                  "type": "uint64"
+                },
+                {
+                  "internalType": "address",
+                  "name": "owner",
+                  "type": "address"
+                },
+                {
+                  "internalType": "string",
+                  "name": "description",
+                  "type": "string"
+                },
+                {
+                  "internalType": "string",
+                  "name": "endpoint",
+                  "type": "string"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getValidatorEligibleVotesCount",
+          "outputs": [
+            {
+              "internalType": "uint64",
+              "name": "",
+              "type": "uint64"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint32",
+              "name": "batch",
+              "type": "uint32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getValidators",
+          "outputs": [
+            {
+              "internalType": "struct DposInterface.ValidatorData[]",
+              "name": "validators",
+              "type": "tuple[]",
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "account",
+                  "type": "address"
+                },
+                {
+                  "internalType": "struct DposInterface.ValidatorBasicInfo",
+                  "name": "info",
+                  "type": "tuple",
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "total_stake",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "commission_reward",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint16",
+                      "name": "commission",
+                      "type": "uint16"
+                    },
+                    {
+                      "internalType": "uint64",
+                      "name": "last_commission_change",
+                      "type": "uint64"
+                    },
+                    {
+                      "internalType": "address",
+                      "name": "owner",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "description",
+                      "type": "string"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "endpoint",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "internalType": "bool",
+              "name": "end",
+              "type": "bool"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "internalType": "uint32",
+              "name": "batch",
+              "type": "uint32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getValidatorsFor",
+          "outputs": [
+            {
+              "internalType": "struct DposInterface.ValidatorData[]",
+              "name": "validators",
+              "type": "tuple[]",
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "account",
+                  "type": "address"
+                },
+                {
+                  "internalType": "struct DposInterface.ValidatorBasicInfo",
+                  "name": "info",
+                  "type": "tuple",
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "total_stake",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint256",
+                      "name": "commission_reward",
+                      "type": "uint256"
+                    },
+                    {
+                      "internalType": "uint16",
+                      "name": "commission",
+                      "type": "uint16"
+                    },
+                    {
+                      "internalType": "uint64",
+                      "name": "last_commission_change",
+                      "type": "uint64"
+                    },
+                    {
+                      "internalType": "address",
+                      "name": "owner",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "description",
+                      "type": "string"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "endpoint",
+                      "type": "string"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "internalType": "bool",
+              "name": "end",
+              "type": "bool"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "isValidatorEligible",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "validator_from",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "validator_to",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "reDelegate"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "proof",
+              "type": "bytes"
+            },
+            {
+              "internalType": "bytes",
+              "name": "vrf_key",
+              "type": "bytes"
+            },
+            {
+              "internalType": "uint16",
+              "name": "commission",
+              "type": "uint16"
+            },
+            {
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "endpoint",
+              "type": "string"
+            }
+          ],
+          "stateMutability": "payable",
+          "type": "function",
+          "name": "registerValidator"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address"
+            },
+            {
+              "internalType": "uint16",
+              "name": "commission",
+              "type": "uint16"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "setCommission"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "endpoint",
+              "type": "string"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "setValidatorInfo"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "validator",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "undelegate"
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {
+          "claimAllRewards(uint32)": {
+            "params": {
+              "batch": "Batch number - there is a limit of 10 validators per batch that delegator can claim rewards from in single tranaction"
+            },
+            "returns": {
+              "end": " Flag if there are no more validators left that delegator can claim rewards from*"
+            }
+          },
+          "getDelegations(address,uint32)": {
+            "params": {
+              "batch": "Batch number to be fetched. If the list is too big it cannot return all delegations in one call. Instead, users are fetching batches of 50 delegations at a time",
+              "delegator": "delegator account address"
+            },
+            "returns": {
+              "delegations": " Batch of N delegations",
+              "end": "         Flag if there are no more delegations left. To get all delegations, caller should fetch all batches until he sees end == true*"
+            }
+          },
+          "getTotalDelegation(address)": {
+            "params": {
+              "delegator": "delegator account address"
+            }
+          },
+          "getUndelegations(address,uint32)": {
+            "params": {
+              "batch": "Batch number to be fetched. If the list is too big it cannot return all undelegations in one call. Instead, users are fetching batches of 50 undelegations at a time",
+              "delegator": "delegator account address"
+            },
+            "returns": {
+              "end": "           Flag if there are no more undelegations left. To get all undelegations, caller should fetch all batches until he sees end == true*",
+              "undelegations": " Batch of N undelegations"
+            }
+          },
+          "getValidatorsFor(address,uint32)": {
+            "params": {
+              "batch": "Batch number to be fetched. If the list is too big it cannot return all validators in one call. Instead, users are fetching batches of 100 account at a time",
+              "owner": "Owner address"
+            },
+            "returns": {
+              "end": "        Flag if there are no more accounts left. To get all accounts, caller should fetch all batches until he sees end == true*",
+              "validators": " Batch of N validators basic info"
+            }
+          },
+          "setValidatorInfo(address,string,string)": {
+            "params": {
+              "description": "New description (e.g name, short purpose description, etc...)",
+              "endpoint": "New endpoint, might be a validator's website*"
+            }
+          }
+        },
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {
+          "claimAllRewards(uint32)": {
+            "notice": "Claims staking rewards from all validators (limited by batch) that caller has delegated to"
+          },
+          "getDelegations(address,uint32)": {
+            "notice": "Returns list of delegations for specified delegator - which validators delegator delegated to"
+          },
+          "getUndelegations(address,uint32)": {
+            "notice": "Returns list of undelegations for specified delegator"
+          },
+          "getValidatorsFor(address,uint32)": {
+            "notice": "Returns list of validators owned by an address"
+          },
+          "setValidatorInfo(address,string,string)": {
+            "notice": "Sets some of the static validator details."
+          }
+        },
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        ":@openzeppelin/=node_modules/@openzeppelin/",
+        ":ds-test/=lib/forge-std/lib/ds-test/src/",
+        ":eth-gas-reporter/=node_modules/eth-gas-reporter/",
+        ":forge-std/=lib/forge-std/src/",
+        ":hardhat/=node_modules/hardhat/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "contracts/interfaces/IDPOS.sol": "DposInterface"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "contracts/interfaces/IDPOS.sol": {
+        "keccak256": "0xbfbdad3d3e0fc755e49d47229101edcde2371cf44f37199c23890da539a9127a",
+        "urls": [
+          "bzz-raw://f1cf4fd46b573f7fa5f1682cad652a645ecdf2c198ce50822afd402bae0f8e4a",
+          "dweb:/ipfs/QmUSWT5EFuxC54JxJ4ayJN7G1pKDPqZ8nv7uU5Ea3hqXgg"
+        ],
+        "license": "MIT"
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "contracts/interfaces/IDPOS.sol",
+    "id": 1105,
+    "exportedSymbols": {
+      "DposInterface": [
+        1104
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "85:8600:6",
+    "nodes": [
+      {
+        "id": 816,
+        "nodeType": "PragmaDirective",
+        "src": "85:24:6",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          ">=",
+          "0.8",
+          ".0"
+        ]
+      },
+      {
+        "id": 1104,
+        "nodeType": "ContractDefinition",
+        "src": "111:8573:6",
+        "nodes": [
+          {
+            "id": 824,
+            "nodeType": "EventDefinition",
+            "src": "141:116:6",
+            "nodes": [],
+            "anonymous": false,
+            "eventSelector": "e5541a6b6103d4fa7e021ed54fad39c66f27a76bd13d374cf6240ae6bd0bb72b",
+            "name": "Delegated",
+            "nameLocation": "147:9:6",
+            "parameters": {
+              "id": 823,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 818,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "delegator",
+                  "nameLocation": "182:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 824,
+                  "src": "166:25:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 817,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "166:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 820,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "217:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 824,
+                  "src": "201:25:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 819,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "201:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 822,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "amount",
+                  "nameLocation": "244:6:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 824,
+                  "src": "236:14:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 821,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "236:7:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "156:100:6"
+            }
+          },
+          {
+            "id": 832,
+            "nodeType": "EventDefinition",
+            "src": "262:118:6",
+            "nodes": [],
+            "anonymous": false,
+            "eventSelector": "4d10bd049775c77bd7f255195afba5088028ecb3c7c277d393ccff7934f2f92c",
+            "name": "Undelegated",
+            "nameLocation": "268:11:6",
+            "parameters": {
+              "id": 831,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 826,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "delegator",
+                  "nameLocation": "305:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 832,
+                  "src": "289:25:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 825,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "289:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 828,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "340:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 832,
+                  "src": "324:25:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 827,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "324:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 830,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "amount",
+                  "nameLocation": "367:6:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 832,
+                  "src": "359:14:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 829,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "359:7:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "279:100:6"
+            }
+          },
+          {
+            "id": 840,
+            "nodeType": "EventDefinition",
+            "src": "385:126:6",
+            "nodes": [],
+            "anonymous": false,
+            "eventSelector": "f8bef3a6fe3b4c932b5b51c6472a89f171d039f4bacf18cff632208938bf0426",
+            "name": "UndelegateConfirmed",
+            "nameLocation": "391:19:6",
+            "parameters": {
+              "id": 839,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 834,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "delegator",
+                  "nameLocation": "436:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 840,
+                  "src": "420:25:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 833,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "420:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 836,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "471:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 840,
+                  "src": "455:25:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 835,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "455:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 838,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "amount",
+                  "nameLocation": "498:6:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 840,
+                  "src": "490:14:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 837,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "490:7:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "410:100:6"
+            }
+          },
+          {
+            "id": 848,
+            "nodeType": "EventDefinition",
+            "src": "516:125:6",
+            "nodes": [],
+            "anonymous": false,
+            "eventSelector": "fc25f8a919d19f2c2dfce21115718abc9ef2b1e0c9218a488f614c75be4184b7",
+            "name": "UndelegateCanceled",
+            "nameLocation": "522:18:6",
+            "parameters": {
+              "id": 847,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 842,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "delegator",
+                  "nameLocation": "566:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 848,
+                  "src": "550:25:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 841,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "550:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 844,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "601:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 848,
+                  "src": "585:25:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 843,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "585:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 846,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "amount",
+                  "nameLocation": "628:6:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 848,
+                  "src": "620:14:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 845,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "620:7:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "540:100:6"
+            }
+          },
+          {
+            "id": 858,
+            "nodeType": "EventDefinition",
+            "src": "646:141:6",
+            "nodes": [],
+            "anonymous": false,
+            "eventSelector": "12e144c27d0bad08abc77c66a640b5cf15a03a93f6582f40de6932b033a5fa5e",
+            "name": "Redelegated",
+            "nameLocation": "652:11:6",
+            "parameters": {
+              "id": 857,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 850,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "delegator",
+                  "nameLocation": "689:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 858,
+                  "src": "673:25:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 849,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "673:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 852,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "from",
+                  "nameLocation": "724:4:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 858,
+                  "src": "708:20:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 851,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "708:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 854,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "to",
+                  "nameLocation": "754:2:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 858,
+                  "src": "738:18:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 853,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "738:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 856,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "amount",
+                  "nameLocation": "774:6:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 858,
+                  "src": "766:14:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 855,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "766:7:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "663:123:6"
+            }
+          },
+          {
+            "id": 866,
+            "nodeType": "EventDefinition",
+            "src": "792:119:6",
+            "nodes": [],
+            "anonymous": false,
+            "eventSelector": "9310ccfcb8de723f578a9e4282ea9f521f05ae40dc08f3068dfad528a65ee3c7",
+            "name": "RewardsClaimed",
+            "nameLocation": "798:14:6",
+            "parameters": {
+              "id": 865,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 860,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "account",
+                  "nameLocation": "838:7:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 866,
+                  "src": "822:23:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 859,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "822:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 862,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "871:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 866,
+                  "src": "855:25:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 861,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "855:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 864,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "amount",
+                  "nameLocation": "898:6:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 866,
+                  "src": "890:14:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 863,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "890:7:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "812:98:6"
+            }
+          },
+          {
+            "id": 874,
+            "nodeType": "EventDefinition",
+            "src": "916:129:6",
+            "nodes": [],
+            "anonymous": false,
+            "eventSelector": "f0ec9e0f6add850a1738c5822244e26ffc3d1f14da7537aa240582b25af12ad0",
+            "name": "CommissionRewardsClaimed",
+            "nameLocation": "922:24:6",
+            "parameters": {
+              "id": 873,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 868,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "account",
+                  "nameLocation": "972:7:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 874,
+                  "src": "956:23:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 867,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "956:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 870,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "1005:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 874,
+                  "src": "989:25:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 869,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "989:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 872,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "amount",
+                  "nameLocation": "1032:6:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 874,
+                  "src": "1024:14:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 871,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1024:7:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "946:98:6"
+            }
+          },
+          {
+            "id": 880,
+            "nodeType": "EventDefinition",
+            "src": "1050:66:6",
+            "nodes": [],
+            "anonymous": false,
+            "eventSelector": "c909daf778d180f43dac53b55d0de934d2f1e0b70412ca274982e4e6e894eb1a",
+            "name": "CommissionSet",
+            "nameLocation": "1056:13:6",
+            "parameters": {
+              "id": 879,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 876,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "1086:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 880,
+                  "src": "1070:25:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 875,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1070:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 878,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "commission",
+                  "nameLocation": "1104:10:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 880,
+                  "src": "1097:17:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint16",
+                    "typeString": "uint16"
+                  },
+                  "typeName": {
+                    "id": 877,
+                    "name": "uint16",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1097:6:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint16",
+                      "typeString": "uint16"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1069:46:6"
+            }
+          },
+          {
+            "id": 884,
+            "nodeType": "EventDefinition",
+            "src": "1121:53:6",
+            "nodes": [],
+            "anonymous": false,
+            "eventSelector": "d09501348473474a20c772c79c653e1fd7e8b437e418fe235d277d2c88853251",
+            "name": "ValidatorRegistered",
+            "nameLocation": "1127:19:6",
+            "parameters": {
+              "id": 883,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 882,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "1163:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 884,
+                  "src": "1147:25:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 881,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1147:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1146:27:6"
+            }
+          },
+          {
+            "id": 888,
+            "nodeType": "EventDefinition",
+            "src": "1179:50:6",
+            "nodes": [],
+            "anonymous": false,
+            "eventSelector": "7aa20e1f59764c9066578febd688a51375adbd654aff86cef56593a17a99071d",
+            "name": "ValidatorInfoSet",
+            "nameLocation": "1185:16:6",
+            "parameters": {
+              "id": 887,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 886,
+                  "indexed": true,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "1218:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 888,
+                  "src": "1202:25:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 885,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1202:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1201:27:6"
+            }
+          },
+          {
+            "id": 903,
+            "nodeType": "StructDefinition",
+            "src": "1235:605:6",
+            "nodes": [],
+            "canonicalName": "DposInterface.ValidatorBasicInfo",
+            "members": [
+              {
+                "constant": false,
+                "id": 890,
+                "mutability": "mutable",
+                "name": "total_stake",
+                "nameLocation": "1340:11:6",
+                "nodeType": "VariableDeclaration",
+                "scope": 903,
+                "src": "1332:19:6",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 889,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "1332:7:6",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 892,
+                "mutability": "mutable",
+                "name": "commission_reward",
+                "nameLocation": "1434:17:6",
+                "nodeType": "VariableDeclaration",
+                "scope": 903,
+                "src": "1426:25:6",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 891,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "1426:7:6",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 894,
+                "mutability": "mutable",
+                "name": "commission",
+                "nameLocation": "1543:10:6",
+                "nodeType": "VariableDeclaration",
+                "scope": 903,
+                "src": "1536:17:6",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint16",
+                  "typeString": "uint16"
+                },
+                "typeName": {
+                  "id": 893,
+                  "name": "uint16",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "1536:6:6",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint16",
+                    "typeString": "uint16"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 896,
+                "mutability": "mutable",
+                "name": "last_commission_change",
+                "nameLocation": "1620:22:6",
+                "nodeType": "VariableDeclaration",
+                "scope": 903,
+                "src": "1613:29:6",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint64",
+                  "typeString": "uint64"
+                },
+                "typeName": {
+                  "id": 895,
+                  "name": "uint64",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "1613:6:6",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint64",
+                    "typeString": "uint64"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 898,
+                "mutability": "mutable",
+                "name": "owner",
+                "nameLocation": "1697:5:6",
+                "nodeType": "VariableDeclaration",
+                "scope": 903,
+                "src": "1689:13:6",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                },
+                "typeName": {
+                  "id": 897,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "1689:7:6",
+                  "stateMutability": "nonpayable",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 900,
+                "mutability": "mutable",
+                "name": "description",
+                "nameLocation": "1758:11:6",
+                "nodeType": "VariableDeclaration",
+                "scope": 903,
+                "src": "1751:18:6",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_string_storage_ptr",
+                  "typeString": "string"
+                },
+                "typeName": {
+                  "id": 899,
+                  "name": "string",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "1751:6:6",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_storage_ptr",
+                    "typeString": "string"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 902,
+                "mutability": "mutable",
+                "name": "endpoint",
+                "nameLocation": "1825:8:6",
+                "nodeType": "VariableDeclaration",
+                "scope": 903,
+                "src": "1818:15:6",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_string_storage_ptr",
+                  "typeString": "string"
+                },
+                "typeName": {
+                  "id": 901,
+                  "name": "string",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "1818:6:6",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_storage_ptr",
+                    "typeString": "string"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "ValidatorBasicInfo",
+            "nameLocation": "1242:18:6",
+            "scope": 1104,
+            "visibility": "public"
+          },
+          {
+            "id": 909,
+            "nodeType": "StructDefinition",
+            "src": "1890:86:6",
+            "nodes": [],
+            "canonicalName": "DposInterface.ValidatorData",
+            "members": [
+              {
+                "constant": false,
+                "id": 905,
+                "mutability": "mutable",
+                "name": "account",
+                "nameLocation": "1929:7:6",
+                "nodeType": "VariableDeclaration",
+                "scope": 909,
+                "src": "1921:15:6",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                },
+                "typeName": {
+                  "id": 904,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "1921:7:6",
+                  "stateMutability": "nonpayable",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 908,
+                "mutability": "mutable",
+                "name": "info",
+                "nameLocation": "1965:4:6",
+                "nodeType": "VariableDeclaration",
+                "scope": 909,
+                "src": "1946:23:6",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_struct$_ValidatorBasicInfo_$903_storage_ptr",
+                  "typeString": "struct DposInterface.ValidatorBasicInfo"
+                },
+                "typeName": {
+                  "id": 907,
+                  "nodeType": "UserDefinedTypeName",
+                  "pathNode": {
+                    "id": 906,
+                    "name": "ValidatorBasicInfo",
+                    "nameLocations": [
+                      "1946:18:6"
+                    ],
+                    "nodeType": "IdentifierPath",
+                    "referencedDeclaration": 903,
+                    "src": "1946:18:6"
+                  },
+                  "referencedDeclaration": 903,
+                  "src": "1946:18:6",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_ValidatorBasicInfo_$903_storage_ptr",
+                    "typeString": "struct DposInterface.ValidatorBasicInfo"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "ValidatorData",
+            "nameLocation": "1897:13:6",
+            "scope": 1104,
+            "visibility": "public"
+          },
+          {
+            "id": 914,
+            "nodeType": "StructDefinition",
+            "src": "1982:282:6",
+            "nodes": [],
+            "canonicalName": "DposInterface.UndelegateRequest",
+            "members": [
+              {
+                "constant": false,
+                "id": 911,
+                "mutability": "mutable",
+                "name": "eligible_block_num",
+                "nameLocation": "2172:18:6",
+                "nodeType": "VariableDeclaration",
+                "scope": 914,
+                "src": "2164:26:6",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 910,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "2164:7:6",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 913,
+                "mutability": "mutable",
+                "name": "amount",
+                "nameLocation": "2251:6:6",
+                "nodeType": "VariableDeclaration",
+                "scope": 914,
+                "src": "2243:14:6",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 912,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "2243:7:6",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "UndelegateRequest",
+            "nameLocation": "1989:17:6",
+            "scope": 1104,
+            "visibility": "public"
+          },
+          {
+            "id": 919,
+            "nodeType": "StructDefinition",
+            "src": "2292:168:6",
+            "nodes": [],
+            "canonicalName": "DposInterface.DelegatorInfo",
+            "members": [
+              {
+                "constant": false,
+                "id": 916,
+                "mutability": "mutable",
+                "name": "stake",
+                "nameLocation": "2376:5:6",
+                "nodeType": "VariableDeclaration",
+                "scope": 919,
+                "src": "2368:13:6",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 915,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "2368:7:6",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 918,
+                "mutability": "mutable",
+                "name": "rewards",
+                "nameLocation": "2446:7:6",
+                "nodeType": "VariableDeclaration",
+                "scope": 919,
+                "src": "2438:15:6",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 917,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "2438:7:6",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "DelegatorInfo",
+            "nameLocation": "2299:13:6",
+            "scope": 1104,
+            "visibility": "public"
+          },
+          {
+            "id": 925,
+            "nodeType": "StructDefinition",
+            "src": "2511:233:6",
+            "nodes": [],
+            "canonicalName": "DposInterface.DelegationData",
+            "members": [
+              {
+                "constant": false,
+                "id": 921,
+                "mutability": "mutable",
+                "name": "account",
+                "nameLocation": "2669:7:6",
+                "nodeType": "VariableDeclaration",
+                "scope": 925,
+                "src": "2661:15:6",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                },
+                "typeName": {
+                  "id": 920,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "2661:7:6",
+                  "stateMutability": "nonpayable",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 924,
+                "mutability": "mutable",
+                "name": "delegation",
+                "nameLocation": "2727:10:6",
+                "nodeType": "VariableDeclaration",
+                "scope": 925,
+                "src": "2713:24:6",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_struct$_DelegatorInfo_$919_storage_ptr",
+                  "typeString": "struct DposInterface.DelegatorInfo"
+                },
+                "typeName": {
+                  "id": 923,
+                  "nodeType": "UserDefinedTypeName",
+                  "pathNode": {
+                    "id": 922,
+                    "name": "DelegatorInfo",
+                    "nameLocations": [
+                      "2713:13:6"
+                    ],
+                    "nodeType": "IdentifierPath",
+                    "referencedDeclaration": 919,
+                    "src": "2713:13:6"
+                  },
+                  "referencedDeclaration": 919,
+                  "src": "2713:13:6",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_DelegatorInfo_$919_storage_ptr",
+                    "typeString": "struct DposInterface.DelegatorInfo"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "DelegationData",
+            "nameLocation": "2518:14:6",
+            "scope": 1104,
+            "visibility": "public"
+          },
+          {
+            "id": 934,
+            "nodeType": "StructDefinition",
+            "src": "2797:377:6",
+            "nodes": [],
+            "canonicalName": "DposInterface.UndelegationData",
+            "members": [
+              {
+                "constant": false,
+                "id": 927,
+                "mutability": "mutable",
+                "name": "stake",
+                "nameLocation": "2884:5:6",
+                "nodeType": "VariableDeclaration",
+                "scope": 934,
+                "src": "2876:13:6",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 926,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "2876:7:6",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 929,
+                "mutability": "mutable",
+                "name": "block",
+                "nameLocation": "2955:5:6",
+                "nodeType": "VariableDeclaration",
+                "scope": 934,
+                "src": "2948:12:6",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint64",
+                  "typeString": "uint64"
+                },
+                "typeName": {
+                  "id": 928,
+                  "name": "uint64",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "2948:6:6",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint64",
+                    "typeString": "uint64"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 931,
+                "mutability": "mutable",
+                "name": "validator",
+                "nameLocation": "3007:9:6",
+                "nodeType": "VariableDeclaration",
+                "scope": 934,
+                "src": "2999:17:6",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                },
+                "typeName": {
+                  "id": 930,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "2999:7:6",
+                  "stateMutability": "nonpayable",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 933,
+                "mutability": "mutable",
+                "name": "validator_exists",
+                "nameLocation": "3151:16:6",
+                "nodeType": "VariableDeclaration",
+                "scope": 934,
+                "src": "3146:21:6",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bool",
+                  "typeString": "bool"
+                },
+                "typeName": {
+                  "id": 932,
+                  "name": "bool",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "3146:4:6",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "UndelegationData",
+            "nameLocation": "2804:16:6",
+            "scope": 1104,
+            "visibility": "public"
+          },
+          {
+            "id": 939,
+            "nodeType": "FunctionDefinition",
+            "src": "3227:54:6",
+            "nodes": [],
+            "functionSelector": "5c19a95c",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "delegate",
+            "nameLocation": "3236:8:6",
+            "parameters": {
+              "id": 937,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 936,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "3253:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 939,
+                  "src": "3245:17:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 935,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3245:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3244:19:6"
+            },
+            "returnParameters": {
+              "id": 938,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3280:0:6"
+            },
+            "scope": 1104,
+            "stateMutability": "payable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 946,
+            "nodeType": "FunctionDefinition",
+            "src": "3379:64:6",
+            "nodes": [],
+            "functionSelector": "4d99dd16",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "undelegate",
+            "nameLocation": "3388:10:6",
+            "parameters": {
+              "id": 944,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 941,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "3407:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 946,
+                  "src": "3399:17:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 940,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3399:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 943,
+                  "mutability": "mutable",
+                  "name": "amount",
+                  "nameLocation": "3426:6:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 946,
+                  "src": "3418:14:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 942,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3418:7:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3398:35:6"
+            },
+            "returnParameters": {
+              "id": 945,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3442:0:6"
+            },
+            "scope": 1104,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 951,
+            "nodeType": "FunctionDefinition",
+            "src": "3484:55:6",
+            "nodes": [],
+            "functionSelector": "45a02561",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "confirmUndelegate",
+            "nameLocation": "3493:17:6",
+            "parameters": {
+              "id": 949,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 948,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "3519:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 951,
+                  "src": "3511:17:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 947,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3511:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3510:19:6"
+            },
+            "returnParameters": {
+              "id": 950,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3538:0:6"
+            },
+            "scope": 1104,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 956,
+            "nodeType": "FunctionDefinition",
+            "src": "3578:54:6",
+            "nodes": [],
+            "functionSelector": "399ff554",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "cancelUndelegate",
+            "nameLocation": "3587:16:6",
+            "parameters": {
+              "id": 954,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 953,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "3612:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 956,
+                  "src": "3604:17:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 952,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3604:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3603:19:6"
+            },
+            "returnParameters": {
+              "id": 955,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3631:0:6"
+            },
+            "scope": 1104,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 965,
+            "nodeType": "FunctionDefinition",
+            "src": "3708:121:6",
+            "nodes": [],
+            "functionSelector": "703812cc",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "reDelegate",
+            "nameLocation": "3717:10:6",
+            "parameters": {
+              "id": 963,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 958,
+                  "mutability": "mutable",
+                  "name": "validator_from",
+                  "nameLocation": "3745:14:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 965,
+                  "src": "3737:22:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 957,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3737:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 960,
+                  "mutability": "mutable",
+                  "name": "validator_to",
+                  "nameLocation": "3777:12:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 965,
+                  "src": "3769:20:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 959,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3769:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 962,
+                  "mutability": "mutable",
+                  "name": "amount",
+                  "nameLocation": "3807:6:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 965,
+                  "src": "3799:14:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 961,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3799:7:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3727:92:6"
+            },
+            "returnParameters": {
+              "id": 964,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3828:0:6"
+            },
+            "scope": 1104,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 970,
+            "nodeType": "FunctionDefinition",
+            "src": "3882:50:6",
+            "nodes": [],
+            "functionSelector": "ef5cfb8c",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "claimRewards",
+            "nameLocation": "3891:12:6",
+            "parameters": {
+              "id": 968,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 967,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "3912:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 970,
+                  "src": "3904:17:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 966,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "3904:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "3903:19:6"
+            },
+            "returnParameters": {
+              "id": 969,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "3931:0:6"
+            },
+            "scope": 1104,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 978,
+            "nodeType": "FunctionDefinition",
+            "src": "4306:67:6",
+            "nodes": [],
+            "documentation": {
+              "id": 971,
+              "nodeType": "StructuredDocumentation",
+              "src": "3938:363:6",
+              "text": " @notice Claims staking rewards from all validators (limited by batch) that caller has delegated to\n @param batch Batch number - there is a limit of 10 validators per batch that delegator can claim rewards from in single tranaction\n @return end  Flag if there are no more validators left that delegator can claim rewards from*"
+            },
+            "functionSelector": "09b72e00",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "claimAllRewards",
+            "nameLocation": "4315:15:6",
+            "parameters": {
+              "id": 974,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 973,
+                  "mutability": "mutable",
+                  "name": "batch",
+                  "nameLocation": "4338:5:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 978,
+                  "src": "4331:12:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint32",
+                    "typeString": "uint32"
+                  },
+                  "typeName": {
+                    "id": 972,
+                    "name": "uint32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4331:6:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint32",
+                      "typeString": "uint32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4330:14:6"
+            },
+            "returnParameters": {
+              "id": 977,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 976,
+                  "mutability": "mutable",
+                  "name": "end",
+                  "nameLocation": "4368:3:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 978,
+                  "src": "4363:8:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 975,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4363:4:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4362:10:6"
+            },
+            "scope": 1104,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 983,
+            "nodeType": "FunctionDefinition",
+            "src": "4436:60:6",
+            "nodes": [],
+            "functionSelector": "d0eebfe2",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "claimCommissionRewards",
+            "nameLocation": "4445:22:6",
+            "parameters": {
+              "id": 981,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 980,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "4476:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 983,
+                  "src": "4468:17:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 979,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4468:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4467:19:6"
+            },
+            "returnParameters": {
+              "id": 982,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "4495:0:6"
+            },
+            "scope": 1104,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 998,
+            "nodeType": "FunctionDefinition",
+            "src": "4613:233:6",
+            "nodes": [],
+            "functionSelector": "d6fdc127",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "registerValidator",
+            "nameLocation": "4622:17:6",
+            "parameters": {
+              "id": 996,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 985,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "4657:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 998,
+                  "src": "4649:17:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 984,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4649:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 987,
+                  "mutability": "mutable",
+                  "name": "proof",
+                  "nameLocation": "4689:5:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 998,
+                  "src": "4676:18:6",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_memory_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 986,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4676:5:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 989,
+                  "mutability": "mutable",
+                  "name": "vrf_key",
+                  "nameLocation": "4717:7:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 998,
+                  "src": "4704:20:6",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_memory_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 988,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4704:5:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 991,
+                  "mutability": "mutable",
+                  "name": "commission",
+                  "nameLocation": "4741:10:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 998,
+                  "src": "4734:17:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint16",
+                    "typeString": "uint16"
+                  },
+                  "typeName": {
+                    "id": 990,
+                    "name": "uint16",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4734:6:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint16",
+                      "typeString": "uint16"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 993,
+                  "mutability": "mutable",
+                  "name": "description",
+                  "nameLocation": "4777:11:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 998,
+                  "src": "4761:27:6",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_calldata_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 992,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4761:6:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 995,
+                  "mutability": "mutable",
+                  "name": "endpoint",
+                  "nameLocation": "4814:8:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 998,
+                  "src": "4798:24:6",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_calldata_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 994,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "4798:6:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "4639:189:6"
+            },
+            "returnParameters": {
+              "id": 997,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "4845:0:6"
+            },
+            "scope": 1104,
+            "stateMutability": "payable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 1008,
+            "nodeType": "FunctionDefinition",
+            "src": "5097:139:6",
+            "nodes": [],
+            "documentation": {
+              "id": 999,
+              "nodeType": "StructuredDocumentation",
+              "src": "4852:240:6",
+              "text": " @notice Sets some of the static validator details.\n @param description   New description (e.g name, short purpose description, etc...)\n @param endpoint      New endpoint, might be a validator's website*"
+            },
+            "functionSelector": "0babea4c",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "setValidatorInfo",
+            "nameLocation": "5106:16:6",
+            "parameters": {
+              "id": 1006,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1001,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "5140:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1008,
+                  "src": "5132:17:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1000,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "5132:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1003,
+                  "mutability": "mutable",
+                  "name": "description",
+                  "nameLocation": "5175:11:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1008,
+                  "src": "5159:27:6",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_calldata_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 1002,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "5159:6:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1005,
+                  "mutability": "mutable",
+                  "name": "endpoint",
+                  "nameLocation": "5212:8:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1008,
+                  "src": "5196:24:6",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_calldata_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 1004,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "5196:6:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "5122:104:6"
+            },
+            "returnParameters": {
+              "id": 1007,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "5235:0:6"
+            },
+            "scope": 1104,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 1015,
+            "nodeType": "FunctionDefinition",
+            "src": "5314:70:6",
+            "nodes": [],
+            "functionSelector": "f000322c",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "setCommission",
+            "nameLocation": "5323:13:6",
+            "parameters": {
+              "id": 1013,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1010,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "5345:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1015,
+                  "src": "5337:17:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1009,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "5337:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1012,
+                  "mutability": "mutable",
+                  "name": "commission",
+                  "nameLocation": "5363:10:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1015,
+                  "src": "5356:17:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint16",
+                    "typeString": "uint16"
+                  },
+                  "typeName": {
+                    "id": 1011,
+                    "name": "uint16",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "5356:6:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint16",
+                      "typeString": "uint16"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "5336:38:6"
+            },
+            "returnParameters": {
+              "id": 1014,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "5383:0:6"
+            },
+            "scope": 1104,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 1022,
+            "nodeType": "FunctionDefinition",
+            "src": "5630:91:6",
+            "nodes": [],
+            "functionSelector": "f3094e90",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isValidatorEligible",
+            "nameLocation": "5639:19:6",
+            "parameters": {
+              "id": 1018,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1017,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "5676:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1022,
+                  "src": "5668:17:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1016,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "5668:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "5658:33:6"
+            },
+            "returnParameters": {
+              "id": 1021,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1020,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1022,
+                  "src": "5715:4:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 1019,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "5715:4:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "5714:6:6"
+            },
+            "scope": 1104,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 1027,
+            "nodeType": "FunctionDefinition",
+            "src": "5779:69:6",
+            "nodes": [],
+            "functionSelector": "de8e4b50",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getTotalEligibleVotesCount",
+            "nameLocation": "5788:26:6",
+            "parameters": {
+              "id": 1023,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "5814:2:6"
+            },
+            "returnParameters": {
+              "id": 1026,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1025,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1027,
+                  "src": "5840:6:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint64",
+                    "typeString": "uint64"
+                  },
+                  "typeName": {
+                    "id": 1024,
+                    "name": "uint64",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "5840:6:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint64",
+                      "typeString": "uint64"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "5839:8:6"
+            },
+            "scope": 1104,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 1034,
+            "nodeType": "FunctionDefinition",
+            "src": "5910:104:6",
+            "nodes": [],
+            "functionSelector": "618e3862",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getValidatorEligibleVotesCount",
+            "nameLocation": "5919:30:6",
+            "parameters": {
+              "id": 1030,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1029,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "5967:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1034,
+                  "src": "5959:17:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1028,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "5959:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "5949:33:6"
+            },
+            "returnParameters": {
+              "id": 1033,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1032,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1034,
+                  "src": "6006:6:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint64",
+                    "typeString": "uint64"
+                  },
+                  "typeName": {
+                    "id": 1031,
+                    "name": "uint64",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "6006:6:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint64",
+                      "typeString": "uint64"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "6005:8:6"
+            },
+            "scope": 1104,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 1042,
+            "nodeType": "FunctionDefinition",
+            "src": "6099:120:6",
+            "nodes": [],
+            "functionSelector": "1904bb2e",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getValidator",
+            "nameLocation": "6108:12:6",
+            "parameters": {
+              "id": 1037,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1036,
+                  "mutability": "mutable",
+                  "name": "validator",
+                  "nameLocation": "6138:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1042,
+                  "src": "6130:17:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1035,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "6130:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "6120:33:6"
+            },
+            "returnParameters": {
+              "id": 1041,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1040,
+                  "mutability": "mutable",
+                  "name": "validator_info",
+                  "nameLocation": "6203:14:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1042,
+                  "src": "6177:40:6",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_ValidatorBasicInfo_$903_memory_ptr",
+                    "typeString": "struct DposInterface.ValidatorBasicInfo"
+                  },
+                  "typeName": {
+                    "id": 1039,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 1038,
+                      "name": "ValidatorBasicInfo",
+                      "nameLocations": [
+                        "6177:18:6"
+                      ],
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 903,
+                      "src": "6177:18:6"
+                    },
+                    "referencedDeclaration": 903,
+                    "src": "6177:18:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_ValidatorBasicInfo_$903_storage_ptr",
+                      "typeString": "struct DposInterface.ValidatorBasicInfo"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "6176:42:6"
+            },
+            "scope": 1104,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 1053,
+            "nodeType": "FunctionDefinition",
+            "src": "6225:119:6",
+            "nodes": [],
+            "functionSelector": "19d8024f",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getValidators",
+            "nameLocation": "6234:13:6",
+            "parameters": {
+              "id": 1045,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1044,
+                  "mutability": "mutable",
+                  "name": "batch",
+                  "nameLocation": "6264:5:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1053,
+                  "src": "6257:12:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint32",
+                    "typeString": "uint32"
+                  },
+                  "typeName": {
+                    "id": 1043,
+                    "name": "uint32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "6257:6:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint32",
+                      "typeString": "uint32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "6247:28:6"
+            },
+            "returnParameters": {
+              "id": 1052,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1049,
+                  "mutability": "mutable",
+                  "name": "validators",
+                  "nameLocation": "6322:10:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1053,
+                  "src": "6299:33:6",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_struct$_ValidatorData_$909_memory_ptr_$dyn_memory_ptr",
+                    "typeString": "struct DposInterface.ValidatorData[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 1047,
+                      "nodeType": "UserDefinedTypeName",
+                      "pathNode": {
+                        "id": 1046,
+                        "name": "ValidatorData",
+                        "nameLocations": [
+                          "6299:13:6"
+                        ],
+                        "nodeType": "IdentifierPath",
+                        "referencedDeclaration": 909,
+                        "src": "6299:13:6"
+                      },
+                      "referencedDeclaration": 909,
+                      "src": "6299:13:6",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_ValidatorData_$909_storage_ptr",
+                        "typeString": "struct DposInterface.ValidatorData"
+                      }
+                    },
+                    "id": 1048,
+                    "nodeType": "ArrayTypeName",
+                    "src": "6299:15:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_struct$_ValidatorData_$909_storage_$dyn_storage_ptr",
+                      "typeString": "struct DposInterface.ValidatorData[]"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1051,
+                  "mutability": "mutable",
+                  "name": "end",
+                  "nameLocation": "6339:3:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1053,
+                  "src": "6334:8:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 1050,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "6334:4:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "6298:45:6"
+            },
+            "scope": 1104,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 1067,
+            "nodeType": "FunctionDefinition",
+            "src": "6875:145:6",
+            "nodes": [],
+            "documentation": {
+              "id": 1054,
+              "nodeType": "StructuredDocumentation",
+              "src": "6350:520:6",
+              "text": " @notice Returns list of validators owned by an address\n @param owner        Owner address\n @param batch        Batch number to be fetched. If the list is too big it cannot return all validators in one call. Instead, users are fetching batches of 100 account at a time\n @return validators  Batch of N validators basic info\n @return end         Flag if there are no more accounts left. To get all accounts, caller should fetch all batches until he sees end == true*"
+            },
+            "functionSelector": "724ac6b0",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getValidatorsFor",
+            "nameLocation": "6884:16:6",
+            "parameters": {
+              "id": 1059,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1056,
+                  "mutability": "mutable",
+                  "name": "owner",
+                  "nameLocation": "6918:5:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1067,
+                  "src": "6910:13:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1055,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "6910:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1058,
+                  "mutability": "mutable",
+                  "name": "batch",
+                  "nameLocation": "6940:5:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1067,
+                  "src": "6933:12:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint32",
+                    "typeString": "uint32"
+                  },
+                  "typeName": {
+                    "id": 1057,
+                    "name": "uint32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "6933:6:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint32",
+                      "typeString": "uint32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "6900:51:6"
+            },
+            "returnParameters": {
+              "id": 1066,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1063,
+                  "mutability": "mutable",
+                  "name": "validators",
+                  "nameLocation": "6998:10:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1067,
+                  "src": "6975:33:6",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_struct$_ValidatorData_$909_memory_ptr_$dyn_memory_ptr",
+                    "typeString": "struct DposInterface.ValidatorData[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 1061,
+                      "nodeType": "UserDefinedTypeName",
+                      "pathNode": {
+                        "id": 1060,
+                        "name": "ValidatorData",
+                        "nameLocations": [
+                          "6975:13:6"
+                        ],
+                        "nodeType": "IdentifierPath",
+                        "referencedDeclaration": 909,
+                        "src": "6975:13:6"
+                      },
+                      "referencedDeclaration": 909,
+                      "src": "6975:13:6",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_ValidatorData_$909_storage_ptr",
+                        "typeString": "struct DposInterface.ValidatorData"
+                      }
+                    },
+                    "id": 1062,
+                    "nodeType": "ArrayTypeName",
+                    "src": "6975:15:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_struct$_ValidatorData_$909_storage_$dyn_storage_ptr",
+                      "typeString": "struct DposInterface.ValidatorData[]"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1065,
+                  "mutability": "mutable",
+                  "name": "end",
+                  "nameLocation": "7015:3:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1067,
+                  "src": "7010:8:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 1064,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "7010:4:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "6974:45:6"
+            },
+            "scope": 1104,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 1075,
+            "nodeType": "FunctionDefinition",
+            "src": "7102:110:6",
+            "nodes": [],
+            "documentation": {
+              "id": 1068,
+              "nodeType": "StructuredDocumentation",
+              "src": "7026:71:6",
+              "text": " @param delegator    delegator account address"
+            },
+            "functionSelector": "fc5e7e09",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getTotalDelegation",
+            "nameLocation": "7111:18:6",
+            "parameters": {
+              "id": 1071,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1070,
+                  "mutability": "mutable",
+                  "name": "delegator",
+                  "nameLocation": "7147:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1075,
+                  "src": "7139:17:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1069,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "7139:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "7129:33:6"
+            },
+            "returnParameters": {
+              "id": 1074,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1073,
+                  "mutability": "mutable",
+                  "name": "total_delegation",
+                  "nameLocation": "7194:16:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1075,
+                  "src": "7186:24:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1072,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "7186:7:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "7185:26:6"
+            },
+            "scope": 1104,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 1089,
+            "nodeType": "FunctionDefinition",
+            "src": "7806:149:6",
+            "nodes": [],
+            "documentation": {
+              "id": 1076,
+              "nodeType": "StructuredDocumentation",
+              "src": "7218:583:6",
+              "text": " @notice Returns list of delegations for specified delegator - which validators delegator delegated to\n @param delegator     delegator account address\n @param batch         Batch number to be fetched. If the list is too big it cannot return all delegations in one call. Instead, users are fetching batches of 50 delegations at a time\n @return delegations  Batch of N delegations\n @return end          Flag if there are no more delegations left. To get all delegations, caller should fetch all batches until he sees end == true*"
+            },
+            "functionSelector": "8b49d394",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getDelegations",
+            "nameLocation": "7815:14:6",
+            "parameters": {
+              "id": 1081,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1078,
+                  "mutability": "mutable",
+                  "name": "delegator",
+                  "nameLocation": "7847:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1089,
+                  "src": "7839:17:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1077,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "7839:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1080,
+                  "mutability": "mutable",
+                  "name": "batch",
+                  "nameLocation": "7873:5:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1089,
+                  "src": "7866:12:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint32",
+                    "typeString": "uint32"
+                  },
+                  "typeName": {
+                    "id": 1079,
+                    "name": "uint32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "7866:6:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint32",
+                      "typeString": "uint32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "7829:55:6"
+            },
+            "returnParameters": {
+              "id": 1088,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1085,
+                  "mutability": "mutable",
+                  "name": "delegations",
+                  "nameLocation": "7932:11:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1089,
+                  "src": "7908:35:6",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_struct$_DelegationData_$925_memory_ptr_$dyn_memory_ptr",
+                    "typeString": "struct DposInterface.DelegationData[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 1083,
+                      "nodeType": "UserDefinedTypeName",
+                      "pathNode": {
+                        "id": 1082,
+                        "name": "DelegationData",
+                        "nameLocations": [
+                          "7908:14:6"
+                        ],
+                        "nodeType": "IdentifierPath",
+                        "referencedDeclaration": 925,
+                        "src": "7908:14:6"
+                      },
+                      "referencedDeclaration": 925,
+                      "src": "7908:14:6",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_DelegationData_$925_storage_ptr",
+                        "typeString": "struct DposInterface.DelegationData"
+                      }
+                    },
+                    "id": 1084,
+                    "nodeType": "ArrayTypeName",
+                    "src": "7908:16:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_struct$_DelegationData_$925_storage_$dyn_storage_ptr",
+                      "typeString": "struct DposInterface.DelegationData[]"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1087,
+                  "mutability": "mutable",
+                  "name": "end",
+                  "nameLocation": "7950:3:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1089,
+                  "src": "7945:8:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 1086,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "7945:4:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "7907:47:6"
+            },
+            "scope": 1104,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 1103,
+            "nodeType": "FunctionDefinition",
+            "src": "8527:155:6",
+            "nodes": [],
+            "documentation": {
+              "id": 1090,
+              "nodeType": "StructuredDocumentation",
+              "src": "7961:561:6",
+              "text": " @notice Returns list of undelegations for specified delegator\n @param delegator       delegator account address\n @param batch           Batch number to be fetched. If the list is too big it cannot return all undelegations in one call. Instead, users are fetching batches of 50 undelegations at a time\n @return undelegations  Batch of N undelegations\n @return end            Flag if there are no more undelegations left. To get all undelegations, caller should fetch all batches until he sees end == true*"
+            },
+            "functionSelector": "4edd9943",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getUndelegations",
+            "nameLocation": "8536:16:6",
+            "parameters": {
+              "id": 1095,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1092,
+                  "mutability": "mutable",
+                  "name": "delegator",
+                  "nameLocation": "8570:9:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1103,
+                  "src": "8562:17:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1091,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "8562:7:6",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1094,
+                  "mutability": "mutable",
+                  "name": "batch",
+                  "nameLocation": "8596:5:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1103,
+                  "src": "8589:12:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint32",
+                    "typeString": "uint32"
+                  },
+                  "typeName": {
+                    "id": 1093,
+                    "name": "uint32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "8589:6:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint32",
+                      "typeString": "uint32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "8552:55:6"
+            },
+            "returnParameters": {
+              "id": 1102,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1099,
+                  "mutability": "mutable",
+                  "name": "undelegations",
+                  "nameLocation": "8657:13:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1103,
+                  "src": "8631:39:6",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_struct$_UndelegationData_$934_memory_ptr_$dyn_memory_ptr",
+                    "typeString": "struct DposInterface.UndelegationData[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 1097,
+                      "nodeType": "UserDefinedTypeName",
+                      "pathNode": {
+                        "id": 1096,
+                        "name": "UndelegationData",
+                        "nameLocations": [
+                          "8631:16:6"
+                        ],
+                        "nodeType": "IdentifierPath",
+                        "referencedDeclaration": 934,
+                        "src": "8631:16:6"
+                      },
+                      "referencedDeclaration": 934,
+                      "src": "8631:16:6",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_UndelegationData_$934_storage_ptr",
+                        "typeString": "struct DposInterface.UndelegationData"
+                      }
+                    },
+                    "id": 1098,
+                    "nodeType": "ArrayTypeName",
+                    "src": "8631:18:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_struct$_UndelegationData_$934_storage_$dyn_storage_ptr",
+                      "typeString": "struct DposInterface.UndelegationData[]"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1101,
+                  "mutability": "mutable",
+                  "name": "end",
+                  "nameLocation": "8677:3:6",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1103,
+                  "src": "8672:8:6",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 1100,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "8672:4:6",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "8630:51:6"
+            },
+            "scope": 1104,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "DposInterface",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": false,
+        "linearizedBaseContracts": [
+          1104
+        ],
+        "name": "DposInterface",
+        "nameLocation": "121:13:6",
+        "scope": 1105,
+        "usedErrors": []
+      }
+    ],
+    "license": "MIT"
+  },
+  "id": 6
+}
