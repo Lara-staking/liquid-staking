@@ -1,5 +1,8 @@
 # EVM-based Liquid Staking Protocol Specification
 
+- What to do when stTARA is transferred to another address?
+- Look at OpenZeppelin pool implementation to define the reward tracking.
+
 The protocol consists of the following smart contracts:
 
 - [DPOS](#dpos)
