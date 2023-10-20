@@ -6,17 +6,24 @@ interface IApyOracle {
     struct NodeData {
         address account;
         uint16 rank;
+        uint256 rating;
         uint16 apy;
         uint64 fromBlock;
         uint64 toBlock;
-        uint256 pbftCount;
+    }
+
+    struct TentativeDelegation {
+        address validator;
+        uint256 amount;
     }
 
     event NodeDataUpdated(address indexed node, uint16 apy, uint256 pbftCount);
 
     function getNodeCount() external view returns (uint256);
 
-    function getNodesList() external view returns (address[] memory);
+    function getNodesForDelegation(
+        uint256 amount
+    ) external view returns (TentativeDelegation[] memory);
 
     function updateNodeCount(uint256 count) external;
 

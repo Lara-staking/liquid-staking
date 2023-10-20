@@ -29,6 +29,11 @@ interface MockIDPOS {
         address indexed to,
         uint256 amount
     );
+    event RewardsClaimed(
+        address indexed account,
+        address indexed validator,
+        uint256 amount
+    );
     event RewardsClaimed(address indexed account, address indexed validator);
     event CommissionRewardsClaimed(
         address indexed account,
@@ -126,4 +131,7 @@ interface MockIDPOS {
         address owner,
         uint32 batch
     ) external view returns (ValidatorData[] memory validators, bool end);
+
+    // Claims staking rewards from <validator>
+    function claimRewards(address validator) external;
 }

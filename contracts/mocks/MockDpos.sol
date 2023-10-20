@@ -148,4 +148,15 @@ contract MockDpos is MockIDPOS {
         delete validators[validator];
         emit Undelegated(msg.sender, validator, amount);
     }
+
+    // Claims staking rewards from <validator>
+    // mocks sending 10000 ether
+    function claimRewards(address validator) external {
+        require(
+            validators[validator].account != address(0),
+            "Validator doesn't exist"
+        );
+        payable(msg.sender).transfer(1000 ether);
+        emit RewardsClaimed(msg.sender, validator, 1000 ether);
+    }
 }

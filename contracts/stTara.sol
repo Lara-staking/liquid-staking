@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract stTARA is ERC20, Ownable {
+contract StTARA is ERC20, Ownable {
     // Errors
 
     // Thrown when the amount sent for minting is lower than min allowed
@@ -17,10 +17,17 @@ contract stTARA is ERC20, Ownable {
     error WrongBurnAddress(address wrongAddress);
 
     // Thrown when the user does not have sufficient balance outside of protocol to burn
-    error InsufficientUserBalanceForBurn(uint256 amount, uint256 senderBalance, uint256 protocolBalance);
+    error InsufficientUserBalanceForBurn(
+        uint256 amount,
+        uint256 senderBalance,
+        uint256 protocolBalance
+    );
 
     // Thrown when Lara burns too many tokens for an user
-    error InsufficientProtocolBalanceForBurn(uint256 amount, uint256 protocolBalance);
+    error InsufficientProtocolBalanceForBurn(
+        uint256 amount,
+        uint256 protocolBalance
+    );
 
     // Events
     event Minted(address indexed user, uint256 amount);
@@ -62,10 +69,15 @@ contract stTARA is ERC20, Ownable {
     }
 
     function burn(address user, uint256 amount) external {
-        if (user != msg.sender && lara != msg.sender) revert WrongBurnAddress(user);
+        if (user != msg.sender && lara != msg.sender)
+            revert WrongBurnAddress(user);
         if (user == msg.sender) {
             if (balanceOf(user) - protocolBalances[user] < amount)
-                revert InsufficientUserBalanceForBurn(amount, balanceOf(user), protocolBalances[user]);
+                revert InsufficientUserBalanceForBurn(
+                    amount,
+                    balanceOf(user),
+                    protocolBalances[user]
+                );
             // Transfer TARA tokens to the user
             payable(msg.sender).transfer(amount);
         } else {
