@@ -85,7 +85,29 @@ contract LaraTestRewards is Test {
         stTaraToken.setLaraAddress(address(lara));
     }
 
-    function testClaimRewards() public {
+    function testFuzz_testClaimRewardsWithNoDelegation(
+        address delegator
+    ) public {
+        // Claim the rewards
+        vm.prank(delegator);
+        vm.deal(delegator, 10000 ether);
+        lara.claimRewards(delegator);
+
+        // Check that no rewards have been claimed
+        ILara.Reward[] memory delegatorRewards = lara.getRewards(delegator);
+        assertEq(
+            delegatorRewards.length,
+            0,
+            "Rewards were claimed incorrectly"
+        );
+        assertEq(
+            address(delegator).balance,
+            10000 ether,
+            "Delegator balance is incorrect"
+        );
+    }
+
+    function invariant_testClaimRewards() public {
         // Call the function with prefedined address
         address staker1 = address(333);
         vm.deal(staker1, 10000 ether);
@@ -118,28 +140,9 @@ contract LaraTestRewards is Test {
             100000 gwei,
             "Delegator balance is incorrect"
         );
-    }
-
-    function testClaimRewardsWithNoDelegation() public {
-        // Set up a delegator with no delegation
-        address delegator = vm.addr(13); // an address not in the validators array
-
-        // Claim the rewards
-        vm.prank(delegator);
-        vm.deal(delegator, 10000 ether);
-        lara.claimRewards(delegator);
-
-        // Check that no rewards have been claimed
-        ILara.Reward[] memory delegatorRewards = lara.getRewards(delegator);
-        assertEq(
-            delegatorRewards.length,
-            0,
-            "Rewards were claimed incorrectly"
-        );
-        assertEq(
-            address(delegator).balance,
-            10000 ether,
-            "Delegator balance is incorrect"
+        assertTrue(
+            address(lara).balance > 0,
+            "Balance went negative on reward claim"
         );
     }
 
@@ -243,6 +246,10 @@ contract LaraTestRewards is Test {
                 "Rewards were not accrued correctly on third accruement"
             );
         }
+    }
+
+    function invariant_proportionalRewards() public {
+        testProportionalRewards();
     }
 
     function testClaimProportionalRewards() public {

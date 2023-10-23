@@ -146,6 +146,8 @@ contract MockDpos is MockIDPOS {
             "Validator doesn't exist"
         );
         delete validators[validator];
+        //mocks rewards
+        payable(msg.sender).transfer(amount / 50);
         emit Undelegated(msg.sender, validator, amount);
     }
 

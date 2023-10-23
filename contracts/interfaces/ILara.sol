@@ -24,15 +24,10 @@ interface ILara {
         uint256 amount
     );
 
-    event RewardCalc(
+    event Undelegated(
         address indexed delegator,
         address indexed validator,
-        uint256 delegation,
-        uint256 totalValidator,
-        uint256 delegationRatio,
-        uint256 epochStart,
-        uint256 epochEnd,
-        uint256 total
+        uint256 amount
     );
 
     struct IndividualDelegation {
@@ -79,7 +74,11 @@ interface ILara {
 
     function claimRewards(address delegator) external;
 
-    function setMaxValdiatorStakeCapacity(
+    function compound(address delegator) external;
+
+    function unstake(uint256 amount) external;
+
+    function setMaxValidatorStakeCapacity(
         uint256 _maxValidatorStakeCapacity
     ) external;
 

@@ -8,80 +8,14 @@ import "../Lara.sol";
 import "../ApyOracle.sol";
 import "../mocks/MockDpos.sol";
 import "../stTara.sol";
+import "./SetUp.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../errors/LaraErrors.sol";
 
-contract LaraTest is Test {
-    Lara lara;
-    ApyOracle mockApyOracle;
-    MockDpos mockDpos;
-    StTARA stTaraToken;
-
+contract LaraTest is Test, TestSetup {
     function setUp() public {
-        for (uint16 i = 0; i < validators.length; i++) {
-            validators[i] = vm.addr(i + 1);
-        }
-        setupValidators();
-        setupApyOracle();
-        setupLara();
-    }
-
-    uint16 numValidators = 12;
-
-    address[] validators = new address[](numValidators);
-
-    function setupValidators() private {
-        // create a random array of addresses as internal validators
-
-        // Set up the apy oracle with a random data feed address and a mock dpos contract
-        mockDpos = new MockDpos{value: 1000000 ether}(validators);
-
-        // check if MockDPos was initialized successfully
-        assertEq(
-            mockDpos.isValidatorRegistered(validators[0]),
-            true,
-            "MockDpos was not initialized successfully"
-        );
-        assertEq(
-            mockDpos.isValidatorRegistered(validators[1]),
-            true,
-            "MockDpos was not initialized successfully"
-        );
-    }
-
-    function setupApyOracle() private {
-        mockApyOracle = new ApyOracle(address(this), address(mockDpos));
-
-        // setting up the two validators in the mockApyOracle
-        for (uint16 i = 0; i < validators.length; i++) {
-            mockApyOracle.updateNodeData(
-                validators[i],
-                IApyOracle.NodeData({
-                    account: validators[i],
-                    rank: i,
-                    apy: i * 1000,
-                    fromBlock: 1,
-                    toBlock: 15000,
-                    rating: 813 //meaning 8.13
-                })
-            );
-        }
-
-        // check if the node data was set successfully
-        assertEq(
-            mockApyOracle.getNodeCount(),
-            numValidators,
-            "Node data was not set successfully"
-        );
-    }
-
-    function setupLara() private {
-        stTaraToken = new StTARA();
-        lara = new Lara(
-            address(stTaraToken),
-            address(mockDpos),
-            address(mockApyOracle)
-        );
-        stTaraToken.setLaraAddress(address(lara));
+        super.setupValidators();
+        super.setupApyOracle();
+        super.setupLara();
     }
 
     function testGetNodesForDelegation() public {
@@ -224,10 +158,7 @@ contract LaraTest is Test {
         vm.assume(amount < 430000000 ether);
 
         // get the stake distribution first to check
-        IApyOracle.TentativeDelegation[]
-            memory tentativeDelegations = mockApyOracle.getNodesForDelegation(
-                amount
-            );
+        mockApyOracle.getNodesForDelegation(amount);
 
         // Call the function with different address
         address staker1 = address(333);

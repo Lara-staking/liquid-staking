@@ -107,6 +107,7 @@ contract Lara is ILara, Ownable {
     }
 
     function stake(uint256 amount) external payable returns (uint256) {
+        // Check if the user has delegation already
         if (amount < minStakeAmount)
             revert StakeAmountTooLow(amount, minStakeAmount);
         if (msg.value < amount) revert StakeValueTooLow(msg.value, amount);
@@ -174,6 +175,62 @@ contract Lara is ILara, Ownable {
                 revert DelegationFailed(
                     nodesList[i].validator,
                     msg.sender,
+                    amount,
+                    ""
+                );
+            }
+        }
+        // Return the remaining amount if there is no capacity in all the nodes
+        return amount - delegatedAmount;
+    }
+
+    function delegateToValidatorsForAddress(
+        uint256 amount,
+        address delegator
+    ) internal returns (uint256 remainingAmount) {
+        uint256 delegatedAmount = 0;
+        IApyOracle.TentativeDelegation[] memory nodesList = apyOracle
+            .getNodesForDelegation(amount);
+        for (uint256 i = 0; i < nodesList.length; i++) {
+            //delegate the amount
+            try
+                dposContract.delegate{value: nodesList[i].amount}(
+                    nodesList[i].validator
+                )
+            {
+                delegatedAmount += nodesList[i].amount;
+                individualDelegations[delegator].push(
+                    IndividualDelegation({
+                        validator: nodesList[i].validator,
+                        amount: nodesList[i].amount,
+                        timestamp: block.timestamp
+                    })
+                );
+                if (validatorDelegations[nodesList[i].validator].length == 0) {
+                    firstDelegationTimestampToValidator[
+                        nodesList[i].validator
+                    ] = block.timestamp;
+                }
+                validatorDelegations[nodesList[i].validator].push(
+                    ValidatorDelegation({
+                        delegator: delegator,
+                        amount: nodesList[i].amount,
+                        timestamp: block.timestamp
+                    })
+                );
+                protocolTotalStakeAtValidator[
+                    nodesList[i].validator
+                ] += nodesList[i].amount;
+                emit Delegated(
+                    delegator,
+                    nodesList[i].validator,
+                    nodesList[i].amount,
+                    block.timestamp
+                );
+            } catch {
+                revert DelegationFailed(
+                    nodesList[i].validator,
+                    delegator,
                     amount,
                     ""
                 );
@@ -265,7 +322,84 @@ contract Lara is ILara, Ownable {
         }
     }
 
-    function setMaxValdiatorStakeCapacity(
+    function compound(address delegator) external onlyOwner {
+        accrueRewardsForDelegator(delegator);
+        // Get the rewards for the user
+        Reward[] memory delegatorRewards = getRewards(delegator);
+        // Iterate through the rewards of the user, remove them from the rewards mapping and send them to the user
+        for (uint256 i = 0; i < delegatorRewards.length; i++) {
+            uint256 amount = delegatorRewards[i].amount;
+            delete rewards[delegator][i];
+            // Delegate to the highest APY validators and return if there is any remaining amount
+            uint256 remainingAmount = delegateToValidatorsForAddress(
+                amount,
+                delegator
+            );
+            if (remainingAmount != 0) {
+                amount -= remainingAmount;
+            }
+            if (amount == 0)
+                revert("No amount could be staked. Validators are full.");
+            stakedAmounts[delegator] += amount;
+
+            // Mint stTARA tokens to user
+            stTaraToken.mint(delegator, amount);
+
+            emit Staked(delegator, amount);
+        }
+    }
+
+    function unstake(uint256 amount) public override {
+        // check if the amount is approved in stTara for the protocol
+        require(
+            stTaraToken.allowance(msg.sender, address(this)) >= amount,
+            "Amount not approved for unstaking"
+        );
+        // undelegate the amount on behalf of the user
+        uint256 undelegated = 0;
+        IndividualDelegation[] memory delegations = getIndividualDelegations(
+            msg.sender
+        );
+        require(delegations.length > 0, "No delegations found for the user");
+        for (uint16 i = 0; i < delegations.length; i++) {
+            if (undelegated >= amount) break;
+            if (delegations[i].amount == 0) continue;
+            uint256 delegated = delegations[i].amount;
+            uint256 toUndelegate = 0;
+            if (delegated > amount) {
+                toUndelegate = amount;
+            } else {
+                toUndelegate = delegated;
+            }
+            uint256 balanceBefore = address(this).balance;
+            try
+                dposContract.undelegate(delegations[i].validator, toUndelegate)
+            {
+                undelegated += toUndelegate;
+                protocolTotalStakeAtValidator[
+                    delegations[i].validator
+                ] -= toUndelegate;
+                emit Undelegated(msg.sender, delegations[i].validator, amount);
+            } catch {
+                revert("Undelegation failed");
+            }
+            protocolTotalStakeAtValidator[
+                delegations[i].validator
+            ] -= toUndelegate;
+            uint256 totalClaimed = address(this).balance - balanceBefore;
+            try stTaraToken.transferFrom(msg.sender, address(this), amount) {
+                try stTaraToken.burn(address(this), amount) {
+                    payable(msg.sender).transfer(totalClaimed);
+                } catch {
+                    revert("Burn failed");
+                }
+            } catch {
+                revert("TransferFrom failed");
+            }
+        }
+    }
+
+    function setMaxValidatorStakeCapacity(
         uint256 _maxValidatorStakeCapacity
     ) external onlyOwner {
         maxValidatorStakeCapacity = _maxValidatorStakeCapacity;
