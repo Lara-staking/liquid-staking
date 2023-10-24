@@ -10,3 +10,4 @@ artifacts
 out
 cache_forge
 lib
+.gas-snapshot

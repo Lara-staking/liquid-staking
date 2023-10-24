@@ -1,4 +1,4 @@
-name: Build and Test
+name: Build and Test(Foundry)
 on:
   push:
     paths:
@@ -41,5 +41,9 @@ jobs:
         run: npm i -g yarn
       - name: Install and Build 🔧 🚚
         run: yarn
-      - name: Run Hardhat tests
-        run: forge test -vv
+      - name: Install Foundry
+        run: foundry-rs/foundry-toolchain@v1
+      - name: Run tests
+        run: forge test -vvv
+      - name: Create snapshot
+        run: forge snapshot

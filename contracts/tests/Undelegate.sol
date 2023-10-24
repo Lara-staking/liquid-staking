@@ -47,7 +47,10 @@ contract LaraTest is Test, TestSetup {
         return totalDelegated;
     }
 
-    function testFuzz_unstake(uint256 amount, address delegator) public {
+    function testFuzz_unstake_failOnApproval(
+        uint256 amount,
+        address delegator
+    ) public {
         vm.warp(block.timestamp + 1000);
         vm.assume(delegator != address(0));
         // compound the amount
@@ -58,7 +61,60 @@ contract LaraTest is Test, TestSetup {
         }
         vm.prank(delegator);
         vm.assume(amount <= totalDelegatedBfore);
+        vm.expectRevert("Amount not approved for unstaking");
         lara.unstake(amount);
+        uint256 stTaraBalanceAfter = stTaraToken.balanceOf(delegator);
+        uint256 totalDelegatedAfter = getDelegationTotal(delegator);
+        if (totalDelegatedBfore == 0) {
+            assertTrue(
+                totalDelegatedAfter == 0,
+                "Delegation amount did not increase"
+            );
+            assertTrue(
+                stTaraBalanceAfter == stTaraBalanceBfore,
+                "StTARA balance did not increase"
+            );
+            assertEq(
+                (totalDelegatedBfore - totalDelegatedAfter),
+                amount,
+                "Delegations did not decrease by the correct amount"
+            );
+        } else {
+            assertEq(
+                (totalDelegatedBfore - totalDelegatedAfter),
+                amount,
+                "Delegations did not decrease by the correct amount"
+            );
+            assertTrue(
+                stTaraBalanceAfter > stTaraBalanceBfore,
+                "StTARA balance did not increase"
+            );
+        }
+        uint256 laraBalace = address(lara).balance;
+        assertTrue(laraBalace >= 0, "Lara balance is < zero");
+    }
+
+    function invariant_testUnstake_fail() public {
+        for (uint256 i = 0; i < delegators.length; i++) {
+            testFuzz_unstake_failOnApproval(1000 ether, delegators[i]);
+        }
+    }
+
+    function testFuzz_unstake(uint256 amount, address delegator) public {
+        vm.warp(block.timestamp + 1000);
+        vm.assume(delegator != address(0));
+        // compound the amount
+        uint256 stTaraBalanceBfore = stTaraToken.balanceOf(delegator);
+        uint256 totalDelegatedBfore = getDelegationTotal(delegator);
+        if (totalDelegatedBfore == 0) {
+            return;
+        }
+        vm.startPrank(delegator);
+        vm.assume(amount <= totalDelegatedBfore);
+        // approve the amount to Lara
+        stTaraToken.approve(address(lara), amount);
+        lara.unstake(amount);
+        vm.stopPrank();
         uint256 stTaraBalanceAfter = stTaraToken.balanceOf(delegator);
         uint256 totalDelegatedAfter = getDelegationTotal(delegator);
         if (totalDelegatedBfore == 0) {
