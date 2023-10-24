@@ -15,7 +15,16 @@ jobs:
 
       - name: foundry-toolchain
         uses: foundry-rs/foundry-toolchain@v1.0.10
-            
+      - name: Install dependencies
+        run: forge install
+      - name: install Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '14.x' 
+      - name: Install yarn
+        run: npm install -g yarn
+      - name: install dependencies
+        run: yarn install
       - name: Run tests
         run: forge test -vvv
 
