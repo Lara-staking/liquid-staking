@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - contracts/**
+      - .github/workflows/test.yml
 jobs:
   test-contracts:
     runs-on: ubuntu-latest
