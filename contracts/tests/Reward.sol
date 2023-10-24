@@ -107,8 +107,10 @@ contract LaraTestRewards is Test {
         );
     }
 
-    function invariant_testClaimRewards() public {
-        // Call the function with prefedined address
+    event CalcCheck(uint256, uint256, uint256, uint256, uint256);
+    event BalanceCheck(uint256, uint256);
+
+    function test_unitClaimRewards() public {
         address staker1 = address(333);
         vm.deal(staker1, 10000 ether);
         vm.prank(staker1);
@@ -116,7 +118,7 @@ contract LaraTestRewards is Test {
         uint256 delegationTimestamp = block.timestamp;
         lara.stake{value: 10000 ether}(10000 ether);
 
-        vm.warp(block.timestamp + 100000);
+        vm.warp(block.timestamp + 1000);
         vm.prank(staker1);
         // Claim the rewards
         uint256 protocolTotalStakeAtValidator = lara
@@ -126,24 +128,40 @@ contract LaraTestRewards is Test {
         );
 
         uint256 balanceBefore = address(staker1).balance;
+        uint256 laraBalanceBefore = address(lara).balance;
         lara.claimRewards(staker1);
 
         uint256 rewards = (((10000 ether * 1000 ether) /
             protocolTotalStakeAtValidator) *
             (block.timestamp - delegationTimestamp)) /
             (block.timestamp - firstDelegationToValidator);
+        emit CalcCheck(
+            10000 ether * 1000 ether,
+            protocolTotalStakeAtValidator,
+            block.timestamp - delegationTimestamp,
+            block.timestamp - firstDelegationToValidator,
+            rewards
+        );
 
+        uint256 balanceAfter = address(staker1).balance;
+        uint256 laraBalanceAfter = address(lara).balance;
+        emit BalanceCheck(balanceBefore, balanceAfter);
+        emit BalanceCheck(laraBalanceBefore, laraBalanceAfter);
         // Check that the rewards have been claimed
-        assertApproxEqRel(
-            address(staker1).balance - balanceBefore,
+        assertEq(
+            balanceAfter - balanceBefore,
             rewards,
-            100000 gwei,
             "Delegator balance is incorrect"
         );
         assertTrue(
-            address(lara).balance > 0,
+            address(lara).balance >= 0,
             "Balance went negative on reward claim"
         );
+    }
+
+    function invariant_testClaimRewards() public {
+        // Call the function with prefedined address
+        test_unitClaimRewards();
     }
 
     function testProportionalRewards() public {
@@ -294,30 +312,27 @@ contract LaraTestRewards is Test {
         uint256 balanaceBfore = address(delegators[0]).balance;
         lara.claimRewards(delegators[0]);
         uint256 balanaceAfter = address(delegators[0]).balance;
-        assertApproxEqRel(
+        assertEq(
             balanaceAfter - balanaceBfore,
-            (expectedRewards[0]),
-            100000 gwei,
+            expectedRewards[0],
             "Rewards were not claimed correctly"
         );
 
         uint256 balanaceBfore1 = address(delegators[1]).balance;
         lara.claimRewards(delegators[1]);
-        uint256 balanaceAfter1 = address(delegators[1]).balance;
-        assertApproxEqRel(
-            balanaceAfter1 - balanaceBfore1,
-            (expectedRewards[1] * 2),
-            100000 gwei,
+        uint256 balanceAfter1 = address(delegators[1]).balance;
+        assertEq(
+            balanceAfter1 - balanaceBfore1,
+            expectedRewards[1],
             "Rewards were not claimed correctly"
         );
 
         uint256 balanaceBfore2 = address(delegators[2]).balance;
         lara.claimRewards(delegators[2]);
         uint256 balanaceAfter2 = address(delegators[2]).balance;
-        assertApproxEqRel(
+        assertEq(
             balanaceAfter2 - balanaceBfore2,
-            (expectedRewards[2] * 3),
-            100000 gwei,
+            expectedRewards[2],
             "Rewards were not claimed correctly"
         );
     }

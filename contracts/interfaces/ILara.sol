@@ -39,7 +39,8 @@ interface ILara {
     struct ValidatorDelegation {
         address delegator;
         uint256 amount;
-        uint256 timestamp;
+        uint256 delegationTimestamp;
+        uint256 lastClaimedTimestamp;
     }
 
     struct Reward {

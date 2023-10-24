@@ -150,7 +150,13 @@ contract Lara is ILara, Ownable {
                         timestamp: block.timestamp
                     })
                 );
-                if (validatorDelegations[nodesList[i].validator].length == 0) {
+                if (
+                    validatorDelegations[nodesList[i].validator].length == 0 ||
+                    firstDelegationTimestampToValidator[
+                        nodesList[i].validator
+                    ] ==
+                    0
+                ) {
                     firstDelegationTimestampToValidator[
                         nodesList[i].validator
                     ] = block.timestamp;
@@ -159,7 +165,8 @@ contract Lara is ILara, Ownable {
                     ValidatorDelegation({
                         delegator: msg.sender,
                         amount: nodesList[i].amount,
-                        timestamp: block.timestamp
+                        delegationTimestamp: block.timestamp,
+                        lastClaimedTimestamp: block.timestamp
                     })
                 );
                 protocolTotalStakeAtValidator[
@@ -206,7 +213,13 @@ contract Lara is ILara, Ownable {
                         timestamp: block.timestamp
                     })
                 );
-                if (validatorDelegations[nodesList[i].validator].length == 0) {
+                if (
+                    validatorDelegations[nodesList[i].validator].length == 0 ||
+                    firstDelegationTimestampToValidator[
+                        nodesList[i].validator
+                    ] ==
+                    0
+                ) {
                     firstDelegationTimestampToValidator[
                         nodesList[i].validator
                     ] = block.timestamp;
@@ -215,7 +228,8 @@ contract Lara is ILara, Ownable {
                     ValidatorDelegation({
                         delegator: delegator,
                         amount: nodesList[i].amount,
-                        timestamp: block.timestamp
+                        delegationTimestamp: block.timestamp,
+                        lastClaimedTimestamp: block.timestamp
                     })
                 );
                 protocolTotalStakeAtValidator[
@@ -225,7 +239,7 @@ contract Lara is ILara, Ownable {
                     delegator,
                     nodesList[i].validator,
                     nodesList[i].amount,
-                    block.timestamp
+                    firstDelegationTimestampToValidator[nodesList[i].validator]
                 );
             } catch {
                 revert DelegationFailed(
@@ -250,6 +264,7 @@ contract Lara is ILara, Ownable {
 
         uint256 balanceBefore = address(this).balance;
         uint256 totalClaimed = 0;
+        uint256 firstDelegationTimestamp = 0;
 
         // claim the rewards for the validator
         try dposContract.claimRewards(validator) {
@@ -257,7 +272,10 @@ contract Lara is ILara, Ownable {
             totalClaimed = address(this).balance - balanceBefore;
             // mint the rewards to the validator
             if (totalClaimed == 0) revert("No rewards to claim");
-            delete firstDelegationTimestampToValidator[validator];
+            firstDelegationTimestamp = firstDelegationTimestampToValidator[
+                validator
+            ];
+            firstDelegationTimestampToValidator[validator] = block.timestamp;
         } catch {
             revert RewardClaimFailed(validator);
         }
@@ -267,14 +285,16 @@ contract Lara is ILara, Ownable {
             // get the delegation amount
             uint256 delegationAmount = delegations[i].amount;
             // get the delegation timestamp
-            uint256 delegationTimestamp = delegations[i].timestamp;
+            uint256 lastClaimedTimestamp = delegations[i].lastClaimedTimestamp;
+            validatorDelegations[validator][i].lastClaimedTimestamp = block
+                .timestamp;
 
-            uint256 epochDuration = block.timestamp -
-                firstDelegationTimestampToValidator[validator];
+            uint256 epochDuration = block.timestamp - firstDelegationTimestamp;
+            if (epochDuration == 0) continue;
             // calculate the proportional rewards
             uint256 proportionalRewards = (((delegationAmount * totalClaimed) /
                 protocolTotalStakeAtValidator[validator]) *
-                (block.timestamp - delegationTimestamp)) / epochDuration;
+                (block.timestamp - lastClaimedTimestamp)) / epochDuration;
 
             // add entry to the delegator's rewards
             if (proportionalRewards == 0) continue;
@@ -282,14 +302,14 @@ contract Lara is ILara, Ownable {
                 Reward({
                     validator: validator,
                     amount: proportionalRewards,
-                    length: block.timestamp - delegationTimestamp
+                    length: block.timestamp - lastClaimedTimestamp
                 })
             );
             emit RewardsAccrued(
                 delegations[i].delegator,
                 validator,
                 proportionalRewards,
-                block.timestamp - delegationTimestamp
+                block.timestamp - lastClaimedTimestamp
             );
         }
     }
