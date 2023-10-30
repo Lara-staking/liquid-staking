@@ -8,7 +8,7 @@ import "../Lara.sol";
 import "../ApyOracle.sol";
 import "../mocks/MockDpos.sol";
 import "../stTara.sol";
-import "./SetUp.sol";
+import "./SetUpTest.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../errors/SharedErrors.sol";
 
 contract LaraTest is Test, TestSetup {
@@ -143,6 +143,11 @@ contract LaraTest is Test, TestSetup {
 
         // start the epoch
         lara.startEpoch();
+        assertEq(
+            lara.lastEpochTotalDelegatedAmount(),
+            amount,
+            "Wrong total amount"
+        );
         assertEq(
             lara.stakedAmounts(staker1),
             0,

@@ -70,7 +70,7 @@ contract Lara is Ownable {
     mapping(address => uint256) public delegatedAmounts; //=> 1000 TARA => 2000 TARA => 2028 TARA
     mapping(address => uint256) public claimableRewards; //=> 14 TARA => 0 TARA => 28 TARA => 0 TARA
     mapping(address => uint256) public undelegated;
-    uint256 lastEpochTotalDelegatedAmount = 0;
+    uint256 public lastEpochTotalDelegatedAmount = 0;
 
     constructor(
         address _sttaraToken,

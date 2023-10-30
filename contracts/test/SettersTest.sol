@@ -8,7 +8,7 @@ import "../Lara.sol";
 import "../ApyOracle.sol";
 import "../mocks/MockDpos.sol";
 import "../stTara.sol";
-import "./SetUp.sol";
+import "./SetUpTest.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../errors/SharedErrors.sol";
 
 contract LaraSetterTest is Test, TestSetup {
