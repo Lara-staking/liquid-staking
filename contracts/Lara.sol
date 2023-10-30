@@ -82,6 +82,14 @@ contract Lara is Ownable {
         apyOracle = IApyOracle(_apyOracle);
     }
 
+    fallback() external payable {}
+
+    receive() external payable {}
+
+    function getDelegatorAtIndex(uint256 index) public view returns (address) {
+        return delegators[index];
+    }
+
     /**
      * @notice Setter for epochDuration
      * @param _epochDuration new epoch duration (in seconds)
@@ -105,6 +113,7 @@ contract Lara is Ownable {
         if (msg.value < amount) revert StakeValueTooLow(msg.value, amount);
 
         // Register the validator for the next stake epoch
+        delegators.push(msg.sender);
         stakedAmounts[msg.sender] += amount;
 
         // Mint stTARA tokens to user
@@ -248,12 +257,13 @@ contract Lara is Ownable {
         emit EpochStarted(totalEpochDelegation, block.timestamp);
     }
 
-    function endEpoch() private onlyOwner {
+    function endEpoch() public onlyOwner {
         uint256 balanceBefore = address(this).balance;
         uint32 batch = 1;
         bool end = false;
         while (!end) {
-            try dposContract.claimAllRewards(batch) {
+            try dposContract.claimAllRewards(batch) returns (bool _end) {
+                end = _end;
                 batch++;
             } catch {
                 revert RewardClaimFailed();

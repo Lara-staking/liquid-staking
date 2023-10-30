@@ -49,40 +49,69 @@ contract LaraTest is Test, TestSetup {
 
     uint256 firstAmountToStake = 500000 ether;
 
-    function testStakeToSingleValidator() public {
-        uint256 amount = firstAmountToStake;
+    event StakedAmount(uint256 amount);
+
+    function testFuzz_testStakeToSingleValidator(uint256 amount) public {
+        vm.assume(amount > 1000 ether);
+        vm.assume(amount < 1000000 ether);
+
+        uint256 laraBalanceBefore = address(lara).balance;
 
         // Call the function
-        uint256 remainingAmount = lara.stake{value: amount}(amount);
+        lara.stake{value: amount}(amount);
+
+        uint256 laraBalanceAfter = address(lara).balance;
+
+        // Check the stTara balance before
+        assertEq(
+            stTaraToken.balanceOf(address(this)),
+            amount,
+            "Wrong starting balance"
+        );
+
+        // Check the lara balance
+        assertEq(
+            laraBalanceAfter - laraBalanceBefore,
+            amount,
+            "Wrong lara balance"
+        );
 
         // Check the remaining amount
-        assertEq(remainingAmount, 0);
+        uint256 stakedAmount = lara.stakedAmounts(address(this));
+        emit StakedAmount(stakedAmount);
+        assertEq(stakedAmount, amount, "Wrong staked amount");
+        assertEq(
+            stTaraToken.balanceOf(address(this)),
+            amount,
+            "Wrong stTara amount given"
+        );
 
         // Check the delegated amount
-        assertEq(lara.getStakedAmount(address(this)), amount);
+        assertEq(
+            lara.stakedAmounts(address(this)),
+            amount,
+            "Wrong staked amount"
+        );
 
-        // Check the individual delegations
-        Lara.IndividualDelegation[] memory delegations = lara
-            .getIndividualDelegations(address(this));
-        assertEq(delegations.length, 1);
-        for (uint256 i = 0; i < delegations.length; i++) {
-            assertEq(delegations[i].amount, amount);
+        // Check other starting values
+        assertEq(
+            lara.delegatedAmounts(address(this)),
+            0,
+            "Wrong delegated amount"
+        );
+        assertEq(
+            lara.claimableRewards(address(this)),
+            0,
+            "Wrong claimable rewards"
+        );
+        assertEq(
+            lara.undelegated(address(this)),
+            0,
+            "Wrong undelegated amount"
+        );
 
-            //check validatorDelegations
-            Lara.ValidatorDelegation[] memory validatorDelegations = lara
-                .getValidatorDelegations(delegations[i].validator);
-            assertEq(validatorDelegations.length, 1);
-            assertEq(validatorDelegations[0].amount, amount);
-
-            //check protocolTotalStakeAtValdiator
-            assertEq(
-                lara.getProtocolTotalStakeAtValdiator(delegations[i].validator),
-                amount
-            );
-        }
-
-        // check the user's stTARA balance
-        assertEq(stTaraToken.balanceOf(address(this)), amount);
+        address firstDelegator = lara.getDelegatorAtIndex(0);
+        assertEq(firstDelegator, address(this), "Wrong delegator address");
     }
 
     function testStakeToMultipleValidators() public {
@@ -98,32 +127,53 @@ contract LaraTest is Test, TestSetup {
         address staker1 = address(333);
         vm.prank(staker1);
         vm.deal(staker1, amount + 1 ether);
-        uint256 remainingAmount = lara.stake{value: amount}(amount);
+        uint256 balanceBefore = address(lara).balance;
+        lara.stake{value: amount}(amount);
+        uint256 balanceAfter = address(lara).balance;
 
         // Check the remaining amount
-        assertEq(remainingAmount, 0);
-
+        assertEq(balanceAfter - balanceBefore, amount, "Wrong amount given");
+        assertEq(
+            stTaraToken.balanceOf(address(staker1)),
+            amount,
+            "Wrong stTara amount accredited"
+        );
         // Check the delegated amount
-        assertEq(lara.getStakedAmount(staker1), amount);
+        assertEq(lara.stakedAmounts(staker1), amount, "Wrong staked amount");
 
-        // Check the individual delegations
-        Lara.IndividualDelegation[] memory delegations = lara
-            .getIndividualDelegations(staker1);
-        assertEq(delegations.length, 2, "Wrong length of array");
-        for (uint256 i = 0; i < delegations.length; i++) {
-            for (uint256 j = 0; j < tentativeDelegations.length; j++) {
-                if (
-                    tentativeDelegations[j].validator ==
-                    delegations[i].validator
-                ) {
-                    assertEq(
-                        tentativeDelegations[j].amount,
-                        delegations[i].amount,
-                        "Wrong value"
-                    );
-                }
-            }
-        }
+        // start the epoch
+        lara.startEpoch();
+        assertEq(
+            lara.stakedAmounts(staker1),
+            0,
+            "Wrong staked amount after epoch start"
+        );
+        assertEq(
+            lara.delegatedAmounts(staker1),
+            amount,
+            "Wrong delegated amount after epoch start"
+        );
+
+        // end the epoch
+        uint256 balanceOfStakerBefore = address(staker1).balance;
+        lara.endEpoch();
+        uint256 balanceOfStakerAfter = address(staker1).balance;
+        assertEq(
+            lara.delegatedAmounts(staker1),
+            amount,
+            "Delegated amounts changed"
+        );
+        assertEq(
+            lara.claimableRewards(staker1),
+            100 ether,
+            "Staker should have received rewards"
+        );
+
+        assertEq(
+            balanceOfStakerAfter,
+            balanceOfStakerBefore,
+            "Staker balance should not have changed"
+        );
     }
 
     function testFailValidatorsFull() public {
@@ -135,41 +185,5 @@ contract LaraTest is Test, TestSetup {
         vm.deal(staker2, amount + 1 ether);
         vm.expectRevert("No amount could be staked. Validators are full.");
         lara.stake{value: amount}(amount);
-    }
-
-    // Fuzz test for staking
-    function testFuzz_stake(uint256 amount) public {
-        vm.assume(amount > 1000 ether);
-        vm.assume(amount < 430000000 ether);
-
-        // Call the function
-        uint256 remainingAmount = lara.stake{value: amount}(amount);
-
-        // Check the remaining amount
-        assertEq(remainingAmount, 0);
-
-        // Check the delegated amount
-        assertEq(lara.getStakedAmount(address(this)), amount);
-    }
-
-    // Fuzz test for delegation
-    function testFuzz_delegation(uint256 amount) public {
-        vm.assume(amount > 1000 ether);
-        vm.assume(amount < 430000000 ether);
-
-        // get the stake distribution first to check
-        mockApyOracle.getNodesForDelegation(amount);
-
-        // Call the function with different address
-        address staker1 = address(333);
-        vm.prank(staker1);
-        vm.deal(staker1, amount + 1 ether);
-        uint256 remainingAmount = lara.stake{value: amount}(amount);
-
-        // Check the remaining amount
-        assertEq(remainingAmount, 0);
-
-        // Check the delegated amount
-        assertEq(lara.getStakedAmount(staker1), amount);
     }
 }

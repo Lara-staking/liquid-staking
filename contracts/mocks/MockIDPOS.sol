@@ -126,4 +126,6 @@ interface MockIDPOS {
         address owner,
         uint32 batch
     ) external view returns (ValidatorData[] memory validators, bool end);
+
+    function claimAllRewards(uint32 batch) external returns (bool end);
 }

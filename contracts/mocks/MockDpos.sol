@@ -149,4 +149,9 @@ contract MockDpos is MockIDPOS {
         payable(msg.sender).transfer(amount / validatorDatas.length);
         emit Undelegated(msg.sender, validator, amount);
     }
+
+    function claimAllRewards(uint32 batch) external returns (bool end) {
+        payable(msg.sender).transfer(100 ether);
+        return true;
+    }
 }
