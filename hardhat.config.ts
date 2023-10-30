@@ -1,8 +1,6 @@
 import * as dotenv from "dotenv";
 
 import { HardhatUserConfig, task } from "hardhat/config";
-import "@nomiclabs/hardhat-etherscan";
-import "@nomiclabs/hardhat-ethers";
 import "@nomicfoundation/hardhat-chai-matchers";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
@@ -34,23 +32,23 @@ const config: HardhatUserConfig = {
           ? [
               {
                 privateKey: process.env.TEST_KEY_1!,
-                balance: ethers.utils.parseEther("1000000000").toString(),
+                balance: ethers.parseEther("1000000000").toString(),
               },
               {
                 privateKey: process.env.TEST_KEY_2!,
-                balance: ethers.utils.parseEther("1000000000").toString(),
+                balance: ethers.parseEther("1000000000").toString(),
               },
               {
                 privateKey: process.env.TEST_KEY_3!,
-                balance: ethers.utils.parseEther("1000000000").toString(),
+                balance: ethers.parseEther("1000000000").toString(),
               },
               {
                 privateKey: process.env.TEST_KEY_4!,
-                balance: ethers.utils.parseEther("1000000000").toString(),
+                balance: ethers.parseEther("1000000000").toString(),
               },
               {
                 privateKey: process.env.TEST_KEY_5!,
-                balance: ethers.utils.parseEther("1000000000").toString(),
+                balance: ethers.parseEther("1000000000").toString(),
               },
               // {
               //   privateKey: process.env.TEST_KEY_6!,
@@ -101,14 +99,16 @@ const config: HardhatUserConfig = {
     enabled: process.env.REPORT_GAS !== undefined,
     currency: "USD",
   },
-  etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
-  },
   contractSizer: {
     alphaSort: true,
     disambiguatePaths: false,
     runOnCompile: true,
     strict: true,
+    except: ["Test", "Mock", "Factory", "std"],
+  },
+  typechain: {
+    outDir: "typechain",
+    target: "ethers-v6",
   },
 };
 
