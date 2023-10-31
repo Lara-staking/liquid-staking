@@ -233,9 +233,6 @@ describe(ContractNames.lara, function () {
       const protocolBalanceBefore = await stTara.protocolBalances(
         staker.address
       );
-      const v1AmountToFill =
-        maxValidatorStakeCapacity - toBigInt(v1InitialTotalStake);
-      const v2AmountToFill = amountToStake - toBigInt(v1AmountToFill);
 
       const stakeTx3 = lara
         .connect(staker)
@@ -278,16 +275,6 @@ describe(ContractNames.lara, function () {
       const protocolBalanceBefore = await stTara.protocolBalances(
         staker.address
       );
-      const v1AmountToFill =
-        maxValidatorStakeCapacity - toBigInt(v1InitialTotalStake);
-      const v2AmountToFill =
-        maxValidatorStakeCapacity -
-        toBigInt(amountToStake - toBigInt(v1AmountToFill));
-      const v3AmountToFill =
-        maxValidatorStakeCapacity -
-        toBigInt(
-          amountToStake - toBigInt(v1AmountToFill) - toBigInt(v2AmountToFill)
-        );
 
       const stakeTx4 = lara
         .connect(staker)

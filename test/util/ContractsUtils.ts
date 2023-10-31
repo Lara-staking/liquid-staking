@@ -2,22 +2,23 @@ import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import { ContractNames } from "../../util/ContractNames";
 import { ApyOracle } from "../../typechain/contracts";
+import { StTARA } from "../../typechain";
 
 export async function deployApyOracle(
   dataFeedAddress: string,
   dposAddress: string
-) {
+): Promise<ApyOracle> {
   const ApyOracle = await ethers.getContractFactory(ContractNames.apyOracle);
   const apyOracle = await ApyOracle.deploy(dataFeedAddress, dposAddress);
 
   return await apyOracle.waitForDeployment();
 }
 
-export async function deploystTara() {
+export async function deploystTara(): Promise<StTARA> {
   const StTara = await ethers.getContractFactory(ContractNames.stTara);
   const stTara = await StTara.deploy();
 
-  return await stTara.waitForDeployment();
+  return (await stTara.waitForDeployment()) as StTARA;
 }
 
 export async function setupApyOracle(

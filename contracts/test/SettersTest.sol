@@ -3,11 +3,8 @@ pragma solidity ^0.8.17;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
-import "../interfaces/IApyOracle.sol";
 import "../Lara.sol";
-import "../ApyOracle.sol";
 import "../mocks/MockDpos.sol";
-import "../stTara.sol";
 import "./SetUpTest.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../errors/SharedErrors.sol";
 

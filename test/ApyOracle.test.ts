@@ -56,7 +56,7 @@ describe(ContractNames.apyOracle, () => {
   it("should throw unauthorized", async () => {
     const nodeAddress = ethers.Wallet.createRandom().address; // Replace with a valid address
     const updatedNodeData = {
-      pbftCount: 5555,
+      rating: 5555,
       rank: 1,
       account: ethers.Wallet.createRandom().address,
       apy: 500, // Example APY value
