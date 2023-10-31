@@ -103,7 +103,7 @@ contract Lara is Ownable {
      * @param user the user for which to set compounding
      * @param value the new value for compounding(T/F)
      */
-    function setCompounding(address user, bool value) public onlyUser(user) {
+    function setCompound(address user, bool value) public onlyUser(user) {
         isCompounding[user] = value;
     }
 
@@ -223,7 +223,8 @@ contract Lara is Ownable {
 
     function claimRewards() public {
         uint256 amount = claimableRewards[msg.sender];
-        if (amount == 0) return;
+        require(amount > 0, "No rewards to claim");
+        require(address(this).balance >= amount, "Not enough balance to claim");
         claimableRewards[msg.sender] = 0;
         payable(msg.sender).transfer(amount);
         emit RewardsClaimed(msg.sender, amount, block.timestamp);
@@ -235,20 +236,24 @@ contract Lara is Ownable {
             amount += claimableRewards[user];
             claimableRewards[user] = 0;
         }
+        if (amount == 0) return; // causes underflow if not checked
         uint256 remainingAmount = delegateToValidators(amount);
         uint256 diffDelegated = amount - remainingAmount;
         delegatedAmounts[user] += diffDelegated;
-        stakedAmounts[user] -= diffDelegated;
+        if (stakedAmounts[user] != 0) {
+            // this is to avoid the scenario where the user autocompounds but has no stakedAmounts to subtract from
+            stakedAmounts[user] -= diffDelegated;
+        }
         emit Delegated(user, diffDelegated);
     }
 
     function startEpoch() external onlyOwner {
         uint256 totalEpochDelegation = 0;
-        for (uint256 i = 0; i < delegators.length; i++) {
-            totalEpochDelegation += stakedAmounts[delegators[i]];
-        }
-        for (uint256 i = 0; i < delegators.length; i++) {
+        for (uint32 i = 0; i < delegators.length; i++) {
             delegateStakeOfUser(delegators[i]);
+        }
+        for (uint32 i = 0; i < delegators.length; i++) {
+            totalEpochDelegation += delegatedAmounts[delegators[i]];
         }
         lastEpochTotalDelegatedAmount = totalEpochDelegation;
         if (protocolStartTimestamp == 0) {
@@ -273,13 +278,19 @@ contract Lara is Ownable {
         uint256 rewards = balanceAfter - balanceBefore;
 
         // iterate through delegators and calculate + allocate their rewards
+        uint256 totalSplitRewards = 0;
         for (uint256 i = 0; i < delegators.length; i++) {
             address delegator = delegators[i];
             uint256 delegatorReward = (delegatedAmounts[delegator] * rewards) /
                 lastEpochTotalDelegatedAmount;
             claimableRewards[delegator] += delegatorReward;
+            totalSplitRewards += delegatorReward;
             emit RewardsClaimed(delegator, delegatorReward, block.timestamp);
         }
+        require(
+            totalSplitRewards <= rewards,
+            "Total split rewards exceed total rewards"
+        );
         emit EpochEnded(
             lastEpochTotalDelegatedAmount,
             rewards,

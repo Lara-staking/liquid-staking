@@ -14,6 +14,7 @@ import {StakeAmountTooLow, StakeValueTooLow} from "../errors/SharedErrors.sol";
 contract LaraTest is Test, TestSetup {
     address staker0 = address(this);
     address staker1 = address(333);
+    address staker2 = address(444);
 
     uint256 constant MAX_VALIDATOR_STAKE_CAPACITY = 80000000 ether;
 
@@ -50,6 +51,14 @@ contract LaraTest is Test, TestSetup {
             }
         }
         return address(0);
+    }
+
+    function getTotalDposStake() public returns (uint256) {
+        uint256 totalDposStake = 0;
+        for (uint256 i = 0; i < validators.length; i++) {
+            totalDposStake += mockDpos.getValidator(validators[i]).total_stake;
+        }
+        return totalDposStake;
     }
 
     function testFuzz_testStakeToSingleValidator(uint256 amount) public {
@@ -106,9 +115,9 @@ contract LaraTest is Test, TestSetup {
         uint256 amount = 100000000 ether; // 1 full node + 20mil
 
         // Call the function with different address
+        uint256 balanceBefore = address(lara).balance;
         vm.prank(staker1);
         vm.deal(staker1, amount + 1 ether);
-        uint256 balanceBefore = address(lara).balance;
         lara.stake{value: amount}(amount);
         checkValidatorTotalStakesAreZero();
         uint256 balanceAfter = address(lara).balance;
@@ -144,6 +153,7 @@ contract LaraTest is Test, TestSetup {
 
         // end the epoch
         uint256 balanceOfStakerBefore = address(staker1).balance;
+        vm.warp(1000);
         lara.endEpoch();
 
         address firstValidatorDelegated = findValidatorWithStake(
@@ -196,6 +206,137 @@ contract LaraTest is Test, TestSetup {
         );
     }
 
+    function calculateExpectedRewardForUser(
+        address staker
+    ) public returns (uint256) {
+        uint256 totalRewards = getTotalDposStake() / 100 + 100 ether;
+
+        uint256 stakerDelegated = lara.delegatedAmounts(staker);
+        uint256 totalDelegatedInLastEpoch = lara
+            .lastEpochTotalDelegatedAmount();
+
+        uint256 expectedRewardStaker = (stakerDelegated * totalRewards) /
+            totalDelegatedInLastEpoch;
+        return expectedRewardStaker;
+    }
+
     // now we launch a second epoch without compound being set
-    function test_launchNextEpoch() public {}
+    function test_launchNextEpoch() public {
+        // staker 1 stakes 100000 ether
+        vm.prank(staker1);
+        vm.deal(staker1, 100000 ether);
+        lara.stake{value: 100000 ether}(100000 ether);
+
+        // staker2 stakes 100000 ether
+        vm.prank(staker2);
+        vm.deal(staker2, 100000 ether);
+        lara.stake{value: 100000 ether}(100000 ether);
+
+        // we start the epoch
+        lara.startEpoch();
+
+        assertEq(
+            lara.lastEpochTotalDelegatedAmount(),
+            200000 ether, // there were no other delegations
+            "Wrong total amount"
+        );
+
+        // we end the epoch
+        vm.warp(1000);
+        lara.endEpoch();
+
+        // check the rewards
+        uint256 expectedRewardStaker1 = calculateExpectedRewardForUser(staker1);
+        uint256 expectedRewardStaker2 = calculateExpectedRewardForUser(staker2);
+        uint256 delegatedAmountStaker1 = lara.delegatedAmounts(staker1);
+        uint256 delegatedAmountStaker2 = lara.delegatedAmounts(staker2);
+        uint256 claimableRewardsStaker1 = lara.claimableRewards(staker1);
+        uint256 claimableRewardsStaker2 = lara.claimableRewards(staker2);
+        assertEq(
+            claimableRewardsStaker1,
+            expectedRewardStaker1,
+            "Staker1 should have received rewards after first epoch"
+        );
+        assertEq(
+            claimableRewardsStaker2,
+            expectedRewardStaker2,
+            "Staker2 should have received rewards after first epoch"
+        );
+
+        // staker1 turns auto-compound on
+        vm.prank(staker1);
+        lara.setCompound(staker1, true);
+
+        // new epoch starts
+        lara.startEpoch();
+
+        // check if the delegated amount now contains the rewards of staker1
+        assertEq(
+            lara.claimableRewards(staker1),
+            0,
+            "Staker1 compounded so claimable rewards should be 0"
+        );
+        assertEq(
+            lara.delegatedAmounts(staker1),
+            delegatedAmountStaker1 + claimableRewardsStaker1,
+            "Staker1 should have bigger delegated amount after first epoch"
+        );
+
+        // check if the delegated amount of staker2 is the same
+        assertEq(
+            lara.delegatedAmounts(staker2),
+            delegatedAmountStaker2,
+            "Staker2 should have the same delegated amount after first epoch"
+        );
+
+        // new epoch ends
+        vm.warp(1000);
+        lara.endEpoch();
+
+        // check rewards, they should be higher for staker1 but the same for staker2
+
+        uint256 expectedRewardStaker1AfterCompound = calculateExpectedRewardForUser(
+                staker1
+            );
+
+        assertEq(
+            lara.claimableRewards(staker1),
+            expectedRewardStaker1AfterCompound,
+            "Staker1 should have received rewards after second epoch"
+        );
+
+        assertApproxEqRel(
+            lara.claimableRewards(staker2),
+            expectedRewardStaker2 * 2,
+            0.04e18,
+            "Staker2 should have received rewards after second epoch"
+        );
+
+        // staker1 claims rewards
+        uint256 balanceOfStakerBefore = address(staker1).balance;
+        vm.prank(staker1);
+        lara.claimRewards();
+        uint256 balanceOfStakerAfter = address(staker1).balance;
+
+        // staker1 should have received expectedRewardStaker1AfterCompound
+        assertEq(
+            balanceOfStakerAfter - balanceOfStakerBefore,
+            expectedRewardStaker1AfterCompound,
+            "staker1 should have received expectedRewardStaker1 + expectedRewardStaker1AfterCompound"
+        );
+
+        // staker2 claims rewards
+        balanceOfStakerBefore = address(staker2).balance;
+        vm.prank(staker2);
+        lara.claimRewards();
+        balanceOfStakerAfter = address(staker2).balance;
+
+        // staker2 should have received expectedRewardStaker2 * 2
+        assertApproxEqRel(
+            balanceOfStakerAfter - balanceOfStakerBefore,
+            expectedRewardStaker2 * 2,
+            0.04e18,
+            "staker2 should have received expectedRewardStaker2 * 2"
+        );
+    }
 }
