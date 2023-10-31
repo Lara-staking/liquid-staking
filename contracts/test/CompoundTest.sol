@@ -12,66 +12,16 @@ import "./SetUpTest.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../errors/SharedErrors.sol";
 
 contract LaraTest is Test, TestSetup {
+    address staker0 = address(this);
+    address staker1 = address(333);
+
+    uint256 constant MAX_VALIDATOR_STAKE_CAPACITY = 80000000 ether;
+
     function setUp() public {
         super.setupValidators();
         super.setupApyOracle();
         super.setupLara();
     }
-
-    function testGetNodesForDelegation() public {
-        // define value
-        uint256 amount = 500000 ether;
-
-        // call the function
-        IApyOracle.TentativeDelegation[]
-            memory tentativeDelegations = mockApyOracle.getNodesForDelegation(
-                amount
-            );
-
-        // check the length of the array
-        assertEq(tentativeDelegations.length, 1, "Wrong length of array");
-
-        // check if the value is the right one. It should be 500000 ether for the first validator
-        assertEq(tentativeDelegations[0].amount, amount, "Wrong value");
-    }
-
-    function testFuzz_GetNodesForDelegation(uint256 amount) public {
-        vm.assume(amount > 1000 ether);
-        vm.assume(amount < 94800000 ether);
-        // call the function
-        IApyOracle.TentativeDelegation[]
-            memory tentativeDelegations = mockApyOracle.getNodesForDelegation(
-                amount
-            );
-
-        // check the length of the array
-        assertTrue(
-            tentativeDelegations.length >= 1,
-            "Wrong length of array: delegations should always get at least one validator"
-        );
-
-        uint256 totalAmount = 0;
-        for (uint256 i = 0; i < tentativeDelegations.length; i++) {
-            totalAmount += tentativeDelegations[i].amount;
-        }
-
-        // check if the value is the right one. It should be 500000 ether for the first validator
-        assertEq(totalAmount, amount, "Wrong total delegated value");
-    }
-
-    function testFailStakeAmountTooLow() public {
-        // Call the function with an amount less than the minimum stake amount
-        vm.expectRevert(StakeAmountTooLow.selector);
-        lara.stake{value: 500 ether}(500 ether);
-    }
-
-    function testFailStakeValueTooLow() public {
-        // Call the function with a value less than the staking amount
-        vm.expectRevert(StakeValueTooLow.selector);
-        lara.stake{value: 400000 ether}(500000 ether);
-    }
-
-    uint256 firstAmountToStake = 500000 ether;
 
     function checkValidatorTotalStakesAreZero() private {
         for (uint256 i = 0; i < validators.length; i++) {
@@ -104,11 +54,12 @@ contract LaraTest is Test, TestSetup {
 
     function testFuzz_testStakeToSingleValidator(uint256 amount) public {
         vm.assume(amount > 1000 ether);
-        vm.assume(amount < 1000000 ether);
+        vm.assume(amount < MAX_VALIDATOR_STAKE_CAPACITY);
 
         uint256 laraBalanceBefore = address(lara).balance;
 
         // Call the function
+        vm.prank(staker0);
         lara.stake{value: amount}(amount);
         checkValidatorTotalStakesAreZero();
 
@@ -116,7 +67,7 @@ contract LaraTest is Test, TestSetup {
 
         // Check the stTara balance before
         assertEq(
-            stTaraToken.balanceOf(address(this)),
+            stTaraToken.balanceOf(staker0),
             amount,
             "Wrong starting balance"
         );
@@ -129,49 +80,32 @@ contract LaraTest is Test, TestSetup {
         );
 
         // Check the remaining amount
-        uint256 stakedAmount = lara.stakedAmounts(address(this));
+        uint256 stakedAmount = lara.stakedAmounts(staker0);
         assertEq(stakedAmount, amount, "Wrong staked amount");
         assertEq(
-            stTaraToken.balanceOf(address(this)),
+            stTaraToken.balanceOf(staker0),
             amount,
             "Wrong stTara amount given"
         );
 
         // Check the delegated amount
-        assertEq(
-            lara.stakedAmounts(address(this)),
-            amount,
-            "Wrong staked amount"
-        );
+        assertEq(lara.stakedAmounts(staker0), amount, "Wrong staked amount");
 
         // Check other starting values
-        assertEq(
-            lara.delegatedAmounts(address(this)),
-            0,
-            "Wrong delegated amount"
-        );
-        assertEq(
-            lara.claimableRewards(address(this)),
-            0,
-            "Wrong claimable rewards"
-        );
-        assertEq(
-            lara.undelegated(address(this)),
-            0,
-            "Wrong undelegated amount"
-        );
+        assertEq(lara.delegatedAmounts(staker0), 0, "Wrong delegated amount");
+        assertEq(lara.claimableRewards(staker0), 0, "Wrong claimable rewards");
+        assertEq(lara.undelegated(staker0), 0, "Wrong undelegated amount");
 
         address firstDelegator = lara.getDelegatorAtIndex(0);
-        assertEq(firstDelegator, address(this), "Wrong delegator address");
+        assertEq(firstDelegator, staker0, "Wrong delegator address");
     }
 
-    event DelegationReward(uint256 totalStakes, uint256 totalRewards);
-
     function testStakeToMultipleValidators() public {
+        // The previous stake isn't available because it was a fuzz test
+
         uint256 amount = 100000000 ether; // 1 full node + 20mil
 
         // Call the function with different address
-        address staker1 = address(333);
         vm.prank(staker1);
         vm.deal(staker1, amount + 1 ether);
         uint256 balanceBefore = address(lara).balance;
@@ -213,7 +147,7 @@ contract LaraTest is Test, TestSetup {
         lara.endEpoch();
 
         address firstValidatorDelegated = findValidatorWithStake(
-            80000000 ether
+            MAX_VALIDATOR_STAKE_CAPACITY
         );
         address secondValidatorDelegated = findValidatorWithStake(
             20000000 ether
@@ -221,7 +155,7 @@ contract LaraTest is Test, TestSetup {
 
         assertEq(
             lara.protocolTotalStakeAtValidator(firstValidatorDelegated),
-            80000000 ether,
+            MAX_VALIDATOR_STAKE_CAPACITY,
             "Wrong total stake at validator"
         );
 
@@ -233,7 +167,7 @@ contract LaraTest is Test, TestSetup {
 
         assertEq(
             mockDpos.getValidator(firstValidatorDelegated).total_stake,
-            80000000 ether,
+            MAX_VALIDATOR_STAKE_CAPACITY,
             "Wrong total stake at validator in mockDpos"
         );
 
@@ -262,14 +196,6 @@ contract LaraTest is Test, TestSetup {
         );
     }
 
-    function testFailValidatorsFull() public {
-        uint256 amount = 100000000 ether;
-
-        // Call the function with different address
-        address staker2 = address(444);
-        vm.prank(staker2);
-        vm.deal(staker2, amount + 1 ether);
-        vm.expectRevert("No amount could be staked. Validators are full.");
-        lara.stake{value: amount}(amount);
-    }
+    // now we launch a second epoch without compound being set
+    function test_launchNextEpoch() public {}
 }

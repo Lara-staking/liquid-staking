@@ -12,7 +12,7 @@ contract MockDpos is MockIDPOS {
         for (uint256 i = 0; i < _internalValidators.length; ++i) {
             MockIDPOS.ValidatorBasicInfo memory info = MockIDPOS
                 .ValidatorBasicInfo(
-                    msg.value / _internalValidators.length,
+                    0,
                     0,
                     100,
                     uint64(block.number),
@@ -99,6 +99,10 @@ contract MockDpos is MockIDPOS {
         require(msg.value > 0, "Delegation value not provided");
 
         validatorData.info.total_stake += msg.value;
+        require(
+            validators[validator].info.total_stake >= msg.value,
+            "Validator stake not reigstered"
+        );
         emit Delegated(msg.sender, validatorData.account, msg.value);
     }
 
@@ -150,8 +154,19 @@ contract MockDpos is MockIDPOS {
         emit Undelegated(msg.sender, validator, amount);
     }
 
+    event DelegationRewards(uint256 totalStakes, uint256 totalRewards);
+
     function claimAllRewards(uint32 batch) external returns (bool end) {
-        payable(msg.sender).transfer(100 ether);
+        uint256 totalStakes = 0;
+        for (uint256 i = 0; i < validatorDatas.length; i++) {
+            totalStakes += validators[validatorDatas[i].account]
+                .info
+                .total_stake;
+        }
+        // give out 1% of the total stakes as rewards + 100 ETH
+        uint256 rewards = totalStakes / 100;
+        emit DelegationRewards(totalStakes, rewards);
+        payable(msg.sender).transfer(100 ether + rewards);
         return true;
     }
 }
