@@ -23,12 +23,6 @@ interface MockIDPOS {
         address indexed validator,
         uint256 amount
     );
-    event Redelegated(
-        address indexed delegator,
-        address indexed from,
-        address indexed to,
-        uint256 amount
-    );
     event RewardsClaimed(address indexed account, address indexed validator);
     event CommissionRewardsClaimed(
         address indexed account,
@@ -37,6 +31,12 @@ interface MockIDPOS {
     event CommissionSet(address indexed validator, uint16 comission);
     event ValidatorRegistered(address indexed validator);
     event ValidatorInfoSet(address indexed validator);
+    event Redelegated(
+        address indexed delegator,
+        address indexed from,
+        address indexed to,
+        uint256 amount
+    );
 
     struct ValidatorBasicInfo {
         // Total number of delegated tokens to the validator
@@ -128,4 +128,10 @@ interface MockIDPOS {
     ) external view returns (ValidatorData[] memory validators, bool end);
 
     function claimAllRewards(uint32 batch) external returns (bool end);
+
+    function reDelegate(
+        address validator_from,
+        address validator_to,
+        uint256 amount
+    ) external;
 }

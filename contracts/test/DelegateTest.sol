@@ -73,35 +73,6 @@ contract LaraTest is Test, TestSetup {
 
     uint256 firstAmountToStake = 500000 ether;
 
-    function checkValidatorTotalStakesAreZero() private {
-        for (uint256 i = 0; i < validators.length; i++) {
-            assertEq(
-                lara.protocolTotalStakeAtValidator(validators[i]),
-                0,
-                "Validator total stake should be zero"
-            );
-            uint256 total_stake = mockDpos
-                .getValidator(validators[i])
-                .total_stake;
-            assertEq(
-                total_stake,
-                0,
-                "Validator total stake should be zero in mockDpos"
-            );
-        }
-    }
-
-    function findValidatorWithStake(
-        uint256 stake
-    ) private view returns (address) {
-        for (uint256 i = 0; i < validators.length; i++) {
-            if (lara.protocolTotalStakeAtValidator(validators[i]) == stake) {
-                return validators[i];
-            }
-        }
-        return address(0);
-    }
-
     function testFuzz_testStakeToSingleValidator(uint256 amount) public {
         vm.assume(amount > 1000 ether);
         vm.assume(amount < 1000000 ether);

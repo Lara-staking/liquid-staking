@@ -125,6 +125,23 @@ contract Lara is Ownable {
         emit Staked(msg.sender, amount);
     }
 
+    function reDelegate(
+        address from,
+        address to,
+        uint256 amount
+    ) public onlyOwner {
+        require(
+            protocolTotalStakeAtValidator[from] >= amount,
+            "Amount exceeds the total stake at the validator"
+        );
+        try dposContract.reDelegate(from, to, amount) {
+            protocolTotalStakeAtValidator[from] -= amount;
+            protocolTotalStakeAtValidator[to] += amount;
+        } catch {
+            revert("Re-delegation failed");
+        }
+    }
+
     function confirmUndelegate(address validator, uint256 amount) public {
         require(
             undelegated[msg.sender] >= amount,

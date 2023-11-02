@@ -169,4 +169,26 @@ contract MockDpos is MockIDPOS {
         payable(msg.sender).transfer(100 ether + rewards);
         return true;
     }
+
+    function reDelegate(
+        address validator_from,
+        address validator_to,
+        uint256 amount
+    ) external {
+        require(
+            validators[validator_from].account != address(0),
+            "Validator doesn't exist"
+        );
+        require(
+            validators[validator_to].account != address(0),
+            "Validator doesn't exist"
+        );
+        require(
+            validators[validator_from].info.total_stake >= amount,
+            "Not enough stake"
+        );
+        validators[validator_from].info.total_stake -= amount;
+        validators[validator_to].info.total_stake += amount;
+        emit Redelegated(msg.sender, validator_from, validator_to, amount);
+    }
 }
