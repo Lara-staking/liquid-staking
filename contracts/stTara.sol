@@ -14,8 +14,8 @@ contract stTARA is ERC20, Ownable {
     // Thrown when the burn caller is not the user or the lara protocol
     error WrongBurnAddress(address wrongAddress);
 
-    // Thrown when the user does not have sufficient balance outside of protocol to burn
-    error InsufficientUserBalanceForBurn(
+    // Thrown when the user does not have sufficient allowance set for Tara to burn
+    error InsufficientUserAllowanceForBurn(
         uint256 amount,
         uint256 senderBalance,
         uint256 protocolBalance
@@ -37,9 +37,6 @@ contract stTARA is ERC20, Ownable {
     // Address of Lara protocol
     address public lara;
 
-    // Mapping holding for each user the balance minted using Lara, currently unclaimed
-    mapping(address => uint256) public protocolBalances;
-
     constructor() ERC20("Staked TARA", "stTARA") {}
 
     modifier onlyLara() {
@@ -59,20 +56,21 @@ contract stTARA is ERC20, Ownable {
         if (amount < minDepositAmount) {
             revert DepositAmountTooLow(amount, minDepositAmount);
         }
-        protocolBalances[recipient] += amount;
         _mint(recipient, amount);
 
         emit Minted(recipient, amount);
     }
 
     function burn(address user, uint256 amount) external onlyLara {
-        //lara == msg.sender. In this case the protocol will pay back the user also with the rewards
-        if (amount > protocolBalances[user])
-            revert InsufficientProtocolBalanceForBurn(
-                amount,
-                protocolBalances[user]
-            );
-        protocolBalances[user] -= amount;
+        if (msg.sender != lara) {
+            // Check if the amount is approved for lara to burn
+            if (amount > allowance(user, lara))
+                revert InsufficientUserAllowanceForBurn(
+                    amount,
+                    balanceOf(user),
+                    allowance(user, lara)
+                );
+        }
         // Burn stTARA tokens
         _burn(user, amount);
 

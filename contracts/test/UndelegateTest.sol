@@ -18,6 +18,10 @@ contract LaraTest is Test, TestSetup {
         super.setupLara();
     }
 
+    fallback() external payable {}
+
+    receive() external payable {}
+
     // set up a single staker
     function testFuzz_testStakeAndRemoveStake(uint256 amount) public {
         vm.assume(amount > 1000 ether);
@@ -83,9 +87,6 @@ contract LaraTest is Test, TestSetup {
 
         // remove the stake instantly
         uint256 laraBalanceBeforeRemove = address(lara).balance;
-        uint256 stTaraBalanceBeforeRemove = stTaraToken.balanceOf(
-            address(this)
-        );
         stTaraToken.approve(address(lara), amount);
         lara.removeStake(amount);
         uint256 laraBalanceAfterRemove = address(lara).balance;
@@ -100,8 +101,8 @@ contract LaraTest is Test, TestSetup {
 
         // check the stTara balance
         assertEq(
-            stTaraBalanceAfterRemove - stTaraBalanceBeforeRemove,
-            amount,
+            stTaraBalanceAfterRemove,
+            0,
             "Wrong stTara balance after claim"
         );
     }

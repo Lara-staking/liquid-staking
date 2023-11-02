@@ -24,7 +24,7 @@ contract LaraTest is Test, TestSetup {
         super.setupLara();
     }
 
-    function getTotalDposStake() public returns (uint256) {
+    function getTotalDposStake() public view returns (uint256) {
         uint256 totalDposStake = 0;
         for (uint256 i = 0; i < validators.length; i++) {
             totalDposStake += mockDpos.getValidator(validators[i]).total_stake;
@@ -179,7 +179,7 @@ contract LaraTest is Test, TestSetup {
 
     function calculateExpectedRewardForUser(
         address staker
-    ) public returns (uint256) {
+    ) public view returns (uint256) {
         uint256 totalRewards = getTotalDposStake() / 100 + 100 ether;
 
         uint256 stakerDelegated = lara.delegatedAmounts(staker);
