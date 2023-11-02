@@ -141,11 +141,8 @@ describe(ContractNames.stTara, () => {
   it("should not allow recipient to backswap stTARA tokens for TARA tokens", async () => {
     const amount = ethers.parseEther("1000");
 
-    await expect(stTara.connect(minter).burn(recipient.address, amount))
-      .to.be.revertedWithCustomError(
-        stTara,
-        ErrorsNames.InsufficientProtocolBalanceForBurn
-      )
-      .withArgs(amount, 0);
+    await expect(
+      stTara.connect(minter).burn(recipient.address, amount)
+    ).to.be.revertedWith("ERC20: burn amount exceeds balance");
   });
 });

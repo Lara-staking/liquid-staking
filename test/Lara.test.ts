@@ -134,9 +134,6 @@ describe(ContractNames.lara, function () {
       const [, , , , staker] = await ethers.getSigners();
       const amountToStake = ethers.parseEther("1001");
       const stakedAmountBefore = await lara.stakedAmounts(staker.address);
-      const protocolBalanceBefore = await stTara.protocolBalances(
-        staker.address
-      );
       const stakeTx = lara
         .connect(staker)
         .stake(amountToStake, { value: amountToStake });
@@ -150,14 +147,8 @@ describe(ContractNames.lara, function () {
         .withArgs(staker.address, amountToStake);
 
       const stakedAmountAfter = await lara.stakedAmounts(staker.address);
-      const protocolBalanceAfter = await stTara.protocolBalances(
-        staker.address
-      );
       expect(stakedAmountAfter).to.equal(
         stakedAmountBefore + toBigInt(amountToStake)
-      );
-      expect(protocolBalanceAfter).to.equal(
-        protocolBalanceBefore + toBigInt(amountToStake)
       );
 
       // Test that the user cannot burn the protocol balance
@@ -182,9 +173,6 @@ describe(ContractNames.lara, function () {
       const [, , , , staker] = await ethers.getSigners();
       const amountToStake = ethers.parseEther("60000000");
       const stakedAmountBefore = await lara.stakedAmounts(staker.address);
-      const protocolBalanceBefore = await stTara.protocolBalances(
-        staker.address
-      );
 
       const stakeTx3 = lara
         .connect(staker)
@@ -203,14 +191,8 @@ describe(ContractNames.lara, function () {
       );
 
       const stakedAmountAfter = await lara.stakedAmounts(staker.address);
-      const protocolBalanceAfter = await stTara.protocolBalances(
-        staker.address
-      );
       expect(stakedAmountAfter).to.equal(
         stakedAmountBefore + toBigInt(amountToStake)
-      );
-      expect(protocolBalanceAfter).to.equal(
-        protocolBalanceBefore + toBigInt(amountToStake)
       );
     });
 
@@ -224,9 +206,6 @@ describe(ContractNames.lara, function () {
         toBigInt(v3InitialTotalStake) +
         toBigInt(surplusAmount);
       const stakedAmountBefore = await lara.stakedAmounts(staker.address);
-      const protocolBalanceBefore = await stTara.protocolBalances(
-        staker.address
-      );
 
       const stakeTx4 = lara
         .connect(staker)
@@ -246,16 +225,8 @@ describe(ContractNames.lara, function () {
       );
 
       const stakedAmountAfter = await lara.stakedAmounts(staker.address);
-      const protocolBalanceAfter = await stTara.protocolBalances(
-        staker.address
-      );
       expect(stakedAmountAfter).to.equal(
         stakedAmountBefore +
-          toBigInt(amountToStake - toBigInt(surplusAmount)) +
-          ethers.parseEther("1000")
-      );
-      expect(protocolBalanceAfter).to.equal(
-        protocolBalanceBefore +
           toBigInt(amountToStake - toBigInt(surplusAmount)) +
           ethers.parseEther("1000")
       );
