@@ -38,7 +38,7 @@ describe(ContractNames.lara, function () {
       await mockDpos.getAddress()
     );
     await setupApyOracle(apyOracle, dataFeed);
-    stTara = await deploystTara();
+    stTara = await deploystTara(v1);
     lara = await deployLara(
       await stTara.getAddress(),
       await mockDpos.getAddress(),
@@ -162,67 +162,19 @@ describe(ContractNames.lara, function () {
 
       // Test that the user cannot burn the protocol balance
       const mintAmount = ethers.parseEther("1010");
-      await stTara
-        .connect(staker)
-        .mint(staker.address, mintAmount, { value: mintAmount });
+      await expect(
+        stTara.connect(staker).mint(staker.address, mintAmount)
+      ).to.be.revertedWith("Only Lara can call this function");
       await expect(
         stTara
           .connect(staker)
           .burn(staker.address, amountToStake + toBigInt(mintAmount))
-      )
-        .to.be.revertedWithCustomError(
-          stTara,
-          ErrorsNames.InsufficientUserBalanceForBurn
-        )
-        .withArgs(
-          amountToStake + toBigInt(mintAmount),
-          amountToStake + toBigInt(mintAmount),
-          amountToStake
-        );
+      ).to.be.revertedWith("Only Lara can call this function");
 
       // Test that the user can burn amount outside of protocol balance
       const stakeTx1 = stTara.connect(staker).burn(staker.address, mintAmount);
-      await expect(stakeTx1)
-        .to.emit(stTara, "Burned")
-        .withArgs(staker.address, mintAmount);
-      await expect(stakeTx1).to.changeEtherBalance(staker.address, mintAmount);
-      await expect(stakeTx1).to.changeTokenBalance(
-        stTara,
-        staker.address,
-        mintAmount * toBigInt(-1)
-      );
-
-      // Set an account as lara
-      // Test that lara cannot burn a value greater than protocol balance
-      const [, , , randomLara] = await ethers.getSigners();
-      await stTara.setLaraAddress(randomLara.address);
-      await expect(
-        stTara
-          .connect(randomLara)
-          .burn(staker.address, amountToStake + toBigInt(mintAmount))
-      )
-        .to.be.revertedWithCustomError(
-          stTara,
-          ErrorsNames.InsufficientProtocolBalanceForBurn
-        )
-        .withArgs(amountToStake + toBigInt(mintAmount), amountToStake);
-
-      // Test that the user can burn from the protocol balance
-      const amountToBurn = amountToStake - toBigInt(100);
-      const stakeTx2 = stTara
-        .connect(randomLara)
-        .burn(staker.address, amountToBurn);
-      await expect(stakeTx2)
-        .to.emit(stTara, "Burned")
-        .withArgs(staker.address, amountToBurn);
-      await expect(stakeTx2).to.changeTokenBalance(
-        stTara,
-        staker.address,
-        amountToBurn * toBigInt(-1)
-      );
-
-      expect(await stTara.protocolBalances(staker.address)).to.equal(
-        amountToStake - toBigInt(amountToBurn)
+      await expect(stakeTx1).to.be.revertedWith(
+        "Only Lara can call this function"
       );
     });
 

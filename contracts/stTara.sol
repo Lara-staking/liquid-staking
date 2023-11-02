@@ -42,6 +42,11 @@ contract stTARA is ERC20, Ownable {
 
     constructor() ERC20("Staked TARA", "stTARA") {}
 
+    modifier onlyLara() {
+        require(msg.sender == lara, "Only Lara can call this function");
+        _;
+    }
+
     function setMinDepositAmount(uint256 _minDepositAmount) external onlyOwner {
         minDepositAmount = _minDepositAmount;
     }
@@ -50,43 +55,24 @@ contract stTARA is ERC20, Ownable {
         lara = _lara;
     }
 
-    function mint(address recipient, uint256 amount) external payable {
-        if (amount < minDepositAmount)
+    function mint(address recipient, uint256 amount) external onlyLara {
+        if (amount < minDepositAmount) {
             revert DepositAmountTooLow(amount, minDepositAmount);
-        if (msg.sender == lara) {
-            protocolBalances[recipient] += amount;
-            _mint(recipient, amount);
-        } else {
-            if (msg.value < amount)
-                revert MintValueTooLow(msg.value, minDepositAmount);
-            amount = msg.value;
-            _mint(recipient, amount);
         }
+        protocolBalances[recipient] += amount;
+        _mint(recipient, amount);
 
         emit Minted(recipient, amount);
     }
 
-    function burn(address user, uint256 amount) external {
-        if (user != msg.sender && lara != msg.sender)
-            revert WrongBurnAddress(user);
-        if (user == msg.sender) {
-            if (balanceOf(user) - protocolBalances[user] < amount)
-                revert InsufficientUserBalanceForBurn(
-                    amount,
-                    balanceOf(user),
-                    protocolBalances[user]
-                );
-            // Transfer TARA tokens to the user
-            payable(msg.sender).transfer(amount);
-        } else {
-            //lara == msg.sender. In this case the protocol will pay back the user also with the rewards
-            if (amount > protocolBalances[user])
-                revert InsufficientProtocolBalanceForBurn(
-                    amount,
-                    protocolBalances[user]
-                );
-            protocolBalances[user] -= amount;
-        }
+    function burn(address user, uint256 amount) external onlyLara {
+        //lara == msg.sender. In this case the protocol will pay back the user also with the rewards
+        if (amount > protocolBalances[user])
+            revert InsufficientProtocolBalanceForBurn(
+                amount,
+                protocolBalances[user]
+            );
+        protocolBalances[user] -= amount;
         // Burn stTARA tokens
         _burn(user, amount);
 

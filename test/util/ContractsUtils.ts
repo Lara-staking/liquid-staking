@@ -14,9 +14,9 @@ export async function deployApyOracle(
   return await apyOracle.waitForDeployment();
 }
 
-export async function deploystTara(): Promise<StTARA> {
+export async function deploystTara(owner: SignerWithAddress): Promise<StTARA> {
   const StTara = await ethers.getContractFactory(ContractNames.stTara);
-  const stTara = await StTara.deploy();
+  const stTara = await StTara.connect(owner).deploy();
 
   return (await stTara.waitForDeployment()) as StTARA;
 }

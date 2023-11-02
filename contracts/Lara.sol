@@ -31,7 +31,7 @@ contract Lara is Ownable {
         uint256 amount
     );
     event TaraSent(address indexed user, uint256 amount, uint256 blockNumber);
-
+    event StakeRemoved(address indexed user, uint256 amount);
     modifier onlyUser(address user) {
         require(
             msg.sender == user,
@@ -173,6 +173,29 @@ contract Lara is Ownable {
             delegatedAmounts[msg.sender] += amount;
         } catch {
             revert("Cancel undelegate failed");
+        }
+    }
+
+    function removeStake(uint256 amount) public {
+        require(
+            stakedAmounts[msg.sender] >= amount,
+            "Amount exceeds the user's stake"
+        );
+        require(
+            stTaraToken.allowance(msg.sender, address(this)) >= amount,
+            "Amount not approved for unstaking"
+        );
+        try stTaraToken.transferFrom(msg.sender, address(this), amount) {
+            try stTaraToken.burn(address(this), amount) {
+                stakedAmounts[msg.sender] -= amount;
+                payable(msg.sender).transfer(amount);
+                emit StakeRemoved(msg.sender, amount);
+                emit TaraSent(msg.sender, amount, block.number);
+            } catch {
+                revert("Burn failed");
+            }
+        } catch {
+            revert("TransferFrom failed");
         }
     }
 
