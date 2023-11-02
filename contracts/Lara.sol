@@ -251,8 +251,6 @@ contract Lara is Ownable {
         uint256 totalEpochDelegation = 0;
         for (uint32 i = 0; i < delegators.length; i++) {
             delegateStakeOfUser(delegators[i]);
-        }
-        for (uint32 i = 0; i < delegators.length; i++) {
             totalEpochDelegation += delegatedAmounts[delegators[i]];
         }
         lastEpochTotalDelegatedAmount = totalEpochDelegation;
