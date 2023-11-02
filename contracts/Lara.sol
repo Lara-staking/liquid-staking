@@ -30,6 +30,7 @@ contract Lara is Ownable {
         address indexed validator,
         uint256 amount
     );
+    event TaraSent(address indexed user, uint256 amount, uint256 blockNumber);
 
     modifier onlyUser(address user) {
         require(
@@ -135,6 +136,11 @@ contract Lara is Ownable {
             uint256 balanceAfter = address(this).balance;
             // we need to send the rewards to the user
             payable(msg.sender).transfer(balanceAfter - balanceBefore);
+            emit TaraSent(
+                msg.sender,
+                balanceAfter - balanceBefore,
+                block.number
+            );
         } catch {
             revert("Confirm undelegate failed");
         }
@@ -209,6 +215,11 @@ contract Lara is Ownable {
                             balanceAfter - balanceBefore,
                             block.timestamp
                         );
+                        emit TaraSent(
+                            msg.sender,
+                            balanceAfter - balanceBefore,
+                            block.number
+                        );
                     } catch {
                         revert("Undelegation failed");
                     }
@@ -228,6 +239,7 @@ contract Lara is Ownable {
         claimableRewards[msg.sender] = 0;
         payable(msg.sender).transfer(amount);
         emit RewardsClaimed(msg.sender, amount, block.timestamp);
+        emit TaraSent(msg.sender, amount, block.number);
     }
 
     function delegateStakeOfUser(address user) private onlyOwner {
