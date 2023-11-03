@@ -165,13 +165,19 @@ contract Lara is Ownable {
     }
 
     function cancelUndelegate(address validator, uint256 amount) public {
+        require(!isEpochRunning, "Cannot undelegate during staking epoch");
         require(
             undelegated[msg.sender] >= amount,
             "Msg.sender has not undelegated the amount"
         );
         try dposContract.cancelUndelegate(validator) {
-            undelegated[msg.sender] -= amount;
-            delegatedAmounts[msg.sender] += amount;
+            try stTaraToken.mint(msg.sender, amount) {
+                undelegated[msg.sender] -= amount;
+                delegatedAmounts[msg.sender] += amount;
+                protocolTotalStakeAtValidator[validator] += amount;
+            } catch {
+                revert("stTARA Mint failed");
+            }
         } catch {
             revert("Cancel undelegate failed");
         }
@@ -199,6 +205,8 @@ contract Lara is Ownable {
             revert("TransferFrom failed");
         }
     }
+
+    event ProtocolDelegation(address validator, uint256 amount);
 
     function requestUndelegate(uint256 amount) public {
         require(!isEpochRunning, "Cannot undelegate during staking epoch");
@@ -231,6 +239,10 @@ contract Lara is Ownable {
                     } else {
                         toUndelegate = amount;
                     }
+                    emit ProtocolDelegation(
+                        validatorsWithDelegation[i],
+                        toUndelegate
+                    );
                     uint256 balanceBefore = address(this).balance;
                     try
                         dposContract.undelegate(
@@ -265,6 +277,11 @@ contract Lara is Ownable {
                         revert("Undelegation failed");
                     }
                 }
+                require(
+                    undelegatedTotal == amount,
+                    "Cannot undelegate full amount"
+                );
+                undelegated[msg.sender] += undelegatedTotal;
             } catch {
                 revert("Burn failed");
             }

@@ -228,8 +228,8 @@ contract UndelegateTest is Test, TestSetup {
         // staker stakes
 
         vm.prank(staker);
-        vm.deal(staker, amount);
-        lara.stake{value: amount}(amount);
+        vm.deal(staker, amount + 1 ether);
+        lara.stake{value: amount + 1 ether}(amount + 1 ether);
 
         // reward epoch starts
         lara.startEpoch();
@@ -277,6 +277,46 @@ contract UndelegateTest is Test, TestSetup {
             stTaraBalanceAfter,
             "Wrong stTARA balance after claim"
         );
+
+        // staker cancels undelegate
+
+        address delegatedToValidator = address(
+            0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf
+        );
+
+        uint256 totalDposStakeValdiatorZero = mockDpos
+            .getValidator(delegatedToValidator)
+            .total_stake;
+
+        vm.prank(staker);
+        lara.cancelUndelegate(delegatedToValidator, amount);
+
+        assertEq(
+            mockDpos.getValidator(delegatedToValidator).total_stake,
+            totalDposStakeValdiatorZero + amount,
+            "Wrong total stake for validator 0 after undelegate cancel"
+        );
+
+        // new epoch starts
+        lara.startEpoch();
+
+        vm.warp(1000);
+
+        lara.endEpoch();
+
+        // staker unstakes
+        vm.prank(staker);
+        stTaraToken.approve(address(lara), amount);
+        vm.prank(staker);
+        lara.requestUndelegate(amount);
+
+        // new epoch starts
+        lara.startEpoch();
+
+        // staker tries to cancel undelegate
+        vm.prank(staker);
+        vm.expectRevert("Cannot undelegate during staking epoch");
+        lara.cancelUndelegate(delegatedToValidator, amount);
     }
 
     function invariant_testFuzz_singleStakeAndUnstake() public {
