@@ -4,42 +4,14 @@ pragma solidity 0.8.17;
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IstTara} from "./interfaces/IstTara.sol";
+import {ILara} from "./interfaces/ILara.sol";
 import {DposInterface} from "./interfaces/IDPOS.sol";
 import {IApyOracle} from "./interfaces/IApyOracle.sol";
 import {INodeContinuityOracle} from "./interfaces/INodeContinuityOracle.sol";
 
 import {RewardClaimFailed, StakeAmountTooLow, StakeValueTooLow, DelegationFailed} from "./errors/SharedErrors.sol";
 
-contract Lara is Ownable {
-    // Events
-    event Staked(address indexed user, uint256 amount);
-    event Delegated(address indexed user, uint256 amount);
-    event EpochStarted(uint256 totalEpochDelegation, uint256 timestamp);
-    event RewardsClaimed(
-        address indexed user,
-        uint256 amount,
-        uint256 timestamp
-    );
-    event EpochEnded(
-        uint256 totalEpochDelegation,
-        uint256 totalEpochReward,
-        uint256 timestamp
-    );
-    event Undelegated(
-        address indexed user,
-        address indexed validator,
-        uint256 amount
-    );
-    event TaraSent(address indexed user, uint256 amount, uint256 blockNumber);
-    event StakeRemoved(address indexed user, uint256 amount);
-    modifier onlyUser(address user) {
-        require(
-            msg.sender == user,
-            "Invalid set: you can set compounding only for yourself"
-        );
-        _;
-    }
-
+contract Lara is Ownable, ILara {
     // State variables
 
     // Reference timestamp for computing epoch number
@@ -63,15 +35,33 @@ contract Lara is Ownable {
     // APY oracle contract
     IApyOracle public apyOracle;
 
+    // List of delegators of the protocol
     address[] public delegators;
+    // List of validators of the protocol
     address[] public validators;
+
+    // Mapping of the total stake at a validator
     mapping(address => uint256) public protocolTotalStakeAtValidator;
+
+    // Mapping of the compounding status of a user
     mapping(address => bool) public isCompounding;
-    mapping(address => uint256) public stakedAmounts; //=> 1000 TARA => 0 TARA => 1000 TARA => 0 TARA => 28 TARA
-    mapping(address => uint256) public delegatedAmounts; //=> 1000 TARA => 2000 TARA => 2028 TARA
-    mapping(address => uint256) public claimableRewards; //=> 14 TARA => 0 TARA => 28 TARA => 0 TARA
+
+    // Mapping of the staked but not yet delegated amount of a user
+    mapping(address => uint256) public stakedAmounts;
+
+    // Mapping of the delegated amount of a user
+    mapping(address => uint256) public delegatedAmounts;
+
+    // Mapping of the claimable rewards of a user
+    mapping(address => uint256) public claimableRewards;
+
+    // Mapping of the undelegated amount of a user
     mapping(address => uint256) public undelegated;
+
+    // State variable for storing the last epoch's total delegated amount
     uint256 public lastEpochTotalDelegatedAmount = 0;
+
+    // State variable for storing a blocker bool value for the epoch runs
     bool public isEpochRunning = false;
 
     constructor(
@@ -88,8 +78,31 @@ contract Lara is Ownable {
 
     receive() external payable {}
 
+    // Modifier for checking if the caller the address in the parameter
+    modifier onlyUser(address user) {
+        require(
+            msg.sender == user,
+            "Invalid set: you can set compounding only for yourself"
+        );
+        _;
+    }
+
+    /**
+     * @notice Getter for a certain delegator at a certain index
+     * @param index the index of the delegator
+     */
     function getDelegatorAtIndex(uint256 index) public view returns (address) {
         return delegators[index];
+    }
+
+    /**
+     * Checks if a validator is registered in the protocol
+     * @param validator the validator address
+     */
+    function isValidatorRegistered(
+        address validator
+    ) public view returns (bool) {
+        return protocolTotalStakeAtValidator[validator] > 0;
     }
 
     /**
@@ -109,6 +122,31 @@ contract Lara is Ownable {
         isCompounding[user] = value;
     }
 
+    /**
+     * @notice onlyOwner Setter for maxValidatorStakeCapacity
+     * @param _maxValidatorStakeCapacity new maxValidatorStakeCapacity
+     */
+    function setMaxValidatorStakeCapacity(
+        uint256 _maxValidatorStakeCapacity
+    ) external onlyOwner {
+        maxValidatorStakeCapacity = _maxValidatorStakeCapacity;
+    }
+
+    /**
+     * @notice onlyOwner Setter for minStakeAmount
+     * @param _minStakeAmount the new minStakeAmount
+     */
+    function setMinStakeAmount(uint256 _minStakeAmount) external onlyOwner {
+        minStakeAmount = _minStakeAmount;
+    }
+
+    /**
+     * @notice Stake function
+     * In the stake function, the user sends the amount of TARA tokens he wants to stake.
+     * This method takes the payment and mints the stTARA tokens to the user.
+     * @notice The tokens are not DELEGATED INSTANTLY, but on the next epoch.
+     * @param amount the amount to stake
+     */
     function stake(uint256 amount) public payable {
         if (amount < minStakeAmount)
             revert StakeAmountTooLow(amount, minStakeAmount);
@@ -126,6 +164,14 @@ contract Lara is Ownable {
         emit Staked(msg.sender, amount);
     }
 
+    /**
+     * ReDelegate method to move stake from one validator to another inside the protocol.
+     * The method is intended to be called by the protocol owner on a need basis.
+     * In this V0 there is no on-chain trigger or management function for this, will be triggere from outside.
+     * @param from the validator from which to move stake
+     * @param to the validator to which to move stake
+     * @param amount the amount to move
+     */
     function reDelegate(
         address from,
         address to,
@@ -147,6 +193,13 @@ contract Lara is Ownable {
         }
     }
 
+    /**
+     * Confirm undelegate method to confirm the undelegation of a user from a certain validator.
+     * Will fail if called before the undelegation period is over.
+     * @param validator the validator from which to undelegate
+     * @param amount the amount to undelegate
+     * @notice msg.sender is the delegator
+     */
     function confirmUndelegate(address validator, uint256 amount) public {
         require(
             undelegated[msg.sender] >= amount,
@@ -168,6 +221,12 @@ contract Lara is Ownable {
         }
     }
 
+    /**
+     * Cancel undelegate method to cancel the undelegation of a user from a certain validator.
+     * The undelegated value will be returned to the origin validator.
+     * @param validator the validator from which to undelegate
+     * @param amount the amount to undelegate
+     */
     function cancelUndelegate(address validator, uint256 amount) public {
         require(!isEpochRunning, "Cannot undelegate during staking epoch");
         require(
@@ -187,6 +246,12 @@ contract Lara is Ownable {
         }
     }
 
+    /**
+     * Removes the stake of a user from the protocol.
+     * @notice reverts on missing approval for the amount.
+     * The user needs to provide the amount of stTARA tokens he wants to get back as TARA
+     * @param amount the amount of stTARA tokens to remove
+     */
     function removeStake(uint256 amount) public {
         require(
             stakedAmounts[msg.sender] >= amount,
@@ -210,12 +275,12 @@ contract Lara is Ownable {
         }
     }
 
-    event ProtocolUnstakeCheck(
-        address validator,
-        uint256 amount,
-        uint256 total
-    );
-
+    /**
+     * Undelegates the amount from one or more validators.
+     * The user needs to provide the amount of stTARA tokens he wants to undelegate. The protocol will burn them.
+     * @notice reverts on missing approval for the amount.
+     * @param amount the amount of tokens to undelegate
+     */
     function requestUndelegate(uint256 amount) public {
         require(!isEpochRunning, "Cannot undelegate during staking epoch");
         // check if the amount is approved in stTara for the protocol
@@ -237,13 +302,6 @@ contract Lara is Ownable {
                     );
                 for (uint16 i = 0; i < validatorsWithDelegation.length; i++) {
                     uint256 toUndelegate = 0;
-                    emit ProtocolUnstakeCheck(
-                        validatorsWithDelegation[i],
-                        protocolTotalStakeAtValidator[
-                            validatorsWithDelegation[i]
-                        ],
-                        maxValidatorStakeCapacity
-                    );
                     require(
                         protocolTotalStakeAtValidator[
                             validatorsWithDelegation[i]
@@ -292,11 +350,6 @@ contract Lara is Ownable {
                             balanceAfter - balanceBefore,
                             block.number
                         );
-                        emit ProtocolUnstakeCheck(
-                            validatorsWithDelegation[i],
-                            undelegatedTotal,
-                            remainingAmount
-                        );
                         if (undelegatedTotal == amount) break;
                     } catch {
                         revert("Undelegation failed");
@@ -315,6 +368,11 @@ contract Lara is Ownable {
         }
     }
 
+    /**
+     * Public method for claiming rewards.
+     * The user can claim his rewards at any time but if there is an epoch running, he will only get the rewards from the last epoch.
+     * Pays rewards in TARA.
+     */
     function claimRewards() public {
         uint256 amount = claimableRewards[msg.sender];
         require(amount > 0, "No rewards to claim");
@@ -325,6 +383,10 @@ contract Lara is Ownable {
         emit TaraSent(msg.sender, amount, block.number);
     }
 
+    /**
+     * Private method for delegating the stake of a user to the validators.
+     * @param user the user for which to delegate
+     */
     function delegateStakeOfUser(address user) private onlyOwner {
         uint256 amount = stakedAmounts[user];
         if (isCompounding[user]) {
@@ -342,6 +404,9 @@ contract Lara is Ownable {
         emit Delegated(user, diffDelegated);
     }
 
+    /**
+     * @notice OnlyOwner method for starting a staking epoch.
+     */
     function startEpoch() external onlyOwner {
         uint256 totalEpochDelegation = 0;
         for (uint32 i = 0; i < delegators.length; i++) {
@@ -356,6 +421,9 @@ contract Lara is Ownable {
         emit EpochStarted(totalEpochDelegation, block.timestamp);
     }
 
+    /**
+     * @notice OnlyOwner method for ending a staking epoch.
+     */
     function endEpoch() public onlyOwner {
         uint256 balanceBefore = address(this).balance;
         uint32 batch = 1;
@@ -424,12 +492,6 @@ contract Lara is Ownable {
         return amount - delegatedAmount;
     }
 
-    function isValidatorRegistered(
-        address validator
-    ) public view returns (bool) {
-        return protocolTotalStakeAtValidator[validator] > 0;
-    }
-
     function findValidatorsWithDelegation(
         uint256 amount
     ) private view returns (address[] memory) {
@@ -451,15 +513,5 @@ contract Lara is Ownable {
             result[i] = validators[i];
         }
         return result;
-    }
-
-    function setMaxValidatorStakeCapacity(
-        uint256 _maxValidatorStakeCapacity
-    ) external onlyOwner {
-        maxValidatorStakeCapacity = _maxValidatorStakeCapacity;
-    }
-
-    function setMinStakeAmount(uint256 _minStakeAmount) external onlyOwner {
-        minStakeAmount = _minStakeAmount;
     }
 }
