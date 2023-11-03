@@ -6,7 +6,7 @@ import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "hardhat-contract-sizer";
 import "@nomicfoundation/hardhat-foundry";
-import "solidity-coverage";
+import "solidity-docgen";
 import { ethers } from "ethers";
 dotenv.config();
 
@@ -109,6 +109,10 @@ const config: HardhatUserConfig = {
   typechain: {
     outDir: "typechain",
     target: "ethers-v6",
+  },
+  docgen: {
+    outputDir: "./docs",
+    exclude: ["./contracts/mocks", "./contracts/test"],
   },
 };
 
