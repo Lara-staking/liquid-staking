@@ -242,7 +242,22 @@ contract MockDpos is MockIDPOS {
             "Only delegator can cancel undelegate"
         );
         delete undelegations[msg.sender];
-        validators[validator].info.total_stake += undelegation.amount;
+        if (validators[validator].account == address(0)) {
+            // we need to readd the validator
+            MockIDPOS.ValidatorBasicInfo memory info = MockIDPOS
+                .ValidatorBasicInfo(
+                    undelegation.amount,
+                    0,
+                    100,
+                    uint64(block.number),
+                    msg.sender,
+                    "Sample description",
+                    "https://endpoint.some"
+                );
+            validators[validator] = MockIDPOS.ValidatorData(validator, info);
+        } else {
+            validators[validator].info.total_stake += undelegation.amount;
+        }
         emit UndelegateCanceled(msg.sender, validator, undelegation.amount);
     }
 }

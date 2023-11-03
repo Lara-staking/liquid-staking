@@ -135,6 +135,10 @@ contract Lara is Ownable {
             protocolTotalStakeAtValidator[from] >= amount,
             "Amount exceeds the total stake at the validator"
         );
+        require(
+            amount <= maxValidatorStakeCapacity,
+            "Amount exceeds max stake of validators in protocol"
+        );
         try dposContract.reDelegate(from, to, amount) {
             protocolTotalStakeAtValidator[from] -= amount;
             protocolTotalStakeAtValidator[to] += amount;
@@ -206,7 +210,11 @@ contract Lara is Ownable {
         }
     }
 
-    event ProtocolDelegation(address validator, uint256 amount);
+    event ProtocolUnstakeCheck(
+        address validator,
+        uint256 amount,
+        uint256 total
+    );
 
     function requestUndelegate(uint256 amount) public {
         require(!isEpochRunning, "Cannot undelegate during staking epoch");
@@ -221,6 +229,7 @@ contract Lara is Ownable {
         // get the stTARA tokens and burn them
         try stTaraToken.transferFrom(msg.sender, address(this), amount) {
             try stTaraToken.burn(address(this), amount) {
+                uint256 remainingAmount = amount;
                 uint256 undelegatedTotal = 0;
                 address[]
                     memory validatorsWithDelegation = findValidatorsWithDelegation(
@@ -228,21 +237,30 @@ contract Lara is Ownable {
                     );
                 for (uint16 i = 0; i < validatorsWithDelegation.length; i++) {
                     uint256 toUndelegate = 0;
+                    emit ProtocolUnstakeCheck(
+                        validatorsWithDelegation[i],
+                        protocolTotalStakeAtValidator[
+                            validatorsWithDelegation[i]
+                        ],
+                        maxValidatorStakeCapacity
+                    );
+                    require(
+                        protocolTotalStakeAtValidator[
+                            validatorsWithDelegation[i]
+                        ] <= maxValidatorStakeCapacity,
+                        "Validator is not at max capacity"
+                    );
                     if (
                         protocolTotalStakeAtValidator[
                             validatorsWithDelegation[i]
-                        ] < amount
+                        ] < remainingAmount
                     ) {
                         toUndelegate = protocolTotalStakeAtValidator[
                             validatorsWithDelegation[i]
                         ];
                     } else {
-                        toUndelegate = amount;
+                        toUndelegate = remainingAmount;
                     }
-                    emit ProtocolDelegation(
-                        validatorsWithDelegation[i],
-                        toUndelegate
-                    );
                     uint256 balanceBefore = address(this).balance;
                     try
                         dposContract.undelegate(
@@ -252,6 +270,7 @@ contract Lara is Ownable {
                     {
                         delegatedAmounts[msg.sender] -= toUndelegate;
                         undelegatedTotal += toUndelegate;
+                        remainingAmount -= toUndelegate;
                         uint256 balanceAfter = address(this).balance;
 
                         // we need to send the rewards to the user
@@ -273,6 +292,12 @@ contract Lara is Ownable {
                             balanceAfter - balanceBefore,
                             block.number
                         );
+                        emit ProtocolUnstakeCheck(
+                            validatorsWithDelegation[i],
+                            undelegatedTotal,
+                            remainingAmount
+                        );
+                        if (undelegatedTotal == amount) break;
                     } catch {
                         revert("Undelegation failed");
                     }
@@ -409,13 +434,16 @@ contract Lara is Ownable {
         uint256 amount
     ) private view returns (address[] memory) {
         uint8 count = 0;
-        uint256 stakeRequired = 0;
+        uint256 stakeRequired = amount;
         for (uint256 i = 0; i < validators.length; i++) {
-            if (stakeRequired <= amount) {
-                count++;
-                stakeRequired += protocolTotalStakeAtValidator[validators[i]];
-            } else {
+            count++;
+            if (
+                stakeRequired <= 0 ||
+                stakeRequired <= protocolTotalStakeAtValidator[validators[i]]
+            ) {
                 break;
+            } else {
+                stakeRequired -= protocolTotalStakeAtValidator[validators[i]];
             }
         }
         address[] memory result = new address[](count);
