@@ -134,4 +134,10 @@ interface MockIDPOS {
         address validator_to,
         uint256 amount
     ) external;
+
+    // Confirms undelegate request
+    function confirmUndelegate(address validator) external;
+
+    // Cancel undelegate request
+    function cancelUndelegate(address validator) external;
 }

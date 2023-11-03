@@ -72,6 +72,7 @@ contract Lara is Ownable {
     mapping(address => uint256) public claimableRewards; //=> 14 TARA => 0 TARA => 28 TARA => 0 TARA
     mapping(address => uint256) public undelegated;
     uint256 public lastEpochTotalDelegatedAmount = 0;
+    bool public isEpochRunning = false;
 
     constructor(
         address _sttaraToken,
@@ -200,13 +201,13 @@ contract Lara is Ownable {
     }
 
     function requestUndelegate(uint256 amount) public {
+        require(!isEpochRunning, "Cannot undelegate during staking epoch");
         // check if the amount is approved in stTara for the protocol
         require(
             stTaraToken.allowance(msg.sender, address(this)) >= amount,
             "Amount not approved for unstaking"
         );
         uint256 userDelegation = delegatedAmounts[msg.sender];
-        require(userDelegation > 0, "No delegations found for the user");
         require(userDelegation >= amount, "Amount exceeds user's delegation");
 
         // get the stTARA tokens and burn them
@@ -217,7 +218,7 @@ contract Lara is Ownable {
                     memory validatorsWithDelegation = findValidatorsWithDelegation(
                         amount
                     );
-                for (uint16 i = 0; i <= validatorsWithDelegation.length; i++) {
+                for (uint16 i = 0; i < validatorsWithDelegation.length; i++) {
                     uint256 toUndelegate = 0;
                     if (
                         protocolTotalStakeAtValidator[
@@ -309,6 +310,7 @@ contract Lara is Ownable {
         if (protocolStartTimestamp == 0) {
             protocolStartTimestamp = block.timestamp;
         }
+        isEpochRunning = true;
         emit EpochStarted(totalEpochDelegation, block.timestamp);
     }
 
@@ -341,6 +343,7 @@ contract Lara is Ownable {
             totalSplitRewards <= rewards,
             "Total split rewards exceed total rewards"
         );
+        isEpochRunning = false;
         emit EpochEnded(
             lastEpochTotalDelegatedAmount,
             rewards,

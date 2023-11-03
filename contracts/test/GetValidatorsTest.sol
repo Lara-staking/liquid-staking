@@ -11,7 +11,7 @@ import "../stTara.sol";
 import "./SetUpTestLotsOfValidators.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../errors/SharedErrors.sol";
 
-contract LaraTest is Test, ManyValidatorsTestSetup {
+contract GetValidatorsTest is Test, ManyValidatorsTestSetup {
     function setUp() public {
         super.setupValidators();
         super.setupApyOracle();

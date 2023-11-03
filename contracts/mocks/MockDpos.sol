@@ -5,8 +5,17 @@ pragma solidity 0.8.17;
 import "./MockIDPOS.sol";
 
 contract MockDpos is MockIDPOS {
+    struct Undelegation {
+        address delegator;
+        uint256 amount;
+        uint256 blockNumberClaimable;
+    }
+
     mapping(address => MockIDPOS.ValidatorData) public validators;
     MockIDPOS.ValidatorData[] validatorDatas;
+    mapping(address => Undelegation) public undelegations;
+
+    uint256 public constant UNDELEGATION_DELAY_BLOCKS = 5000;
 
     constructor(address[] memory _internalValidators) payable {
         for (uint256 i = 0; i < _internalValidators.length; ++i) {
@@ -149,8 +158,22 @@ contract MockDpos is MockIDPOS {
             validators[validator].account != address(0),
             "Validator doesn't exist"
         );
-        delete validators[validator];
-        payable(msg.sender).transfer(amount / validatorDatas.length);
+        uint256 totalStake = validators[validator].info.total_stake;
+        if (totalStake < amount) {
+            revert("Validator has less stake than requested");
+        }
+        if (totalStake == amount) {
+            delete validators[validator];
+        } else {
+            validators[validator].info.total_stake -= amount;
+        }
+        undelegations[validator] = Undelegation({
+            delegator: msg.sender,
+            amount: amount,
+            blockNumberClaimable: block.number + UNDELEGATION_DELAY_BLOCKS
+        });
+        // simulate rewards
+        payable(msg.sender).transfer(333 ether);
         emit Undelegated(msg.sender, validator, amount);
     }
 
@@ -190,5 +213,33 @@ contract MockDpos is MockIDPOS {
         validators[validator_from].info.total_stake -= amount;
         validators[validator_to].info.total_stake += amount;
         emit Redelegated(msg.sender, validator_from, validator_to, amount);
+    }
+
+    // Confirms undelegate request
+    function confirmUndelegate(address validator) external {
+        Undelegation memory undelegation = undelegations[validator];
+        require(
+            undelegation.delegator == msg.sender,
+            "Only delegator can confirm undelegate"
+        );
+        require(
+            undelegation.blockNumberClaimable <= block.number,
+            "Undelegation not yet claimable"
+        );
+        delete undelegations[validator];
+        payable(msg.sender).transfer(undelegation.amount);
+        emit UndelegateConfirmed(msg.sender, validator, undelegation.amount);
+    }
+
+    // Cancel undelegate request
+    function cancelUndelegate(address validator) external {
+        Undelegation memory undelegation = undelegations[validator];
+        require(
+            undelegation.delegator == msg.sender,
+            "Only delegator can cancel undelegate"
+        );
+        delete undelegations[validator];
+        validators[validator].info.total_stake += undelegation.amount;
+        emit UndelegateCanceled(msg.sender, validator, undelegation.amount);
     }
 }

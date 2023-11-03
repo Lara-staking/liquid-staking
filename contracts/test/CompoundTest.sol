@@ -11,7 +11,7 @@ import "../stTara.sol";
 import "./SetUpTest.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../errors/SharedErrors.sol";
 
-contract LaraTest is Test, TestSetup {
+contract CompoundTest is Test, TestSetup {
     address staker0 = address(this);
     address staker1 = address(333);
     address staker2 = address(444);
