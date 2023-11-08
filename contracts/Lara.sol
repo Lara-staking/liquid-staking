@@ -64,14 +64,20 @@ contract Lara is Ownable, ILara {
     // State variable for storing a blocker bool value for the epoch runs
     bool public isEpochRunning = false;
 
+    uint256 public commission = 0;
+
+    address public treasuryAddress = address(0);
+
     constructor(
         address _sttaraToken,
         address _dposContract,
-        address _apyOracle
+        address _apyOracle,
+        address _treasuryAddress
     ) {
         stTaraToken = IstTara(_sttaraToken);
         dposContract = DposInterface(_dposContract);
         apyOracle = IApyOracle(_apyOracle);
+        treasuryAddress = _treasuryAddress;
     }
 
     fallback() external payable {}
@@ -114,12 +120,31 @@ contract Lara is Ownable, ILara {
     }
 
     /**
+     * @notice Setter for commission
+     * @param _commission new commission
+     */
+    function setCommission(uint256 _commission) public onlyOwner {
+        commission = _commission;
+        emit CommissionChanged(_commission);
+    }
+
+    /**
+     * @notice Setter for treasuryAddress
+     * @param _treasuryAddress new treasuryAddress
+     */
+    function setTreasuryAddress(address _treasuryAddress) public onlyOwner {
+        treasuryAddress = _treasuryAddress;
+        emit TreasuryChanged(_treasuryAddress);
+    }
+
+    /**
      * @notice Setter for compounding
      * @param user the user for which to set compounding
      * @param value the new value for compounding(T/F)
      */
     function setCompound(address user, bool value) public onlyUser(user) {
         isCompounding[user] = value;
+        emit CompoundChanged(user, value);
     }
 
     /**
@@ -210,12 +235,20 @@ contract Lara is Ownable, ILara {
             undelegated[msg.sender] -= amount;
             uint256 balanceAfter = address(this).balance;
             // we need to send the rewards to the user
-            payable(msg.sender).transfer(balanceAfter - balanceBefore);
+            uint256 claimCommission = ((balanceAfter - balanceBefore) *
+                commission) / 100;
+            payable(msg.sender).transfer(
+                balanceAfter - balanceBefore - claimCommission
+            );
             emit TaraSent(
                 msg.sender,
-                balanceAfter - balanceBefore,
+                balanceAfter - balanceBefore - claimCommission,
                 block.number
             );
+            if (claimCommission > 0) {
+                payable(treasuryAddress).transfer(claimCommission);
+                emit CommissionWithdrawn(msg.sender, claimCommission);
+            }
         } catch {
             revert("Confirm undelegate failed");
         }
@@ -331,9 +364,11 @@ contract Lara is Ownable, ILara {
                         remainingAmount -= toUndelegate;
                         uint256 balanceAfter = address(this).balance;
 
+                        uint256 totalCommissions = ((balanceAfter -
+                            balanceBefore) * commission) / 100;
                         // we need to send the rewards to the user
                         payable(msg.sender).transfer(
-                            balanceAfter - balanceBefore
+                            balanceAfter - balanceBefore - totalCommissions
                         );
                         emit Undelegated(
                             msg.sender,
@@ -342,14 +377,21 @@ contract Lara is Ownable, ILara {
                         );
                         emit RewardsClaimed(
                             msg.sender,
-                            balanceAfter - balanceBefore,
+                            balanceAfter - balanceBefore - totalCommissions,
                             block.timestamp
                         );
                         emit TaraSent(
                             msg.sender,
-                            balanceAfter - balanceBefore,
+                            balanceAfter - balanceBefore - totalCommissions,
                             block.number
                         );
+                        if (totalCommissions > 0) {
+                            payable(treasuryAddress).transfer(totalCommissions);
+                            emit CommissionWithdrawn(
+                                msg.sender,
+                                totalCommissions
+                            );
+                        }
                         if (undelegatedTotal == amount) break;
                     } catch {
                         revert("Undelegation failed");
@@ -378,9 +420,18 @@ contract Lara is Ownable, ILara {
         require(amount > 0, "No rewards to claim");
         require(address(this).balance >= amount, "Not enough balance to claim");
         claimableRewards[msg.sender] = 0;
-        payable(msg.sender).transfer(amount);
-        emit RewardsClaimed(msg.sender, amount, block.timestamp);
-        emit TaraSent(msg.sender, amount, block.number);
+        uint256 totalCommissions = (amount * commission) / 100;
+        payable(msg.sender).transfer(amount - totalCommissions);
+        emit RewardsClaimed(
+            msg.sender,
+            amount - totalCommissions,
+            block.timestamp
+        );
+        emit TaraSent(msg.sender, amount - totalCommissions, block.number);
+        if (totalCommissions > 0) {
+            payable(treasuryAddress).transfer(totalCommissions);
+            emit CommissionWithdrawn(msg.sender, totalCommissions);
+        }
     }
 
     /**

@@ -18,6 +18,7 @@ contract ApyOracle is IApyOracle {
     uint256 public nodeCount;
     address[] public nodesList;
     mapping(address => IApyOracle.NodeData) public nodes;
+    
 
     modifier OnlyDataFeed() {
         require(

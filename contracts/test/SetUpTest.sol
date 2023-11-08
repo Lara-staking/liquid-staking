@@ -16,6 +16,8 @@ abstract contract TestSetup is Test {
     MockDpos mockDpos;
     stTARA stTaraToken;
 
+    address treasuryAddress = address(9999);
+
     uint16 numValidators = 12;
 
     address[] validators = new address[](numValidators);
@@ -74,9 +76,22 @@ abstract contract TestSetup is Test {
         lara = new Lara(
             address(stTaraToken),
             address(mockDpos),
-            address(mockApyOracle)
+            address(mockApyOracle),
+            treasuryAddress
         );
         stTaraToken.setLaraAddress(address(lara));
+    }
+
+    function setupLaraWithCommission(uint256 commission) public {
+        stTaraToken = new stTARA();
+        lara = new Lara(
+            address(stTaraToken),
+            address(mockDpos),
+            address(mockApyOracle),
+            treasuryAddress
+        );
+        stTaraToken.setLaraAddress(address(lara));
+        lara.setCommission(commission);
     }
 
     function checkValidatorTotalStakesAreZero() public {

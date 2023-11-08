@@ -22,6 +22,10 @@ interface ILara {
     );
     event TaraSent(address indexed user, uint256 amount, uint256 blockNumber);
     event StakeRemoved(address indexed user, uint256 amount);
+    event CommissionWithdrawn(address indexed user, uint256 amount);
+    event CompoundChanged(address indexed user, bool value);
+    event CommissionChanged(uint256 newCommission);
+    event TreasuryChanged(address indexed newTreasury);
 
     function getDelegatorAtIndex(uint256 index) external view returns (address);
 

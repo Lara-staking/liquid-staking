@@ -16,6 +16,7 @@ abstract contract ManyValidatorsTestSetup is Test {
     MockDpos mockDpos;
     stTARA stTaraToken;
 
+    address treasuryAddress = address(9999);
     uint16 numValidators = 1800;
 
     address[] public validators = new address[](numValidators);
@@ -78,7 +79,8 @@ abstract contract ManyValidatorsTestSetup is Test {
         lara = new Lara(
             address(stTaraToken),
             address(mockDpos),
-            address(mockApyOracle)
+            address(mockApyOracle),
+            treasuryAddress
         );
         stTaraToken.setLaraAddress(address(lara));
     }
