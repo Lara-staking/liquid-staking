@@ -323,8 +323,7 @@ contract CommissionTest is Test, TestSetup {
         vm.prank(staker2);
         lara.claimRewards();
         balanceOfStakerAfter = address(staker2).balance;
-        uint256 balanceOfTreasuryAfterSecondClaim = address(treasuryAddress)
-            .balance;
+        balanceOfStakerAfter = address(treasuryAddress).balance;
 
         uint256 expectedCommission = (expectedRewardStaker2 *
             2 *
@@ -340,7 +339,7 @@ contract CommissionTest is Test, TestSetup {
 
         // check the treasury balance
         assertApproxEqRel(
-            balanceOfTreasuryAfterSecondClaim,
+            balanceOfStakerAfter,
             commission + expectedCommission,
             0.125e18,
             "Treasury should have received all commissions"

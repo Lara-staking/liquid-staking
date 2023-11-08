@@ -42,7 +42,8 @@ describe(ContractNames.lara, function () {
     lara = await deployLara(
       await stTara.getAddress(),
       await mockDpos.getAddress(),
-      await apyOracle.getAddress()
+      await apyOracle.getAddress(),
+      ethers.Wallet.createRandom().address
     );
     await stTara.setLaraAddress(await lara.getAddress());
     v1InitialTotalStake = (await mockDpos.getValidator(v1.address)).total_stake;
