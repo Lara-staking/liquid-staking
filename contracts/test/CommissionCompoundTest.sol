@@ -242,7 +242,7 @@ contract CommissionTest is Test, TestSetup {
 
         // staker1 turns auto-compound on
         vm.prank(staker1);
-        lara.setCompound(staker1, true);
+        lara.setCompound(true);
 
         // new epoch starts
         lara.startEpoch();

@@ -35,7 +35,7 @@ interface ILara {
 
     function setEpochDuration(uint256 _epochDuration) external;
 
-    function setCompound(address user, bool value) external;
+    function setCompound(bool value) external;
 
     function setMaxValidatorStakeCapacity(
         uint256 _maxValidatorStakeCapacity

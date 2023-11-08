@@ -84,15 +84,6 @@ contract Lara is Ownable, ILara {
 
     receive() external payable {}
 
-    // Modifier for checking if the caller the address in the parameter
-    modifier onlyUser(address user) {
-        require(
-            msg.sender == user,
-            "Invalid set: you can set compounding only for yourself"
-        );
-        _;
-    }
-
     /**
      * @notice Getter for a certain delegator at a certain index
      * @param index the index of the delegator
@@ -139,12 +130,11 @@ contract Lara is Ownable, ILara {
 
     /**
      * @notice Setter for compounding
-     * @param user the user for which to set compounding
      * @param value the new value for compounding(T/F)
      */
-    function setCompound(address user, bool value) public onlyUser(user) {
-        isCompounding[user] = value;
-        emit CompoundChanged(user, value);
+    function setCompound(bool value) public {
+        isCompounding[msg.sender] = value;
+        emit CompoundChanged(msg.sender, value);
     }
 
     /**
