@@ -249,9 +249,12 @@ contract UndelegateTest is Test, TestSetup {
         lara.requestUndelegate(amount);
 
         uint256 remainder = amount;
-        uint256[] memory undelegationPortions = new uint256[](
-            amount / 80000000 ether + 1
-        );
+        uint8 undelegations = 0;
+        if (amount % 80000000 ether > 0) {
+            undelegations = 1;
+        }
+        undelegations += uint8(amount / 80000000 ether);
+        uint256[] memory undelegationPortions = new uint256[](undelegations);
         for (uint256 i = 0; i < undelegationPortions.length; i++) {
             if ((remainder / 80000000 ether) > 0) {
                 undelegationPortions[i] = 80000000 ether;
