@@ -192,7 +192,7 @@ contract CommissionTest is Test, TestSetup {
     }
 
     // now we launch a second epoch without compound being set
-    function test_launchNextEpoch() public {
+    function test_commission_launchNextEpoch() public {
         // staker 1 stakes 100000 ether
         vm.prank(staker1);
         vm.deal(staker1, 100000 ether);
@@ -219,6 +219,12 @@ contract CommissionTest is Test, TestSetup {
         // check the rewards
         uint256 expectedRewardStaker1 = calculateExpectedRewardForUser(staker1);
         uint256 expectedRewardStaker2 = calculateExpectedRewardForUser(staker2);
+
+        assertEq(
+            expectedRewardStaker1,
+            expectedRewardStaker2,
+            "Rewards should be the same"
+        );
         uint256 delegatedAmountStaker1 = lara.delegatedAmounts(staker1);
         uint256 delegatedAmountStaker2 = lara.delegatedAmounts(staker2);
         uint256 claimableRewardsStaker1 = lara.claimableRewards(staker1);
@@ -323,26 +329,30 @@ contract CommissionTest is Test, TestSetup {
         vm.prank(staker2);
         lara.claimRewards();
         balanceOfStakerAfter = address(staker2).balance;
-        balanceOfStakerAfter = address(treasuryAddress).balance;
+        balanceOfTreasuryAfter = address(treasuryAddress).balance;
+
+        expectedRewardStaker2 = calculateExpectedRewardForUser(staker2) * 2;
 
         uint256 expectedCommission = (expectedRewardStaker2 *
-            2 *
             lara.commission()) / 100;
 
+        emit CommissionCalculates(expectedRewardStaker2, expectedCommission);
         // staker2 should have received expectedRewardStaker2 * 2
         assertApproxEqRel(
             balanceOfStakerAfter - balanceOfStakerBefore,
-            (expectedRewardStaker2 - expectedCommission) * 2,
-            0.125e18,
-            "staker2 should have received expectedRewardStaker2 * 2"
+            (expectedRewardStaker2 - expectedCommission),
+            0.04e18,
+            "staker2 should have received twice the rewards -  10%"
         );
 
         // check the treasury balance
         assertApproxEqRel(
-            balanceOfStakerAfter,
+            balanceOfTreasuryAfter,
             commission + expectedCommission,
-            0.125e18,
+            0.04e18,
             "Treasury should have received all commissions"
         );
     }
+
+    event CommissionCalculates(uint256 reward, uint256 commission);
 }
