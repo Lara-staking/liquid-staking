@@ -22,7 +22,7 @@ interface NodeData {
 
 async function main() {
   const privKey = process.env.DEPLOYER_KEY;
-  const oracleAddress = "0xE17B595748E6207A9416d9FEB07139cA437054bf";
+  const oracleAddress = "0x16Ec3C5D3b7a1f8e533904aBBd47108fC0E4429C";
   if (privKey === undefined) {
     throw new Error("DEPLOYER_KEY not set");
   }
@@ -61,18 +61,19 @@ async function main() {
 
 async function getValidatorsListFromTestnetIndexer(): Promise<NodeData[]> {
   const response = await axios.get(
-    `https://indexer.testnet.explorer.taraxa.io/validators?limit=100&orderBy=rank`
+    `https://indexer.testnet.explorer.taraxa.io/validators?limit=20&orderBy=rank`
   );
   const validatorsList = response.data.data;
   const structuredVaidators: NodeData[] = [];
   for (const validator of validatorsList) {
+    console.log(validator);
     structuredVaidators.push({
       account: validator.address,
       rank: ethers.toBigInt(validator.rank),
       rating: ethers.toBigInt(validator.pbftCount),
-      apy: ethers.toBigInt(Math.round(validator.yield * 10000)),
-      fromBlock: ethers.toBigInt(0),
-      toBlock: ethers.toBigInt(0),
+      apy: ethers.toBigInt(Math.round(validator.yield * 10000) || 0),
+      fromBlock: ethers.toBigInt(1),
+      toBlock: ethers.toBigInt(2),
     });
   }
   return structuredVaidators;

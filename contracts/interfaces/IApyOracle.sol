@@ -1,6 +1,6 @@
 // (c) 2023-2024, Taraxa, Inc. All rights reserved.
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+pragma solidity ^0.8.20;
 
 interface IApyOracle {
     struct NodeData {
@@ -23,7 +23,7 @@ interface IApyOracle {
 
     function getNodesForDelegation(
         uint256 amount
-    ) external view returns (TentativeDelegation[] memory);
+    ) external returns (TentativeDelegation[] memory);
 
     function updateNodeCount(uint256 count) external;
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.17;
+pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
 import "../../contracts/stTara.sol";
@@ -22,6 +22,34 @@ contract DeployLara is Script {
             address(apyOracle),
             treasuryAddress
         );
+        stTara.setLaraAddress(address(lara));
+
+        // checking if ownership and contract addresses are set properly
+        if (stTara.owner() != deployerAddress) {
+            revert("stTara owner is not Lara");
+        }
+        if (lara.owner() != deployerAddress) {
+            revert("Lara owner is not deployer");
+        }
+        // check datafeed
+        if (apyOracle._dataFeed() != deployerAddress) {
+            revert("ApyOracle datafeed is not deployer");
+        }
+        if (address(apyOracle._dpos()) != dposAddress) {
+            revert("ApyOracle dpos is not dposAddress");
+        }
+        if (stTara.lara() != address(lara)) {
+            revert("stTara lara is not lara");
+        }
+        if (address(lara.stTaraToken()) != address(stTara)) {
+            revert("lara stTara is not stTara");
+        }
+        if (address(lara.apyOracle()) != address(apyOracle)) {
+            revert("lara oracle is not apyOracle");
+        }
+        if (address(lara.dposContract()) != dposAddress) {
+            revert("lara dpos is not dposAddress");
+        }
 
         vm.stopBroadcast();
     }

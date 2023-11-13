@@ -32,7 +32,7 @@ describe(ContractNames.stTara, () => {
     const [, randomAccount] = await ethers.getSigners();
     await expect(
       stTara.connect(randomAccount).setMinDepositAmount(3)
-    ).to.be.revertedWith("Ownable: caller is not the owner");
+    ).to.be.revertedWithCustomError(stTara, "OwnableUnauthorizedAccount");
   });
 
   it("should allow setting minDepositAmount if called by owner", async () => {
@@ -46,7 +46,7 @@ describe(ContractNames.stTara, () => {
     const [, randomAccount, lara] = await ethers.getSigners();
     await expect(
       stTara.connect(randomAccount).setLaraAddress(lara.address)
-    ).to.be.revertedWith("Ownable: caller is not the owner");
+    ).to.be.revertedWithCustomError(stTara, "OwnableUnauthorizedAccount");
   });
 
   it("should not allow setting Lara address if not called by owner", async () => {
@@ -114,7 +114,7 @@ describe(ContractNames.stTara, () => {
 
     await expect(
       stTara.connect(minter).transferFrom(recipient.address, target, amount)
-    ).to.be.revertedWith("ERC20: insufficient allowance");
+    ).to.be.revertedWithCustomError(stTara, "ERC20InsufficientAllowance");
   });
 
   it("should allow the transfer of stTARA tokens if the allowance is set", async () => {
@@ -143,6 +143,6 @@ describe(ContractNames.stTara, () => {
 
     await expect(
       stTara.connect(minter).burn(recipient.address, amount)
-    ).to.be.revertedWith("ERC20: burn amount exceeds balance");
+    ).to.be.revertedWithCustomError(stTara, "ERC20InsufficientBalance");
   });
 });

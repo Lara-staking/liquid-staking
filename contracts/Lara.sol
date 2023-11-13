@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+pragma solidity ^0.8.20;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -7,7 +7,6 @@ import {IstTara} from "./interfaces/IstTara.sol";
 import {ILara} from "./interfaces/ILara.sol";
 import {DposInterface} from "./interfaces/IDPOS.sol";
 import {IApyOracle} from "./interfaces/IApyOracle.sol";
-import {INodeContinuityOracle} from "./interfaces/INodeContinuityOracle.sol";
 
 import {RewardClaimFailed, StakeAmountTooLow, StakeValueTooLow, DelegationFailed} from "./errors/SharedErrors.sol";
 
@@ -73,7 +72,7 @@ contract Lara is Ownable, ILara {
         address _dposContract,
         address _apyOracle,
         address _treasuryAddress
-    ) {
+    ) Ownable(msg.sender) {
         stTaraToken = IstTara(_sttaraToken);
         dposContract = DposInterface(_dposContract);
         apyOracle = IApyOracle(_apyOracle);
@@ -172,8 +171,10 @@ contract Lara is Ownable, ILara {
         stakedAmounts[msg.sender] += amount;
 
         // Mint stTARA tokens to user
-        try stTaraToken.mint(msg.sender, amount) {} catch {
-            revert("Mint failed");
+        try stTaraToken.mint(msg.sender, amount) {} catch Error(
+            string memory reason
+        ) {
+            revert(reason);
         }
 
         emit Staked(msg.sender, amount);
@@ -203,8 +204,8 @@ contract Lara is Ownable, ILara {
         try dposContract.reDelegate(from, to, amount) {
             protocolTotalStakeAtValidator[from] -= amount;
             protocolTotalStakeAtValidator[to] += amount;
-        } catch {
-            revert("Re-delegation failed");
+        } catch Error(string memory reason) {
+            revert(reason);
         }
     }
 
@@ -239,8 +240,8 @@ contract Lara is Ownable, ILara {
                 payable(treasuryAddress).transfer(claimCommission);
                 emit CommissionWithdrawn(msg.sender, claimCommission);
             }
-        } catch {
-            revert("Confirm undelegate failed");
+        } catch Error(string memory reason) {
+            revert(reason);
         }
     }
 
@@ -261,11 +262,11 @@ contract Lara is Ownable, ILara {
                 undelegated[msg.sender] -= amount;
                 delegatedAmounts[msg.sender] += amount;
                 protocolTotalStakeAtValidator[validator] += amount;
-            } catch {
-                revert("stTARA Mint failed");
+            } catch Error(string memory reason) {
+                revert(reason);
             }
-        } catch {
-            revert("Cancel undelegate failed");
+        } catch Error(string memory reason) {
+            revert(reason);
         }
     }
 
@@ -290,11 +291,11 @@ contract Lara is Ownable, ILara {
                 payable(msg.sender).transfer(amount);
                 emit StakeRemoved(msg.sender, amount);
                 emit TaraSent(msg.sender, amount, block.number);
-            } catch {
-                revert("Burn failed");
+            } catch Error(string memory reason) {
+                revert(reason);
             }
-        } catch {
-            revert("TransferFrom failed");
+        } catch Error(string memory reason) {
+            revert(reason);
         }
     }
 
@@ -383,8 +384,8 @@ contract Lara is Ownable, ILara {
                             );
                         }
                         if (undelegatedTotal == amount) break;
-                    } catch {
-                        revert("Undelegation failed");
+                    } catch Error(string memory reason) {
+                        revert(reason);
                     }
                 }
                 require(
@@ -392,11 +393,11 @@ contract Lara is Ownable, ILara {
                     "Cannot undelegate full amount"
                 );
                 undelegated[msg.sender] += undelegatedTotal;
-            } catch {
-                revert("Burn failed");
+            } catch Error(string memory reason) {
+                revert(reason);
             }
-        } catch {
-            revert("TransferFrom failed");
+        } catch Error(string memory reason) {
+            revert(reason);
         }
     }
 
@@ -473,8 +474,8 @@ contract Lara is Ownable, ILara {
             try dposContract.claimAllRewards(batch) returns (bool _end) {
                 end = _end;
                 batch++;
-            } catch {
-                revert RewardClaimFailed();
+            } catch Error(string memory reason) {
+                revert(reason);
             }
         }
         uint256 balanceAfter = address(this).balance;
@@ -506,29 +507,31 @@ contract Lara is Ownable, ILara {
         uint256 amount
     ) internal returns (uint256 remainingAmount) {
         uint256 delegatedAmount = 0;
-        IApyOracle.TentativeDelegation[] memory nodesList = apyOracle
-            .getNodesForDelegation(amount);
-        for (uint256 i = 0; i < nodesList.length; i++) {
-            if (delegatedAmount == amount) break;
-            try
-                dposContract.delegate{value: nodesList[i].amount}(
-                    nodesList[i].validator
-                )
-            {
-                delegatedAmount += nodesList[i].amount;
-                if (!isValidatorRegistered(nodesList[i].validator)) {
-                    validators.push(nodesList[i].validator);
+        try apyOracle.getNodesForDelegation(amount) returns (
+            IApyOracle.TentativeDelegation[] memory nodesList
+        ) {
+            if (nodesList.length == 0)
+                revert("No nodes available for delegation");
+            for (uint256 i = 0; i < nodesList.length; i++) {
+                if (delegatedAmount == amount) break;
+                try
+                    dposContract.delegate{value: nodesList[i].amount}(
+                        nodesList[i].validator
+                    )
+                {
+                    delegatedAmount += nodesList[i].amount;
+                    if (!isValidatorRegistered(nodesList[i].validator)) {
+                        validators.push(nodesList[i].validator);
+                    }
+                    protocolTotalStakeAtValidator[
+                        nodesList[i].validator
+                    ] += nodesList[i].amount;
+                } catch Error(string memory reason) {
+                    revert(reason);
                 }
-                protocolTotalStakeAtValidator[
-                    nodesList[i].validator
-                ] += nodesList[i].amount;
-            } catch {
-                revert DelegationFailed(
-                    nodesList[i].validator,
-                    msg.sender,
-                    amount
-                );
             }
+        } catch Error(string memory reason) {
+            revert(reason);
         }
         return amount - delegatedAmount;
     }

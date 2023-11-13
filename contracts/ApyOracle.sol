@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts (last updated v4.6.0) (proxy/Proxy.sol rework with call instead of delegatecall)
-pragma solidity 0.8.17;
+pragma solidity ^0.8.20;
 
 import "./interfaces/IApyOracle.sol";
 import "./interfaces/IDPOS.sol";
@@ -13,8 +13,8 @@ contract ApyOracle is IApyOracle {
 
     uint256 public maxValidatorStakeCapacity = 80000000 ether;
 
-    address private immutable _dataFeed;
-    DposInterface private immutable _dpos;
+    address public immutable _dataFeed;
+    DposInterface public immutable _dpos;
     uint256 public nodeCount;
     address[] public nodesList;
     mapping(address => IApyOracle.NodeData) public nodes;
@@ -31,13 +31,15 @@ contract ApyOracle is IApyOracle {
         return nodeCount;
     }
 
+    event CheckLine(uint256 line);
+
     /**
      * Returns the list of nodes that can be delegated to, along with the amount that can be delegated to each node.
      * @param amount The amount to be delegated
      */
     function getNodesForDelegation(
         uint256 amount
-    ) external view returns (TentativeDelegation[] memory) {
+    ) external returns (TentativeDelegation[] memory) {
         // we loop through the nodesList and see check if the node's able to capture thw whole amount
         // if not, we take the next node and so on. We return the TentativeDelegation's until the amount is
         // fully captured
@@ -47,32 +49,48 @@ contract ApyOracle is IApyOracle {
         uint256 totalAmount = amount;
         for (uint256 i = 0; i < nodeCount; i++) {
             address node = nodesList[i];
-            uint256 totalStake = _dpos.getValidator(node).total_stake;
-            uint256 availableDelegation = maxValidatorStakeCapacity -
-                totalStake;
-            if (totalAmount == 0) {
-                break;
-            }
-            if (availableDelegation > 0) {
-                uint256 stakeSlot = 0;
-                if (availableDelegation < totalAmount) {
-                    stakeSlot = availableDelegation;
-                } else {
-                    stakeSlot = totalAmount;
+            try _dpos.getValidator(node) returns (
+                DposInterface.ValidatorBasicInfo memory validator
+            ) {
+                uint256 totalStake = validator.total_stake;
+
+                if (totalStake >= maxValidatorStakeCapacity) {
+                    continue;
                 }
-                totalAmount -= stakeSlot;
-                tentativeDelegations[
-                    tentativeDelegationsCount
-                ] = TentativeDelegation(node, stakeSlot);
-                tentativeDelegationsCount++;
+                emit CheckLine(1);
+                uint256 availableDelegation = maxValidatorStakeCapacity -
+                    totalStake;
+                if (totalAmount == 0) {
+                    break;
+                }
+                emit CheckLine(2);
+                if (availableDelegation > 0) {
+                    uint256 stakeSlot = 0;
+                    if (availableDelegation < totalAmount) {
+                        stakeSlot = availableDelegation;
+                    } else {
+                        stakeSlot = totalAmount;
+                    }
+                    emit CheckLine(3);
+                    totalAmount -= stakeSlot;
+                    tentativeDelegations[
+                        tentativeDelegationsCount
+                    ] = TentativeDelegation(node, stakeSlot);
+                    tentativeDelegationsCount++;
+                    emit CheckLine(4);
+                }
+            } catch Error(string memory reason) {
+                revert(reason);
             }
         }
         // Create a new array with the exact length
         TentativeDelegation[] memory result = new TentativeDelegation[](
             tentativeDelegationsCount
         );
+        emit CheckLine(5);
         for (uint256 i = 0; i < tentativeDelegationsCount; i++) {
             result[i] = tentativeDelegations[i];
+            emit CheckLine(10 + i);
         }
         return result;
     }
@@ -109,5 +127,11 @@ contract ApyOracle is IApyOracle {
         }
         nodes[node] = data;
         emit NodeDataUpdated(node, data.apy, data.rating);
+    }
+
+    function setMaxValidatorStakeCapacity(
+        uint256 capacity
+    ) external OnlyDataFeed {
+        maxValidatorStakeCapacity = capacity;
     }
 }

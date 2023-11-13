@@ -37,7 +37,7 @@ contract stTARA is ERC20, Ownable {
     // Address of Lara protocol
     address public lara;
 
-    constructor() ERC20("Staked TARA", "stTARA") {}
+    constructor() ERC20("Staked TARA", "stTARA") Ownable(msg.sender) {}
 
     modifier onlyLara() {
         require(msg.sender == lara, "Only Lara can call this function");
@@ -56,7 +56,7 @@ contract stTARA is ERC20, Ownable {
         if (amount < minDepositAmount) {
             revert DepositAmountTooLow(amount, minDepositAmount);
         }
-        _mint(recipient, amount);
+        super._mint(recipient, amount);
 
         emit Minted(recipient, amount);
     }
@@ -72,7 +72,7 @@ contract stTARA is ERC20, Ownable {
                 );
         }
         // Burn stTARA tokens
-        _burn(user, amount);
+        super._burn(user, amount);
 
         emit Burned(user, amount);
     }
