@@ -31,8 +31,6 @@ contract ApyOracle is IApyOracle {
         return nodeCount;
     }
 
-    event CheckLine(uint256 line);
-
     /**
      * Returns the list of nodes that can be delegated to, along with the amount that can be delegated to each node.
      * @param amount The amount to be delegated
@@ -57,13 +55,11 @@ contract ApyOracle is IApyOracle {
                 if (totalStake >= maxValidatorStakeCapacity) {
                     continue;
                 }
-                emit CheckLine(1);
                 uint256 availableDelegation = maxValidatorStakeCapacity -
                     totalStake;
                 if (totalAmount == 0) {
                     break;
                 }
-                emit CheckLine(2);
                 if (availableDelegation > 0) {
                     uint256 stakeSlot = 0;
                     if (availableDelegation < totalAmount) {
@@ -71,13 +67,11 @@ contract ApyOracle is IApyOracle {
                     } else {
                         stakeSlot = totalAmount;
                     }
-                    emit CheckLine(3);
                     totalAmount -= stakeSlot;
                     tentativeDelegations[
                         tentativeDelegationsCount
                     ] = TentativeDelegation(node, stakeSlot);
                     tentativeDelegationsCount++;
-                    emit CheckLine(4);
                 }
             } catch Error(string memory reason) {
                 revert(reason);
@@ -87,10 +81,8 @@ contract ApyOracle is IApyOracle {
         TentativeDelegation[] memory result = new TentativeDelegation[](
             tentativeDelegationsCount
         );
-        emit CheckLine(5);
         for (uint256 i = 0; i < tentativeDelegationsCount; i++) {
             result[i] = tentativeDelegations[i];
-            emit CheckLine(10 + i);
         }
         return result;
     }
