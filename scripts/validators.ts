@@ -22,9 +22,12 @@ interface NodeData {
 
 async function main() {
   const privKey = process.env.DEPLOYER_KEY;
-  const oracleAddress = "0x16Ec3C5D3b7a1f8e533904aBBd47108fC0E4429C";
+  const oracleAddress = process.env.ORACLE_ADDRESS;
   if (privKey === undefined) {
     throw new Error("DEPLOYER_KEY not set");
+  }
+  if (oracleAddress === undefined) {
+    throw new Error("ORACLE_ADDRESS not set");
   }
   const dataFeed = new ethers.Wallet(privKey, ethers.provider);
   console.log(`Deployer address: ${dataFeed.address}`);

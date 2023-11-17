@@ -36,12 +36,22 @@ contract Delegate is Script, DeploymentAware {
         nodes[2] = address(0x5042fA2711Fe547e46C2f64852FDaA5982C80697);
         nodes[3] = address(0x6258d8F51eA17e873f69A2a978fe311fd95743dD);
 
-        // for (uint256 i = 0; i < nodes.length; i++) {
-        //     bool eligible = dpos.isValidatorEligible(nodes[i]);
-        //     if (eligible) {
-        //         emit Eligible(nodes[i]);
-        //     }
-        // }
+        for (uint256 i = 0; i < nodes.length; i++) {
+            (bool success, bytes memory data) = address(dpos).call(
+                abi.encodeWithSignature(
+                    "isValidatorEligible(address)",
+                    nodes[i]
+                )
+            );
+            if (!success) {
+                revert("isValidatorEligible failed");
+            }
+
+            bool eligible = abi.decode(data, (bool));
+            if (eligible) {
+                emit Eligible(nodes[i]);
+            }
+        }
         uint256 amount = 100000 ether;
         startStaking(amount);
         vm.stopBroadcast();
@@ -58,7 +68,7 @@ contract Delegate is Script, DeploymentAware {
 
     function getValidatorFromDpos(
         address validtator
-    ) public view returns (DposInterface.ValidatorBasicInfo memory) {
+    ) public returns (DposInterface.ValidatorBasicInfo memory) {
         return dpos.getValidator(validtator);
     }
 
@@ -78,11 +88,26 @@ contract Delegate is Script, DeploymentAware {
     }
 
     function startStaking(uint256 amount) private {
-        DposInterface.ValidatorBasicInfo
-            memory validator = getValidatorFromDpos(
-                address(0xC578Bb5fc3DAC3e96a8c4cb126c71d2Dc9082817)
-            );
-        validator.total_stake;
+        // DposInterface.ValidatorBasicInfo
+        //     memory validator = getValidatorFromDpos(
+        //         address(0xC578Bb5fc3DAC3e96a8c4cb126c71d2Dc9082817)
+        //     );
+        IApyOracle.TentativeDelegation[] memory delegations = lara
+            .getValidatorsForAmount(amount);
+        for (uint256 i = 0; i < delegations.length; i++) {
+            IApyOracle.TentativeDelegation memory delegation = delegations[i];
+            if (delegation.amount > 0) {
+                (bool success, ) = address(dpos).call{value: delegation.amount}(
+                    abi.encodeWithSignature(
+                        "delegate(address)",
+                        delegation.validator
+                    )
+                );
+                if (!success) {
+                    revert("isValidatorEligible failed");
+                }
+            }
+        }
         lara.stake{value: amount}(amount);
 
         address[] memory stakeNodes = getDelegatorsForAmountFromOracle(amount);

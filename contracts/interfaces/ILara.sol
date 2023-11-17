@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import "./IApyOracle.sol";
+
 interface ILara {
     event Staked(address indexed user, uint256 amount);
     event Delegated(address indexed user, uint256 amount);
     event EpochStarted(uint256 totalEpochDelegation, uint256 timestamp);
+    event AllRewardsClaimed(uint256 amount);
     event RewardsClaimed(
         address indexed user,
         uint256 amount,
@@ -54,6 +57,10 @@ interface ILara {
     function cancelUndelegate(address validator, uint256 amount) external;
 
     function requestUndelegate(uint256 amount) external;
+
+    function getValidatorsForAmount(
+        uint256 amount
+    ) external returns (IApyOracle.TentativeDelegation[] memory);
 
     function claimRewards() external;
 

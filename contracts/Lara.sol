@@ -8,7 +8,7 @@ import {ILara} from "./interfaces/ILara.sol";
 import {DposInterface} from "./interfaces/IDPOS.sol";
 import {IApyOracle} from "./interfaces/IApyOracle.sol";
 
-import {RewardClaimFailed, StakeAmountTooLow, StakeValueTooLow, DelegationFailed} from "./errors/SharedErrors.sol";
+import {RewardClaimFailed, StakeAmountTooLow, StakeValueTooLow, DelegationFailed, UndelegationFailed, RedelegationFailed, ConfirmUndelegationFailed, CancelUndelegationFailed} from "./errors/SharedErrors.sol";
 
 contract Lara is Ownable, ILara {
     // State variables
@@ -167,7 +167,16 @@ contract Lara is Ownable, ILara {
         if (msg.value < amount) revert StakeValueTooLow(msg.value, amount);
 
         // Register the validator for the next stake epoch
-        delegators.push(msg.sender);
+        bool isRegistered = false;
+        for (uint32 i = 0; i < delegators.length; i++) {
+            if (delegators[i] == msg.sender) {
+                isRegistered = true;
+                break;
+            }
+        }
+        if (!isRegistered) {
+            delegators.push(msg.sender);
+        }
         stakedAmounts[msg.sender] += amount;
 
         // Mint stTARA tokens to user
@@ -201,12 +210,23 @@ contract Lara is Ownable, ILara {
             amount <= maxValidatorStakeCapacity,
             "Amount exceeds max stake of validators in protocol"
         );
-        try dposContract.reDelegate(from, to, amount) {
-            protocolTotalStakeAtValidator[from] -= amount;
-            protocolTotalStakeAtValidator[to] += amount;
-        } catch Error(string memory reason) {
-            revert(reason);
-        }
+        (bool success, bytes memory data) = address(dposContract).call(
+            abi.encodeWithSignature(
+                "reDelegate(address,address,uint256)",
+                from,
+                to,
+                amount
+            )
+        );
+        if (!success)
+            revert RedelegationFailed(
+                from,
+                to,
+                amount,
+                abi.decode(data, (string))
+            );
+        protocolTotalStakeAtValidator[from] -= amount;
+        protocolTotalStakeAtValidator[to] += amount;
     }
 
     /**
@@ -222,26 +242,32 @@ contract Lara is Ownable, ILara {
             "Msg.sender has not undelegated the amount"
         );
         uint256 balanceBefore = address(this).balance;
-        try dposContract.confirmUndelegate(validator) {
-            undelegated[msg.sender] -= amount;
-            uint256 balanceAfter = address(this).balance;
-            // we need to send the rewards to the user
-            uint256 claimCommission = ((balanceAfter - balanceBefore) *
-                commission) / 100;
-            payable(msg.sender).transfer(
-                balanceAfter - balanceBefore - claimCommission
-            );
-            emit TaraSent(
+        (bool success, bytes memory data) = address(dposContract).call(
+            abi.encodeWithSignature("confirmUndelegate(address)", validator)
+        );
+        if (!success)
+            revert ConfirmUndelegationFailed(
                 msg.sender,
-                balanceAfter - balanceBefore - claimCommission,
-                block.number
+                validator,
+                amount,
+                abi.decode(data, (string))
             );
-            if (claimCommission > 0) {
-                payable(treasuryAddress).transfer(claimCommission);
-                emit CommissionWithdrawn(msg.sender, claimCommission);
-            }
-        } catch Error(string memory reason) {
-            revert(reason);
+        undelegated[msg.sender] -= amount;
+        uint256 balanceAfter = address(this).balance;
+        // we need to send the rewards to the user
+        uint256 claimCommission = ((balanceAfter - balanceBefore) *
+            commission) / 100;
+        payable(msg.sender).transfer(
+            balanceAfter - balanceBefore - claimCommission
+        );
+        emit TaraSent(
+            msg.sender,
+            balanceAfter - balanceBefore - claimCommission,
+            block.number
+        );
+        if (claimCommission > 0) {
+            payable(treasuryAddress).transfer(claimCommission);
+            emit CommissionWithdrawn(msg.sender, claimCommission);
         }
     }
 
@@ -257,14 +283,20 @@ contract Lara is Ownable, ILara {
             undelegated[msg.sender] >= amount,
             "Msg.sender has not undelegated the amount"
         );
-        try dposContract.cancelUndelegate(validator) {
-            try stTaraToken.mint(msg.sender, amount) {
-                undelegated[msg.sender] -= amount;
-                delegatedAmounts[msg.sender] += amount;
-                protocolTotalStakeAtValidator[validator] += amount;
-            } catch Error(string memory reason) {
-                revert(reason);
-            }
+        (bool success, bytes memory data) = address(dposContract).call(
+            abi.encodeWithSignature("cancelUndelegate(address)", validator)
+        );
+        if (!success)
+            revert CancelUndelegationFailed(
+                msg.sender,
+                validator,
+                amount,
+                abi.decode(data, (string))
+            );
+        try stTaraToken.mint(msg.sender, amount) {
+            undelegated[msg.sender] -= amount;
+            delegatedAmounts[msg.sender] += amount;
+            protocolTotalStakeAtValidator[validator] += amount;
         } catch Error(string memory reason) {
             revert(reason);
         }
@@ -344,49 +376,52 @@ contract Lara is Ownable, ILara {
                         toUndelegate = remainingAmount;
                     }
                     uint256 balanceBefore = address(this).balance;
-                    try
-                        dposContract.undelegate(
+                    (bool success, bytes memory data) = address(dposContract)
+                        .call(
+                            abi.encodeWithSignature(
+                                "undelegate(address,uint256)",
+                                validatorsWithDelegation[i],
+                                toUndelegate
+                            )
+                        );
+                    if (!success)
+                        revert UndelegationFailed(
                             validatorsWithDelegation[i],
-                            toUndelegate
-                        )
-                    {
-                        delegatedAmounts[msg.sender] -= toUndelegate;
-                        undelegatedTotal += toUndelegate;
-                        remainingAmount -= toUndelegate;
-                        uint256 balanceAfter = address(this).balance;
+                            msg.sender,
+                            toUndelegate,
+                            abi.decode(data, (string))
+                        );
+                    delegatedAmounts[msg.sender] -= toUndelegate;
+                    undelegatedTotal += toUndelegate;
+                    remainingAmount -= toUndelegate;
+                    uint256 balanceAfter = address(this).balance;
 
-                        uint256 totalCommissions = ((balanceAfter -
-                            balanceBefore) * commission) / 100;
-                        // we need to send the rewards to the user
-                        payable(msg.sender).transfer(
-                            balanceAfter - balanceBefore - totalCommissions
-                        );
-                        emit Undelegated(
-                            msg.sender,
-                            validatorsWithDelegation[i],
-                            toUndelegate
-                        );
-                        emit RewardsClaimed(
-                            msg.sender,
-                            balanceAfter - balanceBefore - totalCommissions,
-                            block.timestamp
-                        );
-                        emit TaraSent(
-                            msg.sender,
-                            balanceAfter - balanceBefore - totalCommissions,
-                            block.number
-                        );
-                        if (totalCommissions > 0) {
-                            payable(treasuryAddress).transfer(totalCommissions);
-                            emit CommissionWithdrawn(
-                                msg.sender,
-                                totalCommissions
-                            );
-                        }
-                        if (undelegatedTotal == amount) break;
-                    } catch Error(string memory reason) {
-                        revert(reason);
+                    uint256 totalCommissions = ((balanceAfter - balanceBefore) *
+                        commission) / 100;
+                    // we need to send the rewards to the user
+                    payable(msg.sender).transfer(
+                        balanceAfter - balanceBefore - totalCommissions
+                    );
+                    emit Undelegated(
+                        msg.sender,
+                        validatorsWithDelegation[i],
+                        toUndelegate
+                    );
+                    emit RewardsClaimed(
+                        msg.sender,
+                        balanceAfter - balanceBefore - totalCommissions,
+                        block.timestamp
+                    );
+                    emit TaraSent(
+                        msg.sender,
+                        balanceAfter - balanceBefore - totalCommissions,
+                        block.number
+                    );
+                    if (totalCommissions > 0) {
+                        payable(treasuryAddress).transfer(totalCommissions);
+                        emit CommissionWithdrawn(msg.sender, totalCommissions);
                     }
+                    if (undelegatedTotal == amount) break;
                 }
                 require(
                     undelegatedTotal == amount,
@@ -429,7 +464,7 @@ contract Lara is Ownable, ILara {
      * Private method for delegating the stake of a user to the validators.
      * @param user the user for which to delegate
      */
-    function delegateStakeOfUser(address user) private onlyOwner {
+    function delegateStakeOfUser(address user) public onlyOwner {
         uint256 amount = stakedAmounts[user];
         if (isCompounding[user]) {
             amount += claimableRewards[user];
@@ -471,15 +506,17 @@ contract Lara is Ownable, ILara {
         uint32 batch = 1;
         bool end = false;
         while (!end) {
-            try dposContract.claimAllRewards(batch) returns (bool _end) {
-                end = _end;
-                batch++;
-            } catch Error(string memory reason) {
-                revert(reason);
-            }
+            (bool success, bytes memory value) = address(dposContract).call(
+                abi.encodeWithSignature("claimAllRewards(uint32)", batch)
+            );
+            if (!success) revert RewardClaimFailed(batch);
+            bool _end = abi.decode(value, (bool));
+            end = _end;
+            batch++;
         }
         uint256 balanceAfter = address(this).balance;
         uint256 rewards = balanceAfter - balanceBefore;
+        emit AllRewardsClaimed(rewards);
 
         // iterate through delegators and calculate + allocate their rewards
         uint256 totalSplitRewards = 0;
@@ -503,35 +540,61 @@ contract Lara is Ownable, ILara {
         );
     }
 
-    function delegateToValidators(
+    function getValidatorsForAmount(
         uint256 amount
-    ) internal returns (uint256 remainingAmount) {
-        uint256 delegatedAmount = 0;
+    ) public returns (IApyOracle.TentativeDelegation[] memory) {
         try apyOracle.getNodesForDelegation(amount) returns (
             IApyOracle.TentativeDelegation[] memory nodesList
         ) {
             if (nodesList.length == 0)
                 revert("No nodes available for delegation");
-            for (uint256 i = 0; i < nodesList.length; i++) {
-                if (delegatedAmount == amount) break;
-                try
-                    dposContract.delegate{value: nodesList[i].amount}(
-                        nodesList[i].validator
-                    )
-                {
-                    delegatedAmount += nodesList[i].amount;
-                    if (!isValidatorRegistered(nodesList[i].validator)) {
-                        validators.push(nodesList[i].validator);
-                    }
-                    protocolTotalStakeAtValidator[
-                        nodesList[i].validator
-                    ] += nodesList[i].amount;
-                } catch Error(string memory reason) {
-                    revert(reason);
-                }
-            }
+            return nodesList;
         } catch Error(string memory reason) {
             revert(reason);
+        }
+    }
+
+    function delegateToDpos(address validator) public payable {
+        (bool success, ) = address(dposContract).call{
+            value: msg.value,
+            gas: 300000
+        }(abi.encodeWithSignature("delegate(address)", validator));
+        if (!success) revert("Delegation failed");
+    }
+
+    function delegateToValidators(
+        uint256 amount
+    ) public returns (uint256 remainingAmount) {
+        uint256 delegatedAmount = 0;
+        IApyOracle.TentativeDelegation[]
+            memory nodesList = getValidatorsForAmount(amount);
+        if (nodesList.length == 0) {
+            revert("No nodes available for delegation");
+        }
+        for (uint256 i = 0; i < nodesList.length; i++) {
+            if (delegatedAmount == amount) break;
+            (bool success, bytes memory data) = address(dposContract).call{
+                value: nodesList[i].amount
+            }(
+                abi.encodeWithSignature(
+                    "delegate(address)",
+                    nodesList[i].validator
+                )
+            );
+            if (!success)
+                revert DelegationFailed(
+                    nodesList[i].validator,
+                    msg.sender,
+                    nodesList[i].amount,
+                    abi.decode(data, (string))
+                );
+            delegatedAmount += nodesList[i].amount;
+            if (!isValidatorRegistered(nodesList[i].validator)) {
+                validators.push(nodesList[i].validator);
+            }
+            protocolTotalStakeAtValidator[nodesList[i].validator] += nodesList[
+                i
+            ].amount;
         }
         return amount - delegatedAmount;
     }

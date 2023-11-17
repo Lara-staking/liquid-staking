@@ -101,6 +101,21 @@ contract ApyOracle is IApyOracle {
         return nodes[node];
     }
 
+    function batchUpdateNodeData(
+        address[] memory nodeAddresses,
+        IApyOracle.NodeData[] memory data
+    ) external override OnlyDataFeed {
+        require(
+            nodeAddresses.length == data.length,
+            "ApyOracle: nodes and data length mismatch"
+        );
+        nodesList = nodeAddresses;
+        for (uint256 i = 0; i < nodesList.length; i++) {
+            nodes[nodeAddresses[i]] = data[i];
+        }
+        nodeCount = nodesList.length;
+    }
+
     function updateNodeData(
         address node,
         NodeData memory data

@@ -51,25 +51,32 @@ abstract contract ManyValidatorsTestSetup is Test {
     function setupApyOracle() public {
         mockApyOracle = new ApyOracle(address(this), address(mockDpos));
 
-        // setting up the two validators in the mockApyOracle
+        IApyOracle.NodeData[] memory nodeData = new IApyOracle.NodeData[](
+            validators.length
+        );
         for (uint16 i = 0; i < validators.length; i++) {
-            mockApyOracle.updateNodeData(
-                validators[i],
-                IApyOracle.NodeData({
-                    account: validators[i],
-                    rank: i,
-                    apy: i,
-                    fromBlock: 1,
-                    toBlock: 15000,
-                    rating: 813 //meaning 8.13
-                })
-            );
+            nodeData[i] = IApyOracle.NodeData({
+                account: validators[i],
+                rank: i,
+                apy: i,
+                fromBlock: 1,
+                toBlock: 15000,
+                rating: 813 //meaning 8.13
+            });
         }
+
+        // setting up the two validators in the mockApyOracle
+        mockApyOracle.batchUpdateNodeData(validators, nodeData);
 
         // check if the node data was set successfully
         assertEq(
             mockApyOracle.getNodeCount(),
             numValidators,
+            "Node data was not set successfully"
+        );
+        assertEq(
+            mockApyOracle.getNodeData(validators[0]).account,
+            validators[0],
             "Node data was not set successfully"
         );
     }

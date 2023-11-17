@@ -27,6 +27,11 @@ interface IApyOracle {
 
     function updateNodeCount(uint256 count) external;
 
+    function batchUpdateNodeData(
+        address[] memory nodeAddresses,
+        IApyOracle.NodeData[] memory data
+    ) external;
+
     function getNodeData(address node) external view returns (NodeData memory);
 
     function updateNodeData(address node, NodeData memory data) external;
