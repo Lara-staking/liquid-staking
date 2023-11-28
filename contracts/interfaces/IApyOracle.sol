@@ -4,12 +4,12 @@ pragma solidity ^0.8.20;
 
 interface IApyOracle {
     struct NodeData {
-        address account;
-        uint16 rank;
         uint256 rating;
-        uint16 apy;
+        address account;
         uint64 fromBlock;
         uint64 toBlock;
+        uint16 rank;
+        uint16 apy;
     }
 
     struct TentativeDelegation {
@@ -27,10 +27,7 @@ interface IApyOracle {
 
     function updateNodeCount(uint256 count) external;
 
-    function batchUpdateNodeData(
-        address[] memory nodeAddresses,
-        IApyOracle.NodeData[] memory data
-    ) external;
+    function batchUpdateNodeData(IApyOracle.NodeData[] memory data) external;
 
     function getNodeData(address node) external view returns (NodeData memory);
 

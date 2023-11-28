@@ -66,7 +66,7 @@ abstract contract ManyValidatorsTestSetup is Test {
         }
 
         // setting up the two validators in the mockApyOracle
-        mockApyOracle.batchUpdateNodeData(validators, nodeData);
+        mockApyOracle.batchUpdateNodeData(nodeData);
 
         // check if the node data was set successfully
         assertEq(

@@ -503,7 +503,7 @@ contract Lara is Ownable, ILara {
      */
     function endEpoch() public onlyOwner {
         uint256 balanceBefore = address(this).balance;
-        uint32 batch = 1;
+        uint32 batch = 0;
         bool end = false;
         while (!end) {
             (bool success, bytes memory value) = address(dposContract).call(
