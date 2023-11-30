@@ -203,6 +203,10 @@ contract Lara is Ownable, ILara {
         uint256 amount
     ) public onlyOwner {
         require(
+            isEpochRunning == false,
+            "Cannot redelegate during staking epoch"
+        );
+        require(
             protocolTotalStakeAtValidator[from] >= amount,
             "Amount exceeds the total stake at the validator"
         );
@@ -210,6 +214,7 @@ contract Lara is Ownable, ILara {
             amount <= maxValidatorStakeCapacity,
             "Amount exceeds max stake of validators in protocol"
         );
+        uint256 balanceBefore = address(this).balance;
         (bool success, bytes memory data) = address(dposContract).call(
             abi.encodeWithSignature(
                 "reDelegate(address,address,uint256)",
@@ -225,6 +230,16 @@ contract Lara is Ownable, ILara {
                 amount,
                 abi.decode(data, (string))
             );
+        uint256 balanceAfter = address(this).balance;
+        // send this amount to the treasury as it is minimal
+        payable(treasuryAddress).transfer(balanceAfter - balanceBefore);
+        emit CommissionWithdrawn(treasuryAddress, balanceAfter - balanceBefore);
+        emit TaraSent(
+            treasuryAddress,
+            balanceAfter - balanceBefore,
+            block.number
+        );
+
         protocolTotalStakeAtValidator[from] -= amount;
         protocolTotalStakeAtValidator[to] += amount;
     }
