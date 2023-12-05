@@ -233,7 +233,7 @@ contract Lara is Ownable, ILara {
         uint256 balanceAfter = address(this).balance;
         // send this amount to the treasury as it is minimal
         payable(treasuryAddress).transfer(balanceAfter - balanceBefore);
-        emit CommissionWithdrawn(treasuryAddress, balanceAfter - balanceBefore);
+        emit RedelegationRewardsClaimed(balanceAfter - balanceBefore, from);
         emit TaraSent(
             treasuryAddress,
             balanceAfter - balanceBefore,
@@ -500,6 +500,7 @@ contract Lara is Ownable, ILara {
      * @notice OnlyOwner method for starting a staking epoch.
      */
     function startEpoch() external onlyOwner {
+        require(!isEpochRunning, "Epoch already running");
         uint256 totalEpochDelegation = 0;
         for (uint32 i = 0; i < delegators.length; i++) {
             delegateStakeOfUser(delegators[i]);
@@ -517,6 +518,7 @@ contract Lara is Ownable, ILara {
      * @notice OnlyOwner method for ending a staking epoch.
      */
     function endEpoch() public onlyOwner {
+        require(isEpochRunning, "Epoch not running");
         uint256 balanceBefore = address(this).balance;
         uint32 batch = 0;
         bool end = false;
@@ -539,6 +541,9 @@ contract Lara is Ownable, ILara {
             address delegator = delegators[i];
             uint256 delegatorReward = (delegatedAmounts[delegator] * rewards) /
                 lastEpochTotalDelegatedAmount;
+            if (delegatorReward == 0) {
+                continue;
+            }
             claimableRewards[delegator] += delegatorReward;
             totalSplitRewards += delegatorReward;
             emit RewardsClaimed(delegator, delegatorReward, block.timestamp);

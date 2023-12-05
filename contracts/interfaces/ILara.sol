@@ -8,6 +8,7 @@ interface ILara {
     event Delegated(address indexed user, uint256 amount);
     event EpochStarted(uint256 totalEpochDelegation, uint256 timestamp);
     event AllRewardsClaimed(uint256 amount);
+    event RedelegationRewardsClaimed(uint256 amount, address validator);
     event RewardsClaimed(
         address indexed user,
         uint256 amount,
