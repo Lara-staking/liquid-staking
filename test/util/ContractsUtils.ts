@@ -3,6 +3,7 @@ import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import { ContractNames } from "../../util/ContractNames";
 import { ApyOracle } from "../../typechain/contracts";
 import { StTARA } from "../../typechain";
+import { parseEther, HDNodeWallet } from "ethers";
 
 export async function deployApyOracle(
   dataFeedAddress: string,
@@ -52,14 +53,23 @@ export async function setupApyOracle(
   });
 }
 
-export async function deployMockDpos() {
-  const [, v1, v2, v3] = await ethers.getSigners();
-  const MockDpos = await ethers.getContractFactory(ContractNames.mockDpos);
-  const mockDpos = await MockDpos.deploy([v1.address, v2.address, v3.address], {
-    value: ethers.parseEther("80000000"),
-  });
+export async function deployMockDpos(validatorsArray?: HDNodeWallet[]){
+  if (validatorsArray) {
+    const MockDpos = await ethers.getContractFactory(ContractNames.mockDpos);
+    const mockDpos = await MockDpos.deploy([validatorsArray[0].address, validatorsArray[1].address], {
+      value: ethers.parseEther("40000000"),
+    });
+    return await mockDpos.waitForDeployment();
 
-  return await mockDpos.waitForDeployment();
+  } else {
+    const [, v1, v2, v3] = await ethers.getSigners();
+    const MockDpos = await ethers.getContractFactory(ContractNames.mockDpos);
+    const mockDpos = await MockDpos.deploy([v1.address, v2.address, v3.address], {
+      value: ethers.parseEther("80000000"),
+    });
+    return await mockDpos.waitForDeployment();
+  }
+
 }
 
 export async function deployLara(
