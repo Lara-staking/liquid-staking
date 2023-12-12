@@ -197,6 +197,10 @@ contract Lara is Ownable, ILara {
     event DelegationArray(IApyOracle.TentativeDelegation[]);
 
     function rebalance() public {
+        require(
+            isEpochRunning == false,
+            "Cannot rebalance during staking epoch"
+        );
         IApyOracle.TentativeDelegation[]
             memory delegationList = buildCurrentDelegationArray();
         emit DelegationArray(delegationList);

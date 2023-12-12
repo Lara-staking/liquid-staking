@@ -50,3 +50,9 @@ error CancelUndelegationFailed(
     uint256 amount,
     string reason
 );
+
+error EpochDurationNotMet(
+    uint256 lastEpochStart,
+    uint256 currentBlockNumber,
+    uint256 epochDuration
+);

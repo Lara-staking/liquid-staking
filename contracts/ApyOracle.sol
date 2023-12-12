@@ -74,6 +74,9 @@ contract ApyOracle is IApyOracle {
             if (orderedValidators[i].validator == node) {
                 continue;
             }
+            if (nodes[nodesList[i]].rating <= orderedValidators[i].rating) {
+                continue;
+            }
             try _dpos.getValidator(node) returns (
                 DposInterface.ValidatorBasicInfo memory validator
             ) {

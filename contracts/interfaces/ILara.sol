@@ -51,8 +51,6 @@ interface ILara {
 
     function removeStake(uint256 amount) external;
 
-    function reDelegate(address from, address to, uint256 amount) external;
-
     function confirmUndelegate(address validator, uint256 amount) external;
 
     function cancelUndelegate(address validator, uint256 amount) external;
@@ -68,4 +66,6 @@ interface ILara {
     function startEpoch() external;
 
     function endEpoch() external;
+
+    function rebalance() external;
 }

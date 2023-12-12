@@ -15,6 +15,14 @@ interface IApyOracle {
     struct TentativeDelegation {
         address validator;
         uint256 amount;
+        uint256 rating;
+    }
+
+    struct TentativeReDelegation {
+        address from;
+        address to;
+        uint256 amount;
+        uint256 toRating;
     }
 
     event NodeDataUpdated(address indexed node, uint16 apy, uint256 pbftCount);
@@ -24,6 +32,10 @@ interface IApyOracle {
     function getNodesForDelegation(
         uint256 amount
     ) external returns (TentativeDelegation[] memory);
+
+    function getRebalanceList(
+        TentativeDelegation[] memory currentValidators
+    ) external returns (TentativeReDelegation[] memory);
 
     function updateNodeCount(uint256 count) external;
 
