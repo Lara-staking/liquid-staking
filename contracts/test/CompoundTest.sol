@@ -124,7 +124,8 @@ contract CompoundTest is Test, TestSetup {
 
         // end the epoch
         uint256 balanceOfStakerBefore = address(staker1).balance;
-        vm.warp(1000);
+        vm.warp(lara.lastEpochStartBlock() + lara.epochDuration());
+        vm.roll(lara.lastEpochStartBlock() + lara.epochDuration());
         lara.endEpoch();
 
         address firstValidatorDelegated = findValidatorWithStake(
@@ -213,7 +214,8 @@ contract CompoundTest is Test, TestSetup {
         );
 
         // we end the epoch
-        vm.warp(1000);
+        vm.warp(lara.lastEpochStartBlock() + lara.epochDuration());
+        vm.roll(lara.lastEpochStartBlock() + lara.epochDuration());
         lara.endEpoch();
 
         // check the rewards
@@ -261,7 +263,8 @@ contract CompoundTest is Test, TestSetup {
         );
 
         // new epoch ends
-        vm.warp(1000);
+        vm.warp(lara.lastEpochStartBlock() + lara.epochDuration());
+        vm.roll(lara.lastEpochStartBlock() + lara.epochDuration());
         lara.endEpoch();
 
         // check rewards, they should be higher for staker1 but the same for staker2

@@ -124,7 +124,8 @@ contract CommissionTest is Test, TestSetup {
 
         // end the epoch
         uint256 balanceOfStakerBefore = address(staker1).balance;
-        vm.warp(1000);
+        vm.warp(lara.lastEpochStartBlock() + lara.epochDuration());
+        vm.roll(lara.lastEpochStartBlock() + lara.epochDuration());
         lara.endEpoch();
 
         address firstValidatorDelegated = findValidatorWithStake(
@@ -159,6 +160,8 @@ contract CommissionTest is Test, TestSetup {
         );
 
         uint256 balanceOfStakerAfter = address(staker1).balance;
+        uint256 totalRewards = amount / 100 + 100 ether;
+        uint256 expectedCommission = (totalRewards * lara.commission()) / 100;
         assertEq(
             lara.delegatedAmounts(staker1),
             amount,
@@ -166,8 +169,13 @@ contract CommissionTest is Test, TestSetup {
         );
         assertEq(
             lara.claimableRewards(staker1),
-            1000100 ether,
+            totalRewards - expectedCommission,
             "Staker should have received rewards"
+        );
+        assertEq(
+            address(lara.treasuryAddress()).balance,
+            expectedCommission,
+            "Treasurer should have received commission"
         );
 
         assertEq(
@@ -179,16 +187,17 @@ contract CommissionTest is Test, TestSetup {
 
     function calculateExpectedRewardForUser(
         address staker
-    ) public view returns (uint256) {
+    ) public returns (uint256, uint256) {
         uint256 totalRewards = getTotalDposStake() / 100 + 100 ether;
+        uint256 commission = (totalRewards * lara.commission()) / 100;
 
         uint256 stakerDelegated = lara.delegatedAmounts(staker);
         uint256 totalDelegatedInLastEpoch = lara
             .lastEpochTotalDelegatedAmount();
 
-        uint256 expectedRewardStaker = (stakerDelegated * totalRewards) /
-            totalDelegatedInLastEpoch;
-        return expectedRewardStaker;
+        uint256 expectedRewardStaker = (stakerDelegated *
+            (totalRewards - commission)) / totalDelegatedInLastEpoch;
+        return (expectedRewardStaker, commission);
     }
 
     // now we launch a second epoch without compound being set
@@ -206,6 +215,8 @@ contract CommissionTest is Test, TestSetup {
         // we start the epoch
         lara.startEpoch();
 
+        uint256 epochDuration = lara.epochDuration();
+
         assertEq(
             lara.lastEpochTotalDelegatedAmount(),
             200000 ether, // there were no other delegations
@@ -213,12 +224,24 @@ contract CommissionTest is Test, TestSetup {
         );
 
         // we end the epoch
-        vm.warp(1000);
+        vm.warp(lara.lastEpochStartBlock() + lara.epochDuration());
+        vm.roll(lara.lastEpochStartBlock() + lara.epochDuration());
         lara.endEpoch();
 
         // check the rewards
-        uint256 expectedRewardStaker1 = calculateExpectedRewardForUser(staker1);
-        uint256 expectedRewardStaker2 = calculateExpectedRewardForUser(staker2);
+        (
+            uint256 expectedRewardStaker1,
+            uint256 commission
+        ) = calculateExpectedRewardForUser(staker1);
+        (uint256 expectedRewardStaker2, ) = calculateExpectedRewardForUser(
+            staker2
+        );
+
+        assertEq(
+            address(lara.treasuryAddress()).balance,
+            commission,
+            "Treasurer should have received commission"
+        );
 
         assertEq(
             expectedRewardStaker1,
@@ -267,14 +290,23 @@ contract CommissionTest is Test, TestSetup {
         );
 
         // new epoch ends
-        vm.warp(1000);
+        vm.warp(lara.lastEpochStartBlock() + lara.epochDuration());
+        vm.roll(lara.lastEpochStartBlock() + lara.epochDuration());
         lara.endEpoch();
 
         // check rewards, they should be higher for staker1 but the same for staker2
 
-        uint256 expectedRewardStaker1AfterCompound = calculateExpectedRewardForUser(
-                staker1
-            );
+        (
+            uint256 expectedRewardStaker1AfterCompound,
+            uint256 commissionSecond
+        ) = calculateExpectedRewardForUser(staker1);
+
+        // check the treasury balance
+        assertEq(
+            address(lara.treasuryAddress()).balance,
+            commission + commissionSecond,
+            "Treasury should have received all commissions"
+        );
 
         assertEq(
             lara.claimableRewards(staker1),
@@ -295,33 +327,19 @@ contract CommissionTest is Test, TestSetup {
         vm.prank(staker1);
         lara.claimRewards();
         uint256 balanceOfStakerAfter = address(staker1).balance;
-        uint256 balanceOfTreasuryAfter = address(treasuryAddress).balance;
-
-        uint256 commission = (expectedRewardStaker1AfterCompound *
-            lara.commission()) / 100;
 
         // staker1 should have received expectedRewardStaker1AfterCompound
         assertEq(
             balanceOfStakerAfter - balanceOfStakerBefore,
-            expectedRewardStaker1AfterCompound - commission,
+            expectedRewardStaker1AfterCompound,
             "staker1 should have received expectedRewardStaker1 + expectedRewardStaker1AfterCompound"
         );
 
         // check treasury balance
         assertEq(
-            balanceOfTreasuryAfter - balanceOfTreasuryBefore,
-            commission,
+            address(lara.treasuryAddress()).balance,
+            commission + commissionSecond,
             "Treasury should have received commission"
-        );
-
-        // check that the total rewards from the staker and the treasury are the expected rewards
-        assertEq(
-            balanceOfStakerAfter -
-                balanceOfStakerBefore +
-                balanceOfTreasuryAfter -
-                balanceOfTreasuryBefore,
-            expectedRewardStaker1AfterCompound,
-            "Total rewards should be the expected rewards"
         );
 
         // staker2 claims rewards
@@ -329,30 +347,16 @@ contract CommissionTest is Test, TestSetup {
         vm.prank(staker2);
         lara.claimRewards();
         balanceOfStakerAfter = address(staker2).balance;
-        balanceOfTreasuryAfter = address(treasuryAddress).balance;
 
-        expectedRewardStaker2 = calculateExpectedRewardForUser(staker2) * 2;
+        (expectedRewardStaker2, ) = calculateExpectedRewardForUser(staker2);
+        expectedRewardStaker2 = expectedRewardStaker2 * 2;
 
-        uint256 expectedCommission = (expectedRewardStaker2 *
-            lara.commission()) / 100;
-
-        emit CommissionCalculates(expectedRewardStaker2, expectedCommission);
         // staker2 should have received expectedRewardStaker2 * 2
         assertApproxEqRel(
             balanceOfStakerAfter - balanceOfStakerBefore,
-            (expectedRewardStaker2 - expectedCommission),
+            expectedRewardStaker2,
             0.04e18,
             "staker2 should have received twice the rewards -  10%"
         );
-
-        // check the treasury balance
-        assertApproxEqRel(
-            balanceOfTreasuryAfter,
-            commission + expectedCommission,
-            0.04e18,
-            "Treasury should have received all commissions"
-        );
     }
-
-    event CommissionCalculates(uint256 reward, uint256 commission);
 }

@@ -18,10 +18,21 @@ contract GetValidatorsTest is Test, ManyValidatorsTestSetup {
         super.setupLara();
     }
 
+    function test_revertOnNotLara() public {
+        // call the function
+        vm.expectRevert("ApyOracle: caller is not Lara");
+        mockApyOracle.getNodesForDelegation(100000 ether);
+    }
+
+    event LaraAddress(address lara);
+
     function test_GetLotsOfNodesForDelegation() public {
         // define value
         uint256 amount = 500000 ether;
 
+        address laraAddress = mockApyOracle.lara();
+        emit LaraAddress(laraAddress);
+        vm.prank(address(laraAddress));
         // call the function
         IApyOracle.TentativeDelegation[]
             memory tentativeDelegations = mockApyOracle.getNodesForDelegation(
@@ -37,13 +48,13 @@ contract GetValidatorsTest is Test, ManyValidatorsTestSetup {
 
     function testFuzz_GetLotsOfNodesForDelegation(uint256 amount) public {
         // call the function
+        vm.prank(address(lara));
         IApyOracle.TentativeDelegation[]
             memory tentativeDelegations = mockApyOracle.getNodesForDelegation(
                 amount
             );
 
         // check the length of the array
-        emit UpToThis(tentativeDelegations.length);
         uint256 validatorsLength = 0;
         if (amount / 80000000 ether >= validators.length) {
             validatorsLength = validators.length;
