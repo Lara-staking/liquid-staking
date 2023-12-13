@@ -23,6 +23,7 @@ contract DeployLara is Script {
             treasuryAddress
         );
         stTara.setLaraAddress(address(lara));
+        apyOracle.setLara(address(lara));
 
         // checking if ownership and contract addresses are set properly
         if (stTara.owner() != deployerAddress) {
@@ -40,6 +41,12 @@ contract DeployLara is Script {
         }
         if (stTara.lara() != address(lara)) {
             revert("stTara lara is not lara");
+        }
+        if (address(lara.treasuryAddress()) != treasuryAddress) {
+            revert("lara treasury is not treasuryAddress");
+        }
+        if (address(apyOracle.lara()) != address(lara)) {
+            revert("apyOracle lara is not lara");
         }
         if (address(lara.stTaraToken()) != address(stTara)) {
             revert("lara stTara is not stTara");

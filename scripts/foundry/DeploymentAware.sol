@@ -5,9 +5,9 @@ abstract contract DeploymentAware {
     address public immutable DPOS_ADDRESS =
         address(0x00000000000000000000000000000000000000fe);
     address public immutable stTARA_ADDRESS =
-        address(0xd5696f2156325034f3aD1d1D6D13bb73c0e3b1E5);
+        address(0x4f080Db0d36b9d9bD0446D8718108C6D0D99EB34);
     address public immutable ORACLE_ADDRESS =
-        address(0x72B6B11CA6dFc90DC9840e038253133381FA57f9);
+        address(0x01BE93E3563f384bf7121E45619bAA6D8F62010B);
     address public immutable LARA_ADDRESS =
-        address(0x40Fb69932669A92b0cB01DEF620d6758b9ab1393);
+        address(0x5D23F0A99d2503a1DA03a4a36f1e60C6ac6AA3F2);
 }
