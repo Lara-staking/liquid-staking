@@ -1,5 +1,5 @@
 {
-  "name": "hardhat-project",
+  "name": "lara-contracts",
   "scripts": {
     "compile": "yarn run hardhat compile",
     "test": "yarn run hardhat test",
@@ -19,14 +19,14 @@
     "delegate": "npx hardhat run --network testnet ./scripts/delegate.ts"
   },
   "devDependencies": {
-    "@nomicfoundation/hardhat-chai-matchers": "2",
-    "@nomicfoundation/hardhat-ethers": "3",
+    "@nomicfoundation/hardhat-chai-matchers": "2.0.2",
+    "@nomicfoundation/hardhat-ethers": "3.0.5",
     "@nomicfoundation/hardhat-foundry": "^1.1.1",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.9",
-    "@nomicfoundation/hardhat-toolbox": "3",
+    "@nomicfoundation/hardhat-toolbox": "4.0.0",
     "@nomicfoundation/hardhat-verify": "^2.0.0",
     "@typechain/ethers-v6": "^0.5.1",
-    "@typechain/hardhat": "8",
+    "@typechain/hardhat": "9.1.0",
     "@types/chai": "^4.3.5",
     "@types/mocha": "^9.1.1",
     "@types/node": "^12.20.55",
@@ -40,9 +40,9 @@
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.29.0",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "5.1.0",
+    "eslint-plugin-prettier": "5.0.1",
     "eslint-plugin-promise": "^6.1.1",
-    "ethers": "6",
+    "ethers": "6.9.0",
     "hardhat": "^2.18.3",
     "hardhat-contract-sizer": "^2.10.0",
     "hardhat-gas-reporter": "^1.0.9",

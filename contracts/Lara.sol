@@ -11,8 +11,6 @@ import {IApyOracle} from "./interfaces/IApyOracle.sol";
 import {EpochDurationNotMet, RewardClaimFailed, StakeAmountTooLow, StakeValueTooLow, DelegationFailed, UndelegationFailed, RedelegationFailed, ConfirmUndelegationFailed, CancelUndelegationFailed} from "./errors/SharedErrors.sol";
 
 contract Lara is Ownable, ILara {
-    // State variables
-
     // Reference timestamp for computing epoch number
     uint256 public protocolStartTimestamp;
 
@@ -190,11 +188,8 @@ contract Lara is Ownable, ILara {
         ) {
             revert(reason);
         }
-
         emit Staked(msg.sender, amount);
     }
-
-    event DelegationArray(IApyOracle.TentativeDelegation[]);
 
     function rebalance() public {
         require(
@@ -203,7 +198,6 @@ contract Lara is Ownable, ILara {
         );
         IApyOracle.TentativeDelegation[]
             memory delegationList = buildCurrentDelegationArray();
-        emit DelegationArray(delegationList);
         // Get the rebalance list from the oracle
         try apyOracle.getRebalanceList(delegationList) returns (
             IApyOracle.TentativeReDelegation[] memory rebalanceList
@@ -504,7 +498,7 @@ contract Lara is Ownable, ILara {
      * Private method for delegating the stake of a user to the validators.
      * @param user the user for which to delegate
      */
-    function delegateStakeOfUser(address user) public onlyOwner {
+    function delegateStakeOfUser(address user) private {
         uint256 amount = stakedAmounts[user];
         if (isCompounding[user]) {
             amount += claimableRewards[user];
@@ -522,7 +516,7 @@ contract Lara is Ownable, ILara {
     }
 
     /**
-     * @notice OnlyOwner method for starting a staking epoch.
+     * @notice method for starting a staking epoch.
      */
     function startEpoch() external {
         require(!isEpochRunning, "Epoch already running");
@@ -541,7 +535,7 @@ contract Lara is Ownable, ILara {
     }
 
     /**
-     * @notice OnlyOwner method for ending a staking epoch.
+     * @notice method for ending a staking epoch.
      */
     function endEpoch() public {
         require(isEpochRunning, "Epoch not running");
@@ -609,14 +603,6 @@ contract Lara is Ownable, ILara {
         } catch Error(string memory reason) {
             revert(reason);
         }
-    }
-
-    function delegateToDpos(address validator) public payable {
-        (bool success, ) = address(dposContract).call{
-            value: msg.value,
-            gas: 300000
-        }(abi.encodeWithSignature("delegate(address)", validator));
-        if (!success) revert("Delegation failed");
     }
 
     function delegateToValidators(
