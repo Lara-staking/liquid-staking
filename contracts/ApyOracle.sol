@@ -16,19 +16,19 @@ contract ApyOracle is IApyOracle {
      * @param dpos The address of the DPOS contract.
      */
     constructor(address dataFeed, address dpos) {
-        _dataFeed = dataFeed;
-        _dpos = DposInterface(dpos);
+        DATA_FEED = dataFeed;
+        DPOS = DposInterface(dpos);
     }
 
     uint256 public maxValidatorStakeCapacity = 80000000 ether;
 
     uint256 public nodeCount;
 
-    address public immutable _dataFeed;
+    address public immutable DATA_FEED;
 
     address public lara;
 
-    DposInterface public immutable _dpos;
+    DposInterface public immutable DPOS;
 
     address[] public nodesList;
 
@@ -39,7 +39,7 @@ contract ApyOracle is IApyOracle {
      */
     modifier OnlyDataFeed() {
         require(
-            msg.sender == _dataFeed,
+            msg.sender == DATA_FEED,
             "ApyOracle: caller is not the data feed"
         );
         _;
@@ -105,7 +105,7 @@ contract ApyOracle is IApyOracle {
             if (nodes[nodesList[i]].rating <= orderedValidators[i].rating) {
                 continue;
             }
-            try _dpos.getValidator(node) returns (
+            try DPOS.getValidator(node) returns (
                 DposInterface.ValidatorBasicInfo memory validator
             ) {
                 uint256 totalStake = validator.total_stake;
@@ -165,7 +165,7 @@ contract ApyOracle is IApyOracle {
         uint256 totalAmount = amount;
         for (uint256 i = 0; i < nodeCount; i++) {
             address node = nodesList[i];
-            try _dpos.getValidator(node) returns (
+            try DPOS.getValidator(node) returns (
                 DposInterface.ValidatorBasicInfo memory validator
             ) {
                 uint256 totalStake = validator.total_stake;
@@ -222,7 +222,7 @@ contract ApyOracle is IApyOracle {
      * @return The address of the data feed contract.
      */
     function getDataFeedAddress() external view returns (address) {
-        return _dataFeed;
+        return DATA_FEED;
     }
 
     /**
