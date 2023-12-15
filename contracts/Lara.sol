@@ -529,6 +529,9 @@ contract Lara is Ownable, ILara {
         if (protocolStartTimestamp == 0) {
             protocolStartTimestamp = block.timestamp;
         }
+        if (lastEpochTotalDelegatedAmount == 0) {
+            return;
+        }
         isEpochRunning = true;
         lastEpochStartBlock = block.number;
         emit EpochStarted(totalEpochDelegation, block.timestamp);
