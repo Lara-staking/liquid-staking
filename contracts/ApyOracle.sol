@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// OpenZeppelin Contracts (last updated v4.6.0) (proxy/Proxy.sol rework with call instead of delegatecall)
+// Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
 
 import "./interfaces/IApyOracle.sol";

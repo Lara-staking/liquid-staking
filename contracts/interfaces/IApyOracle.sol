@@ -1,5 +1,5 @@
-// (c) 2023-2024, Taraxa, Inc. All rights reserved.
 // SPDX-License-Identifier: MIT
+// Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
 
 /**

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
 
 import "./IApyOracle.sol";
@@ -21,12 +22,15 @@ interface ILara {
     /**
      * @dev Event emitted when an epoch starts
      */
-    event EpochStarted(uint256 totalEpochDelegation, uint256 timestamp);
+    event EpochStarted(
+        uint256 indexed totalEpochDelegation,
+        uint256 indexed timestamp
+    );
 
     /**
      * @dev Event emitted when all rewards are claimed
      */
-    event AllRewardsClaimed(uint256 amount);
+    event AllRewardsClaimed(uint256 indexed amount);
 
     /**
      * @dev Event emitted when redelegation rewards are claimed

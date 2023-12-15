@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Security contact: elod@apeconsulting.xyz
 pragma solidity ^0.8.0;
 
 /**
