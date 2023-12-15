@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -10,6 +10,10 @@ import {IApyOracle} from "./interfaces/IApyOracle.sol";
 
 import {EpochDurationNotMet, RewardClaimFailed, StakeAmountTooLow, StakeValueTooLow, DelegationFailed, UndelegationFailed, RedelegationFailed, ConfirmUndelegationFailed, CancelUndelegationFailed} from "./errors/SharedErrors.sol";
 
+/**
+ * @title Lara Contract
+ * @dev This contract is used for staking and delegating tokens in the protocol.
+ */
 contract Lara is Ownable, ILara {
     // Reference timestamp for computing epoch number
     uint256 public protocolStartTimestamp;
@@ -70,6 +74,13 @@ contract Lara is Ownable, ILara {
     // Mapping of the undelegated amount of a user
     mapping(address => uint256) public undelegated;
 
+    /**
+     * @dev Constructor for the Lara contract.
+     * @param _sttaraToken The address of the stTARA token contract.
+     * @param _dposContract The address of the DPOS contract.
+     * @param _apyOracle The address of the APY Oracle contract.
+     * @param _treasuryAddress The address of the treasury.
+     */
     constructor(
         address _sttaraToken,
         address _dposContract,
@@ -82,21 +93,29 @@ contract Lara is Ownable, ILara {
         treasuryAddress = _treasuryAddress;
     }
 
+    /**
+     * @dev Fallback function to receive Ether.
+     */
     fallback() external payable {}
 
+    /**
+     * @dev Function to receive Ether.
+     */
     receive() external payable {}
 
     /**
      * @notice Getter for a certain delegator at a certain index
      * @param index the index of the delegator
+     * @return address of the delegator at the given index
      */
     function getDelegatorAtIndex(uint256 index) public view returns (address) {
         return delegators[index];
     }
 
     /**
-     * Checks if a validator is registered in the protocol
+     * @notice Checks if a validator is registered in the protocol
      * @param validator the validator address
+     * @return true if the validator is registered, false otherwise
      */
     function isValidatorRegistered(
         address validator

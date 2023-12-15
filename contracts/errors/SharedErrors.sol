@@ -11,7 +11,6 @@ error NotAuthorized();
  */
 error RewardClaimFailed(uint32 batch);
 
-// Errors
 error StakeAmountTooLow(uint256 amount, uint256 minAmount);
 error StakeValueTooLow(uint256 sentAmount, uint256 targetAmount);
 /**
@@ -23,6 +22,10 @@ error DelegationFailed(
     uint256 amount,
     string reason
 );
+
+/**
+ * @notice It is returned if the undelegation from a certain validator fails.
+ */
 error UndelegationFailed(
     address validator,
     address delegator,
@@ -30,6 +33,9 @@ error UndelegationFailed(
     string reason
 );
 
+/**
+ * @notice It is returned if the redelegation from a certain validator fails.
+ */
 error RedelegationFailed(
     address from,
     address to,
@@ -37,6 +43,9 @@ error RedelegationFailed(
     string reason
 );
 
+/**
+ * @notice It is returned if the undelegation confirmation from a certain validator fails.
+ */
 error ConfirmUndelegationFailed(
     address delegator,
     address validator,
@@ -44,6 +53,9 @@ error ConfirmUndelegationFailed(
     string reason
 );
 
+/**
+ * @notice It is returned if the undelegation cancellation from a certain validator fails.
+ */
 error CancelUndelegationFailed(
     address delegator,
     address validator,
@@ -51,6 +63,9 @@ error CancelUndelegationFailed(
     string reason
 );
 
+/**
+ * @notice It is returned if the epoch duration was not met and the method to end was called.
+ */
 error EpochDurationNotMet(
     uint256 lastEpochStart,
     uint256 currentBlockNumber,

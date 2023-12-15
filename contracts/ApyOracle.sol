@@ -1,11 +1,20 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts (last updated v4.6.0) (proxy/Proxy.sol rework with call instead of delegatecall)
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 import "./interfaces/IApyOracle.sol";
 import "./interfaces/IDPOS.sol";
 
+/**
+ * @title ApyOracle
+ * @dev This contract implements the IApyOracle interface and provides methods for managing nodes and delegations.
+ */
 contract ApyOracle is IApyOracle {
+    /**
+     * @dev Initializes the contract with the given data feed and DPOS contract addresses.
+     * @param dataFeed The address of the data feed contract.
+     * @param dpos The address of the DPOS contract.
+     */
     constructor(address dataFeed, address dpos) {
         _dataFeed = dataFeed;
         _dpos = DposInterface(dpos);
@@ -25,6 +34,9 @@ contract ApyOracle is IApyOracle {
 
     mapping(address => IApyOracle.NodeData) public nodes;
 
+    /**
+     * @dev Modifier to make a function callable only by the data feed contract.
+     */
     modifier OnlyDataFeed() {
         require(
             msg.sender == _dataFeed,
@@ -33,19 +45,35 @@ contract ApyOracle is IApyOracle {
         _;
     }
 
+    /**
+     * @dev Modifier to make a function callable only by the Lara contract.
+     */
     modifier OnlyLara() {
         require(msg.sender == lara, "ApyOracle: caller is not Lara");
         _;
     }
 
+    /**
+     * @dev Sets the Lara contract address.
+     * @param _lara The address of the Lara contract.
+     */
     function setLara(address _lara) external OnlyDataFeed {
         lara = _lara;
     }
 
+    /**
+     * @dev Returns the number of nodes.
+     * @return The number of nodes.
+     */
     function getNodeCount() external view override returns (uint256) {
         return nodeCount;
     }
 
+    /**
+     * @dev Returns a list of tentative re-delegations based on the current validators.
+     * @param currentValidators The current validators.
+     * @return An array of tentative re-delegations.
+     */
     function getRebalanceList(
         TentativeDelegation[] memory currentValidators
     ) external override OnlyLara returns (TentativeReDelegation[] memory) {
@@ -121,8 +149,9 @@ contract ApyOracle is IApyOracle {
     }
 
     /**
-     * Returns the list of nodes that can be delegated to, along with the amount that can be delegated to each node.
-     * @param amount The amount to be delegated
+     * @dev Returns a list of nodes that can be delegated to, along with the amount that can be delegated to each node.
+     * @param amount The amount to be delegated.
+     * @return An array of tentative delegations.
      */
     function getNodesForDelegation(
         uint256 amount
@@ -180,20 +209,37 @@ contract ApyOracle is IApyOracle {
         return result;
     }
 
+    /**
+     * @dev Updates the node count.
+     * @param count The new node count.
+     */
     function updateNodeCount(uint256 count) external override OnlyDataFeed {
         nodeCount = count;
     }
 
+    /**
+     * @dev Returns the address of the data feed contract.
+     * @return The address of the data feed contract.
+     */
     function getDataFeedAddress() external view returns (address) {
         return _dataFeed;
     }
 
+    /**
+     * @dev Returns the data of a specific node.
+     * @param node The address of the node.
+     * @return The data of the node.
+     */
     function getNodeData(
         address node
     ) external view override returns (IApyOracle.NodeData memory) {
         return nodes[node];
     }
 
+    /**
+     * @dev Updates the data of multiple nodes at once.
+     * @param data An array of node data.
+     */
     function batchUpdateNodeData(
         IApyOracle.NodeData[] memory data
     ) external override OnlyDataFeed {
@@ -206,6 +252,11 @@ contract ApyOracle is IApyOracle {
         nodeCount = nodesList.length;
     }
 
+    /**
+     * @dev Updates the data of a specific node.
+     * @param node The address of the node.
+     * @param data The new data of the node.
+     */
     function updateNodeData(
         address node,
         NodeData memory data
@@ -226,12 +277,21 @@ contract ApyOracle is IApyOracle {
         emit NodeDataUpdated(node, data.apy, data.rating);
     }
 
+    /**
+     * @dev Sets the maximum stake capacity for a validator.
+     * @param capacity The new maximum stake capacity.
+     */
     function setMaxValidatorStakeCapacity(
         uint256 capacity
     ) external OnlyDataFeed {
         maxValidatorStakeCapacity = capacity;
     }
 
+    /**
+     * @dev Sorts an array of tentative delegations by rating.
+     * @param delegations The array of tentative delegations to sort.
+     * @return The sorted array of tentative delegations.
+     */
     function sortTentativeDelegationsByRating(
         TentativeDelegation[] memory delegations
     ) private pure returns (TentativeDelegation[] memory) {
