@@ -1,7 +1,7 @@
 import { ethers } from "hardhat";
 import { expect } from "chai";
 import * as dotenv from "dotenv";
-import { BigNumberish, Contract, toBigInt, Wallet,Typed, parseEther, HDNodeWallet } from "ethers";
+import { BigNumberish, Contract, toBigInt, Wallet,Typed, parseEther, HDNodeWallet, Signer } from "ethers";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import { ApyOracle, Lara, MockDpos, StTARA } from "../typechain";
 import {
@@ -31,11 +31,14 @@ async function transferNativeTokens(senderWallet: Wallet | SignerWithAddress, re
     await senderWallet.sendTransaction(transaction);
 }
 
-async function generateWallets(count: number): Promise<{ wallet: HDNodeWallet, address: string; isValidator: boolean; }[]> {    const wallets = [];
+async function generateWallets(count: number): Promise<{ wallet: Signer, address: string; isValidator: boolean; }[]> {    
+    const wallets = [];
+
     for (let i = 0; i < count; i++) {
-        const wallet = ethers.Wallet.createRandom(ethers.provider);
+        let wallet: Signer = ethers.Wallet.createRandom(ethers.provider);
         const isValidator = i < VALIDATOR_COUNT;
-        wallets.push({ wallet: wallet, address: wallet.address, isValidator });
+        let walletAddress = await wallet.getAddress();
+        wallets.push({ wallet: wallet, address: walletAddress, isValidator });
     }
     return wallets;
 }
@@ -84,7 +87,7 @@ async function randomTransferAndStake(stakerWallet: Wallet | SignerWithAddress, 
 }
 
 export interface WalletInfo {
-    wallet: HDNodeWallet;
+    wallet: Signer;
     address: string;
     isValidator: boolean;
 }
@@ -147,27 +150,6 @@ describe("Token Distribution", function () {
             ethers.Wallet.createRandom().address
         );
         await stTara.setLaraAddress(await lara.getAddress());
-
-        // let v1AddressBefore = await ethers.provider.getBalance(v1.address);
-        // console.log("🚀 ~ file: distributionScript.test.ts:152 ~ v1AddressBefore:", v1AddressBefore)
-        // let v2AddressBefore = await ethers.provider.getBalance(v2.address);
-        // console.log("🚀 ~ file: distributionScript.test.ts:154 ~ v2AddressBefore:", v2AddressBefore)
-        // let v3AddressBefore = await ethers.provider.getBalance(v3.address);
-        // console.log("🚀 ~ file: distributionScript.test.ts:156 ~ v3AddressBefore:", v3AddressBefore)
-        
-        // let v1InitialTotalStake = (await mockDpos.getValidator(v1.address)).total_stake;
-        // console.log("🚀 ~ file: distributionScript.test.ts:151 ~ v1InitialTotalStake:", v1InitialTotalStake)
-        // let v2InitialTotalStake = (await mockDpos.getValidator(v2.address)).total_stake;
-        // console.log("🚀 ~ file: distributionScript.test.ts:152 ~ v2InitialTotalStake:", v2InitialTotalStake)
-        // let v3InitialTotalStake = (await mockDpos.getValidator(v3.address)).total_stake;
-        // console.log("🚀 ~ file: distributionScript.test.ts:153 ~ v3InitialTotalStake:", v3InitialTotalStake)
-
-        // let v1AddressAfter = await ethers.provider.getBalance(v1.address);
-        // console.log("🚀 ~ file: distributionScript.test.ts:163 ~ v1AddressAfter:", v1AddressAfter)
-        // let v2AddressAfter = await ethers.provider.getBalance(v2.address);
-        // console.log("🚀 ~ file: distributionScript.test.ts:167 ~ v2AddressAfter:", v2AddressAfter)
-        // let v3AddressAfter = await ethers.provider.getBalance(v3.address);
-        // console.log("🚀 ~ file: distributionScript.test.ts:170 ~ v3AddressAfter:", v3AddressAfter)
     });
 
     it("should distribute funds to validators", async function () {
@@ -187,18 +169,18 @@ describe("Token Distribution", function () {
 
     it("should distribute user tokens without exceeding the max limit", async function () {
         const totalDistributed = userAllocations.reduce((acc, val) => Number(acc) + Number(val), 0);
-        console.log("🚀 ~ file: distributionScript.test.ts:88 ~ totalDistributed:", totalDistributed)
         expect(totalDistributed).to.be.lessThanOrEqual(MAX_TARA_USERS);
     });
 
     it("should stake all available tara to Lara from user addresses", async function () {
         for (let i = 0; i < userWallets.length; i++) {
             let staker = userWallets[i].wallet;
-            let stakerBalance = await ethers.provider.getBalance(staker.address);
+            let stakerAddress = userWallets[i].address;
+            let stakerBalance = await ethers.provider.getBalance(stakerAddress);
             const gasBuffer = ethers.parseEther("1");
             stakerBalance = stakerBalance - gasBuffer;
 
-            const stakedAmountBefore = await lara.stakedAmounts(staker.address);
+            const stakedAmountBefore = await lara.stakedAmounts(stakerAddress);
             console.log("🚀 ~ file: distributionScript.test.ts:213 ~ stakedAmountBefore:", stakedAmountBefore)
             const stakeTx = lara
               .connect(staker)
@@ -212,9 +194,9 @@ describe("Token Distribution", function () {
             );
             await expect(stakeTx)
               .to.emit(lara, "Staked")
-              .withArgs(staker.address, stakerBalance);
+              .withArgs(stakerAddress, stakerBalance);
         
-            const stakedAmountAfter = await lara.stakedAmounts(staker.address);
+            const stakedAmountAfter = await lara.stakedAmounts(stakerAddress);
             console.log("🚀 ~ file: distributionScript.test.ts:227 ~ stakedAmountAfter:", stakedAmountAfter)
             expect(stakedAmountAfter).to.equal(
               stakedAmountBefore + toBigInt(stakerBalance)
@@ -223,23 +205,23 @@ describe("Token Distribution", function () {
     });
 
     
-    // it("should randomly transfer and stake tokens", async function () {
-    //     this.timeout(0); // Disable Mocha timeout
-    //     const someNumberOfIterations = 50;
+    it("should randomly transfer and stake tokens", async function () {
+        this.timeout(0); // Disable Mocha timeout
+        const someNumberOfIterations = 50;
 
-    //     async function simulateRandomActions() {
-    //         for (let i = 0; i < someNumberOfIterations; i++) {
-    //             await randomTransferAndStake(genesisWallet, userWallets, lara);
+        async function simulateRandomActions() {
+            for (let i = 0; i < someNumberOfIterations; i++) {
+                await randomTransferAndStake(genesisWallet, userWallets, lara);
 
-    //             // Wait for a random period
-    //             console.log("Waiting for a random period before the next action");
-    //             await new Promise(resolve => setTimeout(resolve, Math.random() * 5));
-    //             console.log("Finished waiting for a random period");
-    //         }
-    //     }
+                // Wait for a random period
+                console.log("Waiting for a random period before the next action");
+                await new Promise(resolve => setTimeout(resolve, Math.random() * 5));
+                console.log("Finished waiting for a random period");
+            }
+        }
 
-    //     await simulateRandomActions();
-    // });
+        await simulateRandomActions();
+    });
 
 
 });
