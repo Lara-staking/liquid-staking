@@ -211,10 +211,7 @@ contract Lara is Ownable, ILara {
     }
 
     function rebalance() public {
-        require(
-            isEpochRunning == false,
-            "Cannot rebalance during staking epoch"
-        );
+        require(!isEpochRunning, "Cannot rebalance during staking epoch");
         IApyOracle.TentativeDelegation[]
             memory delegationList = buildCurrentDelegationArray();
         // Get the rebalance list from the oracle
@@ -249,10 +246,7 @@ contract Lara is Ownable, ILara {
         uint256 amount,
         uint256 rating
     ) internal {
-        require(
-            isEpochRunning == false,
-            "Cannot redelegate during staking epoch"
-        );
+        require(!isEpochRunning, "Cannot redelegate during staking epoch");
         require(
             protocolTotalStakeAtValidator[from] >= amount,
             "Amount exceeds the total stake at the validator"
