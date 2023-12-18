@@ -33,10 +33,10 @@ contract DeployLara is Script {
             revert("Lara owner is not deployer");
         }
         // check datafeed
-        if (apyOracle._dataFeed() != deployerAddress) {
+        if (apyOracle.DATA_FEED() != deployerAddress) {
             revert("ApyOracle datafeed is not deployer");
         }
-        if (address(apyOracle._dpos()) != dposAddress) {
+        if (address(apyOracle.DPOS()) != dposAddress) {
             revert("ApyOracle dpos is not dposAddress");
         }
         if (stTara.lara() != address(lara)) {
