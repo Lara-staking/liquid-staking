@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity 0.8.20;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
@@ -7,6 +7,8 @@ import "../Lara.sol";
 import "../mocks/MockDpos.sol";
 import "./SetUpTest.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../errors/SharedErrors.sol";
+
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract LaraSetterTest is Test, TestSetup {
     address[] delegators = new address[](6);
@@ -36,7 +38,10 @@ contract LaraSetterTest is Test, TestSetup {
 
         if (setter != owner) {
             vm.prank(setter);
-            vm.expectRevert("Ownable: caller is not the owner");
+            bytes4 selector = bytes4(
+                keccak256(bytes("OwnableUnauthorizedAccount(address)"))
+            );
+            vm.expectRevert(abi.encodeWithSelector(selector, setter));
             lara.setMaxValidatorStakeCapacity(1000 ether);
             return;
         } else {
@@ -56,7 +61,10 @@ contract LaraSetterTest is Test, TestSetup {
 
         if (setter != owner) {
             vm.prank(setter);
-            vm.expectRevert("Ownable: caller is not the owner");
+            bytes4 selector = bytes4(
+                keccak256(bytes("OwnableUnauthorizedAccount(address)"))
+            );
+            vm.expectRevert(abi.encodeWithSelector(selector, setter));
             lara.setMinStakeAmount(1000 ether);
             return;
         } else {

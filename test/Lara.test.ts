@@ -42,7 +42,8 @@ describe(ContractNames.lara, function () {
     lara = await deployLara(
       await stTara.getAddress(),
       await mockDpos.getAddress(),
-      await apyOracle.getAddress()
+      await apyOracle.getAddress(),
+      ethers.Wallet.createRandom().address
     );
     await stTara.setLaraAddress(await lara.getAddress());
     v1InitialTotalStake = (await mockDpos.getValidator(v1.address)).total_stake;
@@ -76,7 +77,7 @@ describe(ContractNames.lara, function () {
           .setMaxValidatorStakeCapacity(
             initialMaxValidatorStakeCap + toBigInt(10)
           )
-      ).to.be.revertedWith("Ownable: caller is not the owner");
+      ).to.be.revertedWithCustomError(lara, "OwnableUnauthorizedAccount");
     });
 
     it("should allow setting max valdiator stake capacity if called by the owner", async () => {
@@ -101,7 +102,7 @@ describe(ContractNames.lara, function () {
         lara
           .connect(randomAccount)
           .setMinStakeAmount(initialMinStake + toBigInt(10))
-      ).to.be.revertedWith("Ownable: caller is not the owner");
+      ).to.be.revertedWithCustomError(stTara, "OwnableUnauthorizedAccount");
     });
 
     it("should allow setting min stake amount if called by owner", async () => {
@@ -177,19 +178,23 @@ describe(ContractNames.lara, function () {
       const stakeTx3 = lara
         .connect(staker)
         .stake(amountToStake, { value: amountToStake });
-      await expect(stakeTx3)
-        .to.emit(lara, "Staked")
-        .withArgs(staker.address, amountToStake);
-      await expect(stakeTx3).to.changeTokenBalance(
-        stTara,
-        staker,
-        amountToStake
-      );
-      await expect(stakeTx3).to.changeEtherBalance(
-        staker,
-        amountToStake * toBigInt(-1)
-      );
-
+      const receipt = await stakeTx3;
+      const tx = await receipt.wait();
+      if (tx) {
+        const totalGasUsed = tx.gasUsed * receipt.gasPrice;
+        await expect(stakeTx3)
+          .to.emit(lara, "Staked")
+          .withArgs(staker.address, amountToStake);
+        await expect(stakeTx3).to.changeTokenBalance(
+          stTara,
+          staker,
+          amountToStake
+        );
+        await expect(stakeTx3).to.changeEtherBalance(
+          staker,
+          amountToStake * toBigInt(-1) - totalGasUsed
+        );
+      }
       const stakedAmountAfter = await lara.stakedAmounts(staker.address);
       expect(stakedAmountAfter).to.equal(
         stakedAmountBefore + toBigInt(amountToStake)
@@ -210,20 +215,27 @@ describe(ContractNames.lara, function () {
       const stakeTx4 = lara
         .connect(staker)
         .stake(amountToStake, { value: amountToStake });
-      await expect(stakeTx4)
-        .to.emit(lara, "Staked")
-        .withArgs(staker.address, amountToStake);
-      await expect(stakeTx4).to.changeTokenBalance(
-        stTara,
-        staker,
-        amountToStake - toBigInt(surplusAmount) + ethers.parseEther("1000")
-      );
-      await expect(stakeTx4).to.changeEtherBalance(
-        staker,
-        (amountToStake - toBigInt(surplusAmount) + ethers.parseEther("1000")) *
-          toBigInt(-1)
-      );
-
+      const receipt = await stakeTx4;
+      const tx = await receipt.wait();
+      if (tx) {
+        const totalGasUsed = tx.gasUsed * receipt.gasPrice;
+        await expect(stakeTx4)
+          .to.emit(lara, "Staked")
+          .withArgs(staker.address, amountToStake);
+        await expect(stakeTx4).to.changeTokenBalance(
+          stTara,
+          staker,
+          amountToStake - toBigInt(surplusAmount) + ethers.parseEther("1000")
+        );
+        await expect(stakeTx4).to.changeEtherBalance(
+          staker,
+          (amountToStake -
+            toBigInt(surplusAmount) +
+            ethers.parseEther("1000")) *
+            toBigInt(-1) -
+            totalGasUsed
+        );
+      }
       const stakedAmountAfter = await lara.stakedAmounts(staker.address);
       expect(stakedAmountAfter).to.equal(
         stakedAmountBefore +

@@ -1,6 +1,6 @@
 // (c) 2023-2024, Taraxa, Inc. All rights reserved.
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+pragma solidity 0.8.20;
 
 import "./MockIDPOS.sol";
 
@@ -25,6 +25,7 @@ contract MockDpos is MockIDPOS {
                     0,
                     100,
                     uint64(block.number),
+                    0,
                     msg.sender,
                     "Sample description",
                     "https://endpoint.some"
@@ -139,6 +140,7 @@ contract MockDpos is MockIDPOS {
             0,
             commission,
             uint64(block.number),
+            0,
             msg.sender,
             description,
             endpoint
@@ -250,6 +252,7 @@ contract MockDpos is MockIDPOS {
                     0,
                     100,
                     uint64(block.number),
+                    0,
                     msg.sender,
                     "Sample description",
                     "https://endpoint.some"

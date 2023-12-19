@@ -24,9 +24,19 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 // Go to https://hardhat.org/config/ to learn more
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.17",
+  solidity: {
+    version: "0.8.20",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 1000,
+      },
+    },
+  },
   networks: {
     hardhat: {
+      hardfork: "berlin",
+      allowUnlimitedContractSize: true,
       accounts:
         process.env.TEST_KEY_1 !== undefined
           ? [
@@ -62,12 +72,15 @@ const config: HardhatUserConfig = {
           : [],
     },
     local: {
+      hardfork: "berlin",
       url: "http://127.0.0.1:8545/",
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      allowUnlimitedContractSize: true,
     },
     mainnet: {
       chainId: 841,
+      hardfork: "berlin",
       url: process.env.TARA_MAINNET_URL || "",
       gas: 10000000,
       gasPrice: 10000000,
@@ -75,14 +88,15 @@ const config: HardhatUserConfig = {
     },
     testnet: {
       chainId: 842,
+      hardfork: "berlin",
       url: process.env.TARA_TESTNET_URL || "",
-      gas: 2100000,
-      gasPrice: 8000000000,
-      gasMultiplier: 20,
+      gas: 10000000,
+      gasPrice: 10000000,
       allowUnlimitedContractSize: true,
     },
     devnet: {
       chainId: 843,
+      hardfork: "berlin",
       url: process.env.TARA_DEVNET_URL || "",
       gas: 2100000,
       gasPrice: 8000000000,
@@ -93,6 +107,7 @@ const config: HardhatUserConfig = {
       url: process.env.ROPSTEN_URL || "",
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      allowUnlimitedContractSize: true,
     },
   },
   gasReporter: {

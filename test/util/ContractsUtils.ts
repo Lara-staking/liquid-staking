@@ -65,13 +65,15 @@ export async function deployMockDpos() {
 export async function deployLara(
   stTaraAddress: string,
   mockDposAddress: string,
-  apyOracleAddress: string
+  apyOracleAddress: string,
+  treasuryAddress: string
 ) {
   const Lara = await ethers.getContractFactory(ContractNames.lara);
   const lara = await Lara.deploy(
     stTaraAddress,
     mockDposAddress,
-    apyOracleAddress
+    apyOracleAddress,
+    treasuryAddress
   );
 
   return await lara.waitForDeployment();

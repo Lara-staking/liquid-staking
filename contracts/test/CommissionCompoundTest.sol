@@ -11,7 +11,7 @@ import "../stTara.sol";
 import "./SetUpTest.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../errors/SharedErrors.sol";
 
-contract CompoundTest is Test, TestSetup {
+contract CommissionTest is Test, TestSetup {
     address staker0 = address(this);
     address staker1 = address(333);
     address staker2 = address(444);
@@ -21,7 +21,7 @@ contract CompoundTest is Test, TestSetup {
     function setUp() public {
         super.setupValidators();
         super.setupApyOracle();
-        super.setupLara();
+        super.setupLaraWithCommission(10);
     }
 
     function getTotalDposStake() public view returns (uint256) {
@@ -160,6 +160,8 @@ contract CompoundTest is Test, TestSetup {
         );
 
         uint256 balanceOfStakerAfter = address(staker1).balance;
+        uint256 totalRewards = amount / 100 + 100 ether;
+        uint256 expectedCommission = (totalRewards * lara.commission()) / 100;
         assertEq(
             lara.delegatedAmounts(staker1),
             amount,
@@ -167,8 +169,13 @@ contract CompoundTest is Test, TestSetup {
         );
         assertEq(
             lara.claimableRewards(staker1),
-            1000100 ether,
+            totalRewards - expectedCommission,
             "Staker should have received rewards"
+        );
+        assertEq(
+            address(lara.treasuryAddress()).balance,
+            expectedCommission,
+            "Treasurer should have received commission"
         );
 
         assertEq(
@@ -180,20 +187,21 @@ contract CompoundTest is Test, TestSetup {
 
     function calculateExpectedRewardForUser(
         address staker
-    ) public view returns (uint256) {
+    ) public returns (uint256, uint256) {
         uint256 totalRewards = getTotalDposStake() / 100 + 100 ether;
+        uint256 commission = (totalRewards * lara.commission()) / 100;
 
         uint256 stakerDelegated = lara.delegatedAmounts(staker);
         uint256 totalDelegatedInLastEpoch = lara
             .lastEpochTotalDelegatedAmount();
 
-        uint256 expectedRewardStaker = (stakerDelegated * totalRewards) /
-            totalDelegatedInLastEpoch;
-        return expectedRewardStaker;
+        uint256 expectedRewardStaker = (stakerDelegated *
+            (totalRewards - commission)) / totalDelegatedInLastEpoch;
+        return (expectedRewardStaker, commission);
     }
 
     // now we launch a second epoch without compound being set
-    function test_launchNextEpoch() public {
+    function test_commission_launchNextEpoch() public {
         // staker 1 stakes 100000 ether
         vm.prank(staker1);
         vm.deal(staker1, 100000 ether);
@@ -207,6 +215,8 @@ contract CompoundTest is Test, TestSetup {
         // we start the epoch
         lara.startEpoch();
 
+        uint256 epochDuration = lara.epochDuration();
+
         assertEq(
             lara.lastEpochTotalDelegatedAmount(),
             200000 ether, // there were no other delegations
@@ -219,8 +229,25 @@ contract CompoundTest is Test, TestSetup {
         lara.endEpoch();
 
         // check the rewards
-        uint256 expectedRewardStaker1 = calculateExpectedRewardForUser(staker1);
-        uint256 expectedRewardStaker2 = calculateExpectedRewardForUser(staker2);
+        (
+            uint256 expectedRewardStaker1,
+            uint256 commission
+        ) = calculateExpectedRewardForUser(staker1);
+        (uint256 expectedRewardStaker2, ) = calculateExpectedRewardForUser(
+            staker2
+        );
+
+        assertEq(
+            address(lara.treasuryAddress()).balance,
+            commission,
+            "Treasurer should have received commission"
+        );
+
+        assertEq(
+            expectedRewardStaker1,
+            expectedRewardStaker2,
+            "Rewards should be the same"
+        );
         uint256 delegatedAmountStaker1 = lara.delegatedAmounts(staker1);
         uint256 delegatedAmountStaker2 = lara.delegatedAmounts(staker2);
         uint256 claimableRewardsStaker1 = lara.claimableRewards(staker1);
@@ -269,9 +296,17 @@ contract CompoundTest is Test, TestSetup {
 
         // check rewards, they should be higher for staker1 but the same for staker2
 
-        uint256 expectedRewardStaker1AfterCompound = calculateExpectedRewardForUser(
-                staker1
-            );
+        (
+            uint256 expectedRewardStaker1AfterCompound,
+            uint256 commissionSecond
+        ) = calculateExpectedRewardForUser(staker1);
+
+        // check the treasury balance
+        assertEq(
+            address(lara.treasuryAddress()).balance,
+            commission + commissionSecond,
+            "Treasury should have received all commissions"
+        );
 
         assertEq(
             lara.claimableRewards(staker1),
@@ -288,6 +323,7 @@ contract CompoundTest is Test, TestSetup {
 
         // staker1 claims rewards
         uint256 balanceOfStakerBefore = address(staker1).balance;
+        uint256 balanceOfTreasuryBefore = address(treasuryAddress).balance;
         vm.prank(staker1);
         lara.claimRewards();
         uint256 balanceOfStakerAfter = address(staker1).balance;
@@ -299,18 +335,28 @@ contract CompoundTest is Test, TestSetup {
             "staker1 should have received expectedRewardStaker1 + expectedRewardStaker1AfterCompound"
         );
 
+        // check treasury balance
+        assertEq(
+            address(lara.treasuryAddress()).balance,
+            commission + commissionSecond,
+            "Treasury should have received commission"
+        );
+
         // staker2 claims rewards
         balanceOfStakerBefore = address(staker2).balance;
         vm.prank(staker2);
         lara.claimRewards();
         balanceOfStakerAfter = address(staker2).balance;
 
+        (expectedRewardStaker2, ) = calculateExpectedRewardForUser(staker2);
+        expectedRewardStaker2 = expectedRewardStaker2 * 2;
+
         // staker2 should have received expectedRewardStaker2 * 2
         assertApproxEqRel(
             balanceOfStakerAfter - balanceOfStakerBefore,
-            expectedRewardStaker2 * 2,
+            expectedRewardStaker2,
             0.04e18,
-            "staker2 should have received expectedRewardStaker2 * 2"
+            "staker2 should have received twice the rewards -  10%"
         );
     }
 }

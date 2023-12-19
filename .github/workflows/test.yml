@@ -44,8 +44,6 @@ jobs:
         run: yarn install
       - name: Run Foundry tests
         run: forge test -vvv
-      - name: Run snapshot
-        run: forge snapshot
       - name: Install and Build 🔧 🚚
         run: yarn
       - name: Run Hardhat tests

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity 0.8.20;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
@@ -15,6 +15,8 @@ abstract contract TestSetup is Test {
     ApyOracle mockApyOracle;
     MockDpos mockDpos;
     stTARA stTaraToken;
+
+    address treasuryAddress = address(9999);
 
     uint16 numValidators = 12;
 
@@ -74,9 +76,34 @@ abstract contract TestSetup is Test {
         lara = new Lara(
             address(stTaraToken),
             address(mockDpos),
-            address(mockApyOracle)
+            address(mockApyOracle),
+            treasuryAddress
         );
         stTaraToken.setLaraAddress(address(lara));
+        mockApyOracle.setLara(address(lara));
+        assertEq(
+            mockApyOracle.lara(),
+            address(lara),
+            "Lara address was not set successfully"
+        );
+    }
+
+    function setupLaraWithCommission(uint256 commission) public {
+        stTaraToken = new stTARA();
+        lara = new Lara(
+            address(stTaraToken),
+            address(mockDpos),
+            address(mockApyOracle),
+            treasuryAddress
+        );
+        stTaraToken.setLaraAddress(address(lara));
+        mockApyOracle.setLara(address(lara));
+        assertEq(
+            mockApyOracle.lara(),
+            address(lara),
+            "Lara address was not set successfully"
+        );
+        lara.setCommission(commission);
     }
 
     function checkValidatorTotalStakesAreZero() public {
@@ -106,5 +133,35 @@ abstract contract TestSetup is Test {
             }
         }
         return address(0);
+    }
+
+    function batchUpdateNodeData(uint16 multiplier, bool reverse) public {
+        IApyOracle.NodeData[] memory nodeData = new IApyOracle.NodeData[](
+            validators.length
+        );
+        if (reverse) {
+            for (uint16 i = uint16(validators.length); i > 0; i--) {
+                nodeData[validators.length - i] = IApyOracle.NodeData({
+                    account: validators[i - 1],
+                    rank: uint16(validators.length - i),
+                    apy: 1000 - i * multiplier,
+                    fromBlock: 1,
+                    toBlock: 15000,
+                    rating: 813 + i * 10 * multiplier //meaning 8.13
+                });
+            }
+        } else {
+            for (uint16 i = 0; i < validators.length; i++) {
+                nodeData[i] = IApyOracle.NodeData({
+                    account: validators[i],
+                    rank: i + 1,
+                    apy: 1000 - i * multiplier,
+                    fromBlock: 1,
+                    toBlock: 15000,
+                    rating: 813 + i * 10 * multiplier
+                });
+            }
+        }
+        mockApyOracle.batchUpdateNodeData(nodeData);
     }
 }
