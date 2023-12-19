@@ -26,10 +26,17 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.20",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 1000,
+      },
+    },
   },
   networks: {
     hardhat: {
       hardfork: "berlin",
+      allowUnlimitedContractSize: true,
       accounts:
         process.env.TEST_KEY_1 !== undefined
           ? [
@@ -69,6 +76,7 @@ const config: HardhatUserConfig = {
       url: "http://127.0.0.1:8545/",
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      allowUnlimitedContractSize: true,
     },
     mainnet: {
       chainId: 841,
@@ -99,6 +107,7 @@ const config: HardhatUserConfig = {
       url: process.env.ROPSTEN_URL || "",
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      allowUnlimitedContractSize: true,
     },
   },
   gasReporter: {

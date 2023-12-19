@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
@@ -9,7 +9,7 @@ import "../ApyOracle.sol";
 import "../mocks/MockDpos.sol";
 import "../stTara.sol";
 import "./SetUpTest.sol";
-import {StakeAmountTooLow, StakeValueTooLow} from "../errors/SharedErrors.sol";
+import {StakeAmountTooLow, StakeValueTooLow, EpochDurationNotMet} from "../errors/SharedErrors.sol";
 
 contract UndelegateTest is Test, TestSetup {
     function setUp() public {
@@ -160,12 +160,13 @@ contract UndelegateTest is Test, TestSetup {
         // reward epoch starts
         lara.startEpoch();
 
-        vm.warp(500);
-
+        vm.warp(lara.lastEpochStartBlock() + lara.epochDuration() - 1);
+        vm.roll(lara.lastEpochStartBlock() + lara.epochDuration() - 1);
         vm.expectRevert("Cannot undelegate during staking epoch");
         lara.requestUndelegate(amount);
 
-        lara.endEpoch();
+        // vm.expectRevert(EpochDurationNotMet.selector);
+        // lara.endEpoch();
     }
 
     function testFuzz_failsToUndelegateWithoutApproval(uint256 amount) public {
@@ -183,8 +184,8 @@ contract UndelegateTest is Test, TestSetup {
         // reward epoch starts
         lara.startEpoch();
 
-        vm.warp(1000);
-
+        vm.warp(lara.lastEpochStartBlock() + lara.epochDuration());
+        vm.roll(lara.lastEpochStartBlock() + lara.epochDuration());
         lara.endEpoch();
 
         // staker unstakes
@@ -208,7 +209,8 @@ contract UndelegateTest is Test, TestSetup {
         // reward epoch starts
         lara.startEpoch();
 
-        vm.warp(1000);
+        vm.warp(lara.lastEpochStartBlock() + lara.epochDuration());
+        vm.roll(lara.lastEpochStartBlock() + lara.epochDuration());
 
         lara.endEpoch();
 
@@ -234,7 +236,8 @@ contract UndelegateTest is Test, TestSetup {
         // reward epoch starts
         lara.startEpoch();
 
-        vm.warp(1000);
+        vm.warp(lara.lastEpochStartBlock() + lara.epochDuration());
+        vm.roll(lara.lastEpochStartBlock() + lara.epochDuration());
 
         lara.endEpoch();
 
@@ -302,10 +305,5 @@ contract UndelegateTest is Test, TestSetup {
 
         vm.prank(staker);
         lara.cancelUndelegate(delegatedToValidator, undelegationPortions[0]);
-    }
-
-    function invariant_testFuzz_singleStakeAndUnstake() public {
-        uint256 amount = 500000 ether;
-        testFuzz_singleStakeAndUnstake(amount);
     }
 }

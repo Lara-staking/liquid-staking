@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
@@ -12,10 +12,13 @@ import "./SetUpTest.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../errors/SharedErrors.sol";
 
 contract DelegateTest is Test, TestSetup {
+    uint256 epochDuration = 0;
+
     function setUp() public {
         super.setupValidators();
         super.setupApyOracle();
         super.setupLara();
+        epochDuration = lara.epochDuration();
     }
 
     function testGetNodesForDelegation() public {
@@ -23,6 +26,7 @@ contract DelegateTest is Test, TestSetup {
         uint256 amount = 500000 ether;
 
         // call the function
+        vm.prank(address(lara));
         IApyOracle.TentativeDelegation[]
             memory tentativeDelegations = mockApyOracle.getNodesForDelegation(
                 amount
@@ -39,6 +43,7 @@ contract DelegateTest is Test, TestSetup {
         vm.assume(amount > 1000 ether);
         vm.assume(amount < 94800000 ether);
         // call the function
+        vm.prank(address(lara));
         IApyOracle.TentativeDelegation[]
             memory tentativeDelegations = mockApyOracle.getNodesForDelegation(
                 amount
@@ -181,6 +186,7 @@ contract DelegateTest is Test, TestSetup {
 
         // end the epoch
         uint256 balanceOfStakerBefore = address(staker1).balance;
+        vm.roll(epochDuration + lara.lastEpochStartBlock());
         lara.endEpoch();
 
         address firstValidatorDelegated = findValidatorWithStake(

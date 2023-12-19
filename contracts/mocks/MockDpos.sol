@@ -1,6 +1,6 @@
 // (c) 2023-2024, Taraxa, Inc. All rights reserved.
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
 import "./MockIDPOS.sol";
 
