@@ -3,12 +3,9 @@ on:
   push:
     paths:
       - contracts/**
-  pull_request:
-    paths:
-      - contracts/**
-    types: [opened, synchronize, closed]
+      - .github/workflows/test.yml
 jobs:
-  test-contracts:
+  test-contracts-hardhat:
     runs-on: ubuntu-latest
     env:
       ETHERSCAN_API_KEY: ABC123ABC123ABC123ABC123ABC123ABC1
@@ -29,16 +26,24 @@ jobs:
       TEST_KEY_6: a2939087d5872960bc3ea08530ba9f7accde6a0af7371cbdf2ddef70d3731692
       TEST_KEY_7: 85604fd7b8e6b0065c639046f6084a3b46560d90e96c1b56c6cf2fa69268ea4a
     steps:
-      - name: Checkout 🛎️
-        uses: actions/checkout@v3
-      - name: Setup NodeJS 16
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v3
         with:
-          node-version: 16.x
-      - name: Show NodeJS version    
-        run: node -v
+          submodules: recursive
+
+      - name: foundry-toolchain
+        uses: foundry-rs/foundry-toolchain@v1.0.10
+      - name: Install dependencies
+        run: forge install
+      - name: install Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '18.x' 
       - name: Install yarn
-        run: npm i -g yarn
+        run: npm install -g yarn
+      - name: install dependencies
+        run: yarn install
+      - name: Run Foundry tests
+        run: forge test -vvv
       - name: Install and Build 🔧 🚚
         run: yarn
       - name: Run Hardhat tests

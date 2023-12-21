@@ -1,6 +1,6 @@
 // (c) 2023-2024, Taraxa, Inc. All rights reserved.
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+pragma solidity 0.8.20;
 
 interface MockIDPOS {
     event Delegated(
@@ -29,12 +29,17 @@ interface MockIDPOS {
         address indexed to,
         uint256 amount
     );
-    event RewardsClaimed(address indexed account, address indexed validator);
+    event RewardsClaimed(
+        address indexed account,
+        address indexed validator,
+        uint256 amount
+    );
     event CommissionRewardsClaimed(
         address indexed account,
-        address indexed validator
+        address indexed validator,
+        uint256 amount
     );
-    event CommissionSet(address indexed validator, uint16 comission);
+    event CommissionSet(address indexed validator, uint16 commission);
     event ValidatorRegistered(address indexed validator);
     event ValidatorInfoSet(address indexed validator);
 
@@ -43,10 +48,12 @@ interface MockIDPOS {
         uint256 total_stake;
         // Validator's reward from delegators rewards commission
         uint256 commission_reward;
-        // Validator's commission - max value 1000(precision up to 0.1%)
+        // Validator's commission - max value 10000(precision up to 0.01%)
         uint16 commission;
         // Block number of last commission change
         uint64 last_commission_change;
+        // Number of ongoing undelegations from the validator
+        uint16 undelegations_count;
         // Validator's owner account
         address owner;
         // Validators description/name
@@ -126,4 +133,18 @@ interface MockIDPOS {
         address owner,
         uint32 batch
     ) external view returns (ValidatorData[] memory validators, bool end);
+
+    function claimAllRewards(uint32 batch) external returns (bool end);
+
+    function reDelegate(
+        address validator_from,
+        address validator_to,
+        uint256 amount
+    ) external;
+
+    // Confirms undelegate request
+    function confirmUndelegate(address validator) external;
+
+    // Cancel undelegate request
+    function cancelUndelegate(address validator) external;
 }
