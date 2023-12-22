@@ -72,3 +72,8 @@ error EpochDurationNotMet(
     uint256 currentBlockNumber,
     uint256 epochDuration
 );
+
+/**
+ * @notice It is returned if the user doesn't have enough balance of stTARA.
+ */
+error NotEnoughStTARA(address user, uint256 balance, uint256 amount);

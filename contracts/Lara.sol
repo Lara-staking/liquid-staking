@@ -9,7 +9,7 @@ import {ILara} from "./interfaces/ILara.sol";
 import {DposInterface} from "./interfaces/IDPOS.sol";
 import {IApyOracle} from "./interfaces/IApyOracle.sol";
 
-import {EpochDurationNotMet, RewardClaimFailed, StakeAmountTooLow, StakeValueTooLow, DelegationFailed, UndelegationFailed, RedelegationFailed, ConfirmUndelegationFailed, CancelUndelegationFailed} from "./errors/SharedErrors.sol";
+import {NotEnoughStTARA, EpochDurationNotMet, RewardClaimFailed, StakeAmountTooLow, StakeValueTooLow, DelegationFailed, UndelegationFailed, RedelegationFailed, ConfirmUndelegationFailed, CancelUndelegationFailed} from "./errors/SharedErrors.sol";
 
 /**
  * @title Lara Contract
@@ -65,6 +65,9 @@ contract Lara is Ownable, ILara {
 
     // Mapping of the staked but not yet delegated amount of a user
     mapping(address => uint256) public stakedAmounts;
+
+    // Mapping of the amount pushed into
+    mapping(address => uint256) public registeredAmounts;
 
     // Mapping of the delegated amount of a user
     mapping(address => uint256) public delegatedAmounts;
@@ -201,6 +204,7 @@ contract Lara is Ownable, ILara {
             delegators.push(msg.sender);
         }
         stakedAmounts[msg.sender] += amount;
+        registeredAmounts[msg.sender] += amount;
 
         // Mint stTARA tokens to user
         try stTaraToken.mint(msg.sender, amount) {} catch Error(
@@ -314,20 +318,8 @@ contract Lara is Ownable, ILara {
         undelegated[msg.sender] -= amount;
         uint256 balanceAfter = address(this).balance;
         // we need to send the rewards to the user
-        uint256 claimCommission = ((balanceAfter - balanceBefore) *
-            commission) / 100;
-        payable(msg.sender).transfer(
-            balanceAfter - balanceBefore - claimCommission
-        );
-        emit TaraSent(
-            msg.sender,
-            balanceAfter - balanceBefore - claimCommission,
-            block.number
-        );
-        if (claimCommission > 0) {
-            payable(treasuryAddress).transfer(claimCommission);
-            emit CommissionWithdrawn(msg.sender, claimCommission);
-        }
+        payable(msg.sender).transfer(balanceAfter - balanceBefore);
+        emit TaraSent(msg.sender, balanceAfter - balanceBefore, block.number);
     }
 
     /**
@@ -379,6 +371,7 @@ contract Lara is Ownable, ILara {
         try stTaraToken.transferFrom(msg.sender, address(this), amount) {
             try stTaraToken.burn(address(this), amount) {
                 stakedAmounts[msg.sender] -= amount;
+                registeredAmounts[msg.sender] -= amount;
                 payable(msg.sender).transfer(amount);
                 emit StakeRemoved(msg.sender, amount);
                 emit TaraSent(msg.sender, amount, block.number);
@@ -502,6 +495,14 @@ contract Lara is Ownable, ILara {
         uint256 amount = claimableRewards[msg.sender];
         require(amount > 0, "No rewards to claim");
         require(address(this).balance >= amount, "Not enough balance to claim");
+        uint256 stTARABalance = stTaraToken.balanceOf(address(msg.sender));
+        if (stTARABalance < registeredAmounts[msg.sender]) {
+            revert NotEnoughStTARA(
+                msg.sender,
+                stTARABalance,
+                registeredAmounts[msg.sender]
+            );
+        }
         claimableRewards[msg.sender] = 0;
         payable(msg.sender).transfer(amount);
         emit RewardsClaimed(msg.sender, amount, block.timestamp);
