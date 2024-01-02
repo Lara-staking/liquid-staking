@@ -66,9 +66,6 @@ contract Lara is Ownable, ILara {
     // Mapping of the staked but not yet delegated amount of a user
     mapping(address => uint256) public stakedAmounts;
 
-    // Mapping of the amount pushed into
-    mapping(address => uint256) public registeredAmounts;
-
     // Mapping of the delegated amount of a user
     mapping(address => uint256) public delegatedAmounts;
 
@@ -204,7 +201,6 @@ contract Lara is Ownable, ILara {
             delegators.push(msg.sender);
         }
         stakedAmounts[msg.sender] += amount;
-        registeredAmounts[msg.sender] += amount;
 
         // Mint stTARA tokens to user
         try stTaraToken.mint(msg.sender, amount) {} catch Error(
@@ -371,7 +367,6 @@ contract Lara is Ownable, ILara {
         try stTaraToken.transferFrom(msg.sender, address(this), amount) {
             try stTaraToken.burn(address(this), amount) {
                 stakedAmounts[msg.sender] -= amount;
-                registeredAmounts[msg.sender] -= amount;
                 payable(msg.sender).transfer(amount);
                 emit StakeRemoved(msg.sender, amount);
                 emit TaraSent(msg.sender, amount, block.number);
@@ -496,11 +491,13 @@ contract Lara is Ownable, ILara {
         require(amount > 0, "No rewards to claim");
         require(address(this).balance >= amount, "Not enough balance to claim");
         uint256 stTARABalance = stTaraToken.balanceOf(address(msg.sender));
-        if (stTARABalance < registeredAmounts[msg.sender]) {
+        uint256 totalSupposedStTARABalance = delegatedAmounts[msg.sender] +
+            claimableRewards[msg.sender];
+        if (stTARABalance < totalSupposedStTARABalance) {
             revert NotEnoughStTARA(
                 msg.sender,
                 stTARABalance,
-                registeredAmounts[msg.sender]
+                totalSupposedStTARABalance
             );
         }
         claimableRewards[msg.sender] = 0;
@@ -565,16 +562,10 @@ contract Lara is Ownable, ILara {
             );
         }
         uint256 balanceBefore = address(this).balance;
-        uint32 batch = 0;
-        bool end = false;
-        while (!end) {
-            (bool success, bytes memory value) = address(dposContract).call(
-                abi.encodeWithSignature("claimAllRewards(uint32)", batch)
-            );
-            if (!success) revert RewardClaimFailed(batch);
-            bool _end = abi.decode(value, (bool));
-            end = _end;
-            batch++;
+        try dposContract.claimAllRewards() {
+            // do nothing
+        } catch Error(string memory reason) {
+            revert RewardClaimFailed(reason);
         }
         uint256 balanceAfter = address(this).balance;
         uint256 rewards = balanceAfter - balanceBefore;
@@ -592,6 +583,12 @@ contract Lara is Ownable, ILara {
                 continue;
             }
             claimableRewards[delegator] += delegatorReward;
+            // Mint stTARA tokens to user
+            try stTaraToken.mint(delegator, delegatorReward) {} catch Error(
+                string memory reason
+            ) {
+                revert(reason);
+            }
             totalSplitRewards += delegatorReward;
             emit RewardsClaimed(delegator, delegatorReward, block.timestamp);
         }

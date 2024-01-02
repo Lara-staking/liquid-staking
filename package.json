@@ -11,10 +11,12 @@
     "deploy-stats:testnet": "yarn run hardhat run --network testnet scripts/deploy_stats_oracle.ts",
     "foundry-test": "forge test -vv",
     "deploy-lara-testnet": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/Lara.s.sol:DeployLara --rpc-url https://rpc.testnet.taraxa.io --broadcast --legacy -vvvv",
+    "prnet-deploy-lara": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/Lara.s.sol:DeployLara --rpc-url https://rpc-pr-2609.prnet.taraxa.io --broadcast --legacy -vvvv",
     "deploy-only-lara-testnet": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/OnlyLara.s.sol:DeployLara --rpc-url https://rpc.testnet.taraxa.io --broadcast --legacy -vvvv",
     "deploy-lara-devnet": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/Lara.s.sol:DeployLara --rpc-url https://rpc.devnet.taraxa.io --broadcast -vvvv",
     "stake-lara-testnet": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/Delegate.s.sol:Delegate --rpc-url https://rpc.testnet.taraxa.io --broadcast --legacy -vvvv",
     "stake-lara-devnet": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/Delegate.s.sol:Delegate --rpc-url https://rpc.devnet.taraxa.io --broadcast --legacy -vvvv",
+    "dpos-devnet": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/Dpos.s.sol:DposTest --rpc-url https://rpc.devnet.taraxa.io --broadcast --legacy -vvvv",
     "update-top100-validators": "npx hardhat run --network testnet ./scripts/validators.ts",
     "delegate": "npx hardhat run --network testnet ./scripts/delegate.ts"
   },

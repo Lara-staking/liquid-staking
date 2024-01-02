@@ -134,7 +134,11 @@ interface MockIDPOS {
         uint32 batch
     ) external view returns (ValidatorData[] memory validators, bool end);
 
-    function claimAllRewards(uint32 batch) external returns (bool end);
+    /**
+     * @notice Claims staking rewards from all validators (limited by max dag block gas limit) that caller has delegated to
+     *
+     */
+    function claimAllRewards() external;
 
     function reDelegate(
         address validator_from,

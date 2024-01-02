@@ -10,7 +10,7 @@ error NotAuthorized();
 /**
  * @notice It is returned if reward claim from DPOS fails
  */
-error RewardClaimFailed(uint32 batch);
+error RewardClaimFailed(string reason);
 
 error StakeAmountTooLow(uint256 amount, uint256 minAmount);
 error StakeValueTooLow(uint256 sentAmount, uint256 targetAmount);

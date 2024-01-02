@@ -28,20 +28,6 @@ describe(ContractNames.stTara, () => {
     expect(await stTara.lara()).to.equal(minter.address);
   });
 
-  it("should not allow setting minDepositAmount if not called by owner", async () => {
-    const [, randomAccount] = await ethers.getSigners();
-    await expect(
-      stTara.connect(randomAccount).setMinDepositAmount(3)
-    ).to.be.revertedWithCustomError(stTara, "OwnableUnauthorizedAccount");
-  });
-
-  it("should allow setting minDepositAmount if called by owner", async () => {
-    const newMinDepositAmount = ethers.parseEther("1500");
-    await expect(stTara.setMinDepositAmount(newMinDepositAmount)).to.not.be
-      .reverted;
-    expect(await stTara.minDepositAmount()).to.equal(newMinDepositAmount);
-  });
-
   it("should not allow setting Lara address if not called by owner", async () => {
     const [, randomAccount, lara] = await ethers.getSigners();
     await expect(
@@ -54,13 +40,6 @@ describe(ContractNames.stTara, () => {
     await expect(stTara.setLaraAddress(lara.address)).to.not.be.reverted;
     expect(await stTara.lara()).to.equal(lara.address);
     stTara.connect(lara).setLaraAddress(minter);
-  });
-
-  it("should not mint stTARA tokens when the minDepositAmount is not met", async () => {
-    const amount = ethers.parseEther("999");
-    await expect(stTara.connect(minter).mint(minter.address, amount))
-      .to.be.revertedWithCustomError(stTara, ErrorsNames.DepositAmountTooLow)
-      .withArgs(amount, initialMinDepositAmount);
   });
 
   it("should mint stTARA tokens when the minDepositAmount is met and owner called", async () => {

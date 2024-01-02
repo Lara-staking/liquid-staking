@@ -300,7 +300,8 @@ contract CompoundTest is Test, TestSetup {
         );
 
         // user sells the stTARA and is not able to claim rewards anymore
-        uint256 delegatedStake = lara.delegatedAmounts(staker2);
+        uint256 delegatedStake = lara.delegatedAmounts(staker2) +
+            lara.claimableRewards(staker2);
         vm.prank(staker2);
         stTaraToken.approve(address(staker1), 100000 ether);
         vm.prank(staker1);
