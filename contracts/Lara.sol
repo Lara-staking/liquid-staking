@@ -66,6 +66,9 @@ contract Lara is Ownable, ILara {
     // Mapping of the staked but not yet delegated amount of a user
     mapping(address => uint256) public stakedAmounts;
 
+    // Mapping of the psuehd TARA amount of a user into the protocol
+    mapping(address => uint256) public registeredTaraAmounts;
+
     // Mapping of the delegated amount of a user
     mapping(address => uint256) public delegatedAmounts;
 
@@ -201,6 +204,7 @@ contract Lara is Ownable, ILara {
             delegators.push(msg.sender);
         }
         stakedAmounts[msg.sender] += amount;
+        registeredTaraAmounts[msg.sender] += amount;
 
         // Mint stTARA tokens to user
         try stTaraToken.mint(msg.sender, amount) {} catch Error(
@@ -491,15 +495,14 @@ contract Lara is Ownable, ILara {
         require(amount > 0, "No rewards to claim");
         require(address(this).balance >= amount, "Not enough balance to claim");
         uint256 stTARABalance = stTaraToken.balanceOf(address(msg.sender));
-        uint256 totalSupposedStTARABalance = delegatedAmounts[msg.sender] +
-            claimableRewards[msg.sender];
-        if (stTARABalance < totalSupposedStTARABalance) {
+        if (stTARABalance < registeredTaraAmounts[msg.sender]) {
             revert NotEnoughStTARA(
                 msg.sender,
                 stTARABalance,
-                totalSupposedStTARABalance
+                registeredTaraAmounts[msg.sender]
             );
         }
+
         claimableRewards[msg.sender] = 0;
         payable(msg.sender).transfer(amount);
         emit RewardsClaimed(msg.sender, amount, block.timestamp);
@@ -583,12 +586,6 @@ contract Lara is Ownable, ILara {
                 continue;
             }
             claimableRewards[delegator] += delegatorReward;
-            // Mint stTARA tokens to user
-            try stTaraToken.mint(delegator, delegatorReward) {} catch Error(
-                string memory reason
-            ) {
-                revert(reason);
-            }
             totalSplitRewards += delegatorReward;
             emit RewardsClaimed(delegator, delegatorReward, block.timestamp);
         }

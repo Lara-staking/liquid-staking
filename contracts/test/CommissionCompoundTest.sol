@@ -215,8 +215,6 @@ contract CommissionTest is Test, TestSetup {
         // we start the epoch
         lara.startEpoch();
 
-        uint256 epochDuration = lara.epochDuration();
-
         assertEq(
             lara.lastEpochTotalDelegatedAmount(),
             200000 ether, // there were no other delegations
