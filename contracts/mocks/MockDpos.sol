@@ -181,7 +181,7 @@ contract MockDpos is MockIDPOS {
 
     event DelegationRewards(uint256 totalStakes, uint256 totalRewards);
 
-    function claimAllRewards(uint32 batch) external returns (bool end) {
+    function claimAllRewards() external {
         uint256 totalStakes = 0;
         for (uint256 i = 0; i < validatorDatas.length; i++) {
             totalStakes += validators[validatorDatas[i].account]
@@ -192,7 +192,6 @@ contract MockDpos is MockIDPOS {
         uint256 rewards = totalStakes / 100;
         emit DelegationRewards(totalStakes, rewards);
         payable(msg.sender).transfer(100 ether + rewards);
-        return true;
     }
 
     function reDelegate(

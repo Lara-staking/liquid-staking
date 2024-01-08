@@ -6,15 +6,6 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract stTARA is ERC20, Ownable {
-    // Thrown when the amount sent for minting is lower than min allowed
-    error DepositAmountTooLow(uint256 amount, uint256 minAmount);
-
-    // Thrown when the value sent for the mint by an user is lower than min allowed
-    error MintValueTooLow(uint256 sentAmount, uint256 minAmount);
-
-    // Thrown when the burn caller is not the user or the lara protocol
-    error WrongBurnAddress(address wrongAddress);
-
     // Thrown when the user does not have sufficient allowance set for Tara to burn
     error InsufficientUserAllowanceForBurn(
         uint256 amount,
@@ -22,18 +13,9 @@ contract stTARA is ERC20, Ownable {
         uint256 protocolBalance
     );
 
-    // Thrown when Lara burns too many tokens for an user
-    error InsufficientProtocolBalanceForBurn(
-        uint256 amount,
-        uint256 protocolBalance
-    );
-
     // Events
     event Minted(address indexed user, uint256 amount);
     event Burned(address indexed user, uint256 amount);
-
-    // State variables
-    uint256 public minDepositAmount = 1000 ether;
 
     // Address of Lara protocol
     address public lara;
@@ -45,18 +27,11 @@ contract stTARA is ERC20, Ownable {
         _;
     }
 
-    function setMinDepositAmount(uint256 _minDepositAmount) external onlyOwner {
-        minDepositAmount = _minDepositAmount;
-    }
-
     function setLaraAddress(address _lara) external onlyOwner {
         lara = _lara;
     }
 
     function mint(address recipient, uint256 amount) external onlyLara {
-        if (amount < minDepositAmount) {
-            revert DepositAmountTooLow(amount, minDepositAmount);
-        }
         super._mint(recipient, amount);
 
         emit Minted(recipient, amount);

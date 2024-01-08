@@ -128,12 +128,10 @@ interface DposInterface {
     function claimRewards(address validator) external;
 
     /**
-     * @notice Claims staking rewards from all validators (limited by batch) that caller has delegated to
+     * @notice Claims staking rewards from all validators (limited by max dag block gas limit) that caller has delegated to
      *
-     * @param batch Batch number - there is a limit of 10 validators per batch that delegator can claim rewards from in single tranaction
-     * @return end  Flag if there are no more validators left that delegator can claim rewards from
-     **/
-    function claimAllRewards(uint32 batch) external returns (bool end);
+     */
+    function claimAllRewards() external;
 
     // Claims tokens from validator's commission rewards
     function claimCommissionRewards(address validator) external;
@@ -153,7 +151,8 @@ interface DposInterface {
      *
      * @param description   New description (e.g name, short purpose description, etc...)
      * @param endpoint      New endpoint, might be a validator's website
-     **/
+     *
+     */
     function setValidatorInfo(
         address validator,
         string calldata description,
@@ -196,7 +195,8 @@ interface DposInterface {
      *
      * @return validators  Batch of N validators basic info
      * @return end         Flag if there are no more accounts left. To get all accounts, caller should fetch all batches until he sees end == true
-     **/
+     *
+     */
     function getValidatorsFor(
         address owner,
         uint32 batch
@@ -207,8 +207,9 @@ interface DposInterface {
      *
      * @param delegator Delegator account address
      *
-     * @return total_delegation Total delegation for specified delegator
-     **/
+     * @return total_delegation amount that was delegated
+     *
+     */
     function getTotalDelegation(
         address delegator
     ) external view returns (uint256 total_delegation);
@@ -221,7 +222,8 @@ interface DposInterface {
      *
      * @return delegations  Batch of N delegations
      * @return end          Flag if there are no more delegations left. To get all delegations, caller should fetch all batches until he sees end == true
-     **/
+     *
+     */
     function getDelegations(
         address delegator,
         uint32 batch
@@ -235,7 +237,8 @@ interface DposInterface {
      *
      * @return undelegations  Batch of N undelegations
      * @return end            Flag if there are no more undelegations left. To get all undelegations, caller should fetch all batches until he sees end == true
-     **/
+     *
+     */
     function getUndelegations(
         address delegator,
         uint32 batch

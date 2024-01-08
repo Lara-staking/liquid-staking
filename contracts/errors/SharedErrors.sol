@@ -10,7 +10,7 @@ error NotAuthorized();
 /**
  * @notice It is returned if reward claim from DPOS fails
  */
-error RewardClaimFailed(uint32 batch);
+error RewardClaimFailed(string reason);
 
 error StakeAmountTooLow(uint256 amount, uint256 minAmount);
 error StakeValueTooLow(uint256 sentAmount, uint256 targetAmount);
@@ -72,3 +72,8 @@ error EpochDurationNotMet(
     uint256 currentBlockNumber,
     uint256 epochDuration
 );
+
+/**
+ * @notice It is returned if the user doesn't have enough balance of stTARA.
+ */
+error NotEnoughStTARA(address user, uint256 balance, uint256 amount);

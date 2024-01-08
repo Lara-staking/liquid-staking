@@ -9,7 +9,7 @@ import "../ApyOracle.sol";
 import "../mocks/MockDpos.sol";
 import "../stTara.sol";
 import "./SetUpTest.sol";
-import {StakeAmountTooLow, StakeValueTooLow} from "../errors/SharedErrors.sol";
+import {NotEnoughStTARA, StakeAmountTooLow, StakeValueTooLow} from "../errors/SharedErrors.sol";
 
 contract CompoundTest is Test, TestSetup {
     address staker0 = address(this);
@@ -298,6 +298,31 @@ contract CompoundTest is Test, TestSetup {
             expectedRewardStaker1AfterCompound,
             "staker1 should have received expectedRewardStaker1 + expectedRewardStaker1AfterCompound"
         );
+
+        // user sells the stTARA and is not able to claim rewards anymore
+        uint256 delegatedStake = lara.delegatedAmounts(staker2) +
+            lara.claimableRewards(staker2);
+        vm.prank(staker2);
+        stTaraToken.approve(address(staker1), 100000 ether);
+        vm.prank(staker1);
+        stTaraToken.transferFrom(staker2, staker1, 100000 ether);
+        uint256 stTaraBalanceAfter = stTaraToken.balanceOf(staker2);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                NotEnoughStTARA.selector,
+                staker2,
+                stTaraBalanceAfter,
+                delegatedStake
+            )
+        );
+        vm.prank(staker2);
+        lara.claimRewards();
+
+        // staker1 sends back the stTARA to staker2
+        vm.prank(staker1);
+        stTaraToken.approve(address(staker2), 100000 ether);
+        vm.prank(staker2);
+        stTaraToken.transferFrom(staker1, staker2, 100000 ether);
 
         // staker2 claims rewards
         balanceOfStakerBefore = address(staker2).balance;
