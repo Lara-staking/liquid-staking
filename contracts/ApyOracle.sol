@@ -76,7 +76,7 @@ contract ApyOracle is IApyOracle {
      */
     function getRebalanceList(
         TentativeDelegation[] memory currentValidators
-    ) external override returns (TentativeReDelegation[] memory) {
+    ) external override OnlyLara returns (TentativeReDelegation[] memory) {
         if (currentValidators.length == 0 || nodeCount == 0) {
             return new TentativeReDelegation[](0);
         }
@@ -155,68 +155,7 @@ contract ApyOracle is IApyOracle {
      */
     function getNodesForDelegation(
         uint256 amount
-    ) external returns (TentativeDelegation[] memory) {
-        // we loop through the nodesList and see check if the node's able to capture thw whole amount
-        // if not, we take the next node and so on. We return the TentativeDelegation's until the amount is
-        // fully captured
-        TentativeDelegation[]
-            memory tentativeDelegations = new TentativeDelegation[](nodeCount);
-        uint256 tentativeDelegationsCount = 0;
-        uint256 totalAmount = amount;
-        for (uint256 i = 0; i < nodeCount; i++) {
-            address node = nodesList[i];
-            try DPOS.getValidator(node) returns (
-                DposInterface.ValidatorBasicInfo memory validator
-            ) {
-                uint256 totalStake = validator.total_stake;
-
-                if (totalStake >= maxValidatorStakeCapacity) {
-                    continue;
-                }
-                uint256 availableDelegation = maxValidatorStakeCapacity -
-                    totalStake;
-                if (totalAmount == 0) {
-                    break;
-                }
-                if (availableDelegation > 0) {
-                    uint256 stakeSlot = 0;
-                    if (availableDelegation < totalAmount) {
-                        stakeSlot = availableDelegation;
-                    } else {
-                        stakeSlot = totalAmount;
-                    }
-                    totalAmount -= stakeSlot;
-                    tentativeDelegations[
-                        tentativeDelegationsCount
-                    ] = TentativeDelegation(
-                        node,
-                        stakeSlot,
-                        nodes[node].rating
-                    );
-                    tentativeDelegationsCount++;
-                }
-            } catch Error(string memory reason) {
-                revert(reason);
-            }
-        }
-        // Create a new array with the exact length
-        TentativeDelegation[] memory result = new TentativeDelegation[](
-            tentativeDelegationsCount
-        );
-        for (uint256 i = 0; i < tentativeDelegationsCount; i++) {
-            result[i] = tentativeDelegations[i];
-        }
-        return result;
-    }
-
-    /**
-     * @dev Returns a list of nodes that can be delegated to, along with the amount that can be delegated to each node.
-     * @param amount The amount to be delegated.
-     * @return An array of tentative delegations.
-     */
-    function getNodesForDelegationFree(
-        uint256 amount
-    ) external returns (TentativeDelegation[] memory) {
+    ) external OnlyLara returns (TentativeDelegation[] memory) {
         // we loop through the nodesList and see check if the node's able to capture thw whole amount
         // if not, we take the next node and so on. We return the TentativeDelegation's until the amount is
         // fully captured

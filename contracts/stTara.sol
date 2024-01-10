@@ -4,8 +4,10 @@ pragma solidity 0.8.20;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IstTara} from "./interfaces/IstTara.sol";
+import {Utils} from "./libs/Utils.sol";
 
-contract stTARA is ERC20, Ownable {
+contract stTARA is ERC20, Ownable, IstTara {
     // Thrown when the user does not have sufficient allowance set for Tara to burn
     error InsufficientUserAllowanceForBurn(
         uint256 amount,
@@ -19,6 +21,8 @@ contract stTARA is ERC20, Ownable {
 
     // Address of Lara protocol
     address public lara;
+    address[] public holders;
+    Utils.HolderData[] public holderSnapshot;
 
     constructor() ERC20("Staked TARA", "stTARA") Ownable(msg.sender) {}
 
@@ -32,6 +36,9 @@ contract stTARA is ERC20, Ownable {
     }
 
     function mint(address recipient, uint256 amount) external onlyLara {
+        if (balanceOf(recipient) == 0) {
+            holders.push(recipient);
+        }
         super._mint(recipient, amount);
 
         emit Minted(recipient, amount);
@@ -49,7 +56,36 @@ contract stTARA is ERC20, Ownable {
         }
         // Burn stTARA tokens
         super._burn(user, amount);
-
+        // remove the holder
+        if (balanceOf(user) == 0) {
+            for (uint256 i = 0; i < holders.length; i++) {
+                if (holders[i] == user) {
+                    holders[i] = holders[holders.length - 1];
+                    holders.pop();
+                    break;
+                }
+            }
+        }
         emit Burned(user, amount);
+    }
+
+    function makeHolderSnapshot() external {
+        delete holderSnapshot;
+        for (uint256 i = 0; i < holders.length; i++) {
+            holderSnapshot.push(
+                Utils.HolderData({
+                    holder: holders[i],
+                    amount: balanceOf(holders[i])
+                })
+            );
+        }
+    }
+
+    function getHolderSnapshot()
+        external
+        view
+        returns (Utils.HolderData[] memory)
+    {
+        return holderSnapshot;
     }
 }

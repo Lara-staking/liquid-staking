@@ -12,12 +12,12 @@ interface ILara {
     /**
      * @dev Event emitted when a user stakes
      */
-    event Staked(address indexed user, uint256 amount);
+    event Staked(address indexed user, uint256 indexed amount);
 
     /**
      * @dev Event emitted when a user delegates
      */
-    event Delegated(address indexed user, uint256 amount);
+    event Delegated(address indexed user, uint256 indexed amount);
 
     /**
      * @dev Event emitted when an epoch starts
@@ -35,24 +35,17 @@ interface ILara {
     /**
      * @dev Event emitted when redelegation rewards are claimed
      */
-    event RedelegationRewardsClaimed(uint256 amount, address validator);
-
-    /**
-     * @dev Event emitted when rewards are claimed
-     */
-    event RewardsClaimed(
-        address indexed user,
-        uint256 amount,
-        uint256 timestamp
+    event RedelegationRewardsClaimed(
+        uint256 indexed amount,
+        address indexed validator
     );
 
     /**
      * @dev Event emitted when an epoch ends
      */
     event EpochEnded(
-        uint256 totalEpochDelegation,
-        uint256 totalEpochReward,
-        uint256 timestamp
+        uint256 indexed totalEpochDelegation,
+        uint256 indexed totalEpochReward
     );
 
     /**
@@ -61,23 +54,27 @@ interface ILara {
     event Undelegated(
         address indexed user,
         address indexed validator,
-        uint256 amount
+        uint256 indexed amount
     );
 
     /**
      * @dev Event emitted when Tara is sent
      */
-    event TaraSent(address indexed user, uint256 amount, uint256 blockNumber);
+    event TaraSent(
+        address indexed user,
+        uint256 indexed amount,
+        uint256 indexed blockNumber
+    );
 
     /**
      * @dev Event emitted when a stake is removed
      */
-    event StakeRemoved(address indexed user, uint256 amount);
+    event StakeRemoved(address indexed user, uint256 indexed amount);
 
     /**
      * @dev Event emitted when commission is withdrawn
      */
-    event CommissionWithdrawn(address indexed user, uint256 amount);
+    event CommissionWithdrawn(address indexed user, uint256 indexed amount);
 
     /**
      * @dev Event emitted when compound is changed
@@ -87,19 +84,12 @@ interface ILara {
     /**
      * @dev Event emitted when commission is changed
      */
-    event CommissionChanged(uint256 newCommission);
+    event CommissionChanged(uint256 indexed newCommission);
 
     /**
      * @dev Event emitted when treasury is changed
      */
     event TreasuryChanged(address indexed newTreasury);
-
-    /**
-     * @dev Function to get the delegator at a specific index
-     * @param index The index of the delegator
-     * @return The address of the delegator
-     */
-    function getDelegatorAtIndex(uint256 index) external view returns (address);
 
     /**
      * @dev Function to check if a validator is registered
@@ -117,10 +107,16 @@ interface ILara {
     function setEpochDuration(uint256 _epochDuration) external;
 
     /**
-     * @dev Function to set the compound value
-     * @param value The new compound value
+     * @dev Function to set the commission
+     * @param _commission The new commission
      */
-    function setCompound(bool value) external;
+    function setCommission(uint256 _commission) external;
+
+    /**
+     * @dev Function to set the treasury address
+     * @param _treasuryAddress The new treasury address
+     */
+    function setTreasuryAddress(address _treasuryAddress) external;
 
     /**
      * @dev Function to set the maximum validator stake capacity
@@ -143,10 +139,25 @@ interface ILara {
     function stake(uint256 amount) external payable;
 
     /**
+     * @notice Rebalance method to rebalance the protocol.
+     * The method is intended to be called by anyone in between epochs.
+     * In this V0 there is no on-chain trigger or management function for this, will be triggered from outside.
+     * The method will call the oracle to get the rebalance list and then redelegate the stake.
+     */
+    function rebalance() external;
+
+    /**
      * @dev Function for a user to remove a certain amount of stake
      * @param amount The amount of stake to remove
      */
-    function removeStake(uint256 amount) external;
+    function unstake(uint256 amount) external;
+
+    /**
+     * @dev Function for a user to request undelegation of a certain amount
+     * @param amount The amount to undelegate
+     * The undelegation will take place at the next epoch end
+     */
+    function registerUndelegationRequest(uint256 amount) external;
 
     /**
      * @dev Function for a user to confirm undelegation of a certain amount
@@ -163,26 +174,6 @@ interface ILara {
     function cancelUndelegate(address validator, uint256 amount) external;
 
     /**
-     * @dev Function for a user to request undelegation of a certain amount
-     * @param amount The amount to undelegate
-     */
-    function requestUndelegate(uint256 amount) external;
-
-    /**
-     * @dev Function to get validators for a certain amount
-     * @param amount The amount
-     * @return An array of tentative delegations
-     */
-    function getValidatorsForAmount(
-        uint256 amount
-    ) external returns (IApyOracle.TentativeDelegation[] memory);
-
-    /**
-     * @dev Function for a user to claim rewards
-     */
-    function claimRewards() external;
-
-    /**
      * @dev Function to start an epoch
      */
     function startEpoch() external;
@@ -191,9 +182,4 @@ interface ILara {
      * @dev Function to end an epoch
      */
     function endEpoch() external;
-
-    /**
-     * @dev Function to rebalance
-     */
-    function rebalance() external;
 }

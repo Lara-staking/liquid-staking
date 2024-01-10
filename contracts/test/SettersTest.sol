@@ -6,7 +6,7 @@ import "forge-std/console.sol";
 import "../Lara.sol";
 import "../mocks/MockDpos.sol";
 import "./SetUpTest.sol";
-import {StakeAmountTooLow, StakeValueTooLow} from "../errors/SharedErrors.sol";
+import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 

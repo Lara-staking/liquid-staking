@@ -12,6 +12,7 @@ contract MockDpos is MockIDPOS {
     }
 
     mapping(address => MockIDPOS.ValidatorData) public validators;
+    mapping(address => uint256) public totalDelegations;
     MockIDPOS.ValidatorData[] validatorDatas;
     mapping(address => Undelegation) public undelegations;
 
@@ -46,6 +47,12 @@ contract MockDpos is MockIDPOS {
         address validator
     ) external view returns (bool) {
         return validators[validator].account != address(0);
+    }
+
+    function getTotalDelegation(
+        address delegator
+    ) external view returns (uint256 total_delegation) {
+        return totalDelegations[delegator];
     }
 
     function getValidator(
@@ -108,6 +115,7 @@ contract MockDpos is MockIDPOS {
         require(validatorData.account != address(0), "Validator doesn't exist");
         require(msg.value > 0, "Delegation value not provided");
 
+        totalDelegations[msg.sender] += msg.value;
         validatorData.info.total_stake += msg.value;
         require(
             validators[validator].info.total_stake >= msg.value,
@@ -150,6 +158,7 @@ contract MockDpos is MockIDPOS {
             info
         );
         validators[validator] = validatorData;
+        totalDelegations[msg.sender] += msg.value;
         validatorDatas.push(validatorData);
 
         emit ValidatorRegistered(validator);
@@ -174,6 +183,7 @@ contract MockDpos is MockIDPOS {
             amount: amount,
             blockNumberClaimable: block.number + UNDELEGATION_DELAY_BLOCKS
         });
+        totalDelegations[msg.sender] -= amount;
         // simulate rewards
         payable(msg.sender).transfer(333 ether);
         emit Undelegated(msg.sender, validator, amount);
@@ -260,6 +270,7 @@ contract MockDpos is MockIDPOS {
         } else {
             validators[validator].info.total_stake += undelegation.amount;
         }
+        totalDelegations[msg.sender] += undelegation.amount;
         emit UndelegateCanceled(msg.sender, validator, undelegation.amount);
     }
 }
