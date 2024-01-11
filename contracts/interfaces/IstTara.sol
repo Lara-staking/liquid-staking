@@ -29,18 +29,4 @@ interface IstTara is IERC20 {
      * @param laraAddress The address of the Lara contract
      */
     function setLaraAddress(address laraAddress) external;
-
-    /**
-     * @dev Function to get the holders snapshot
-     * @return The array of holders
-     */
-    function getHolderSnapshot()
-        external
-        view
-        returns (Utils.HolderData[] memory);
-
-    /**
-     * @dev Function to make a new holders snapshot
-     */
-    function makeHolderSnapshot() external;
 }

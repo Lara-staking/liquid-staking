@@ -8,10 +8,10 @@ import "../Lara.sol";
 import "../ApyOracle.sol";
 import "../mocks/MockDpos.sol";
 import "../stTara.sol";
-import "./SetUpTest.sol";
+import "./SetUpTestLotsOfValidators.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
-contract EpochTest is Test, TestSetup {
+contract ManyValidatorEpochTest is Test, ManyValidatorsTestSetup {
     uint256 epochDuration = 0;
 
     uint256[] balancesBefore;
@@ -25,7 +25,7 @@ contract EpochTest is Test, TestSetup {
         epochDuration = lara.epochDuration();
         for (uint32 i = 0; i < 1000; i++) {
             stakers.push(vm.addr(i + 1));
-            vm.deal(stakers[i], 5000000 ether);
+            vm.deal(stakers[i], 500000 ether);
         }
         balancesBefore = new uint256[](stakers.length);
     }

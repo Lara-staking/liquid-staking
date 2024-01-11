@@ -14,7 +14,7 @@ contract MockDpos is MockIDPOS {
     mapping(address => MockIDPOS.ValidatorData) public validators;
     mapping(address => uint256) public totalDelegations;
     MockIDPOS.ValidatorData[] validatorDatas;
-    mapping(address => Undelegation) public undelegations;
+    mapping(address => mapping(address => Undelegation)) public undelegations;
 
     uint256 public constant UNDELEGATION_DELAY_BLOCKS = 5000;
 
@@ -178,7 +178,7 @@ contract MockDpos is MockIDPOS {
         } else {
             validators[validator].info.total_stake -= amount;
         }
-        undelegations[msg.sender] = Undelegation({
+        undelegations[msg.sender][validator] = Undelegation({
             delegator: msg.sender,
             amount: amount,
             blockNumberClaimable: block.number + UNDELEGATION_DELAY_BLOCKS
@@ -228,7 +228,7 @@ contract MockDpos is MockIDPOS {
 
     // Confirms undelegate request
     function confirmUndelegate(address validator) external {
-        Undelegation memory undelegation = undelegations[msg.sender];
+        Undelegation memory undelegation = undelegations[msg.sender][validator];
         require(
             undelegation.delegator == msg.sender,
             "Only delegator can confirm undelegate"
@@ -237,22 +237,19 @@ contract MockDpos is MockIDPOS {
             undelegation.blockNumberClaimable <= block.number,
             "Undelegation not yet claimable"
         );
-        delete undelegations[msg.sender];
+        delete undelegations[msg.sender][validator];
         payable(msg.sender).transfer(undelegation.amount);
         emit UndelegateConfirmed(msg.sender, validator, undelegation.amount);
     }
 
-    event CallerCheck(address CallerCheck);
-
     // Cancel undelegate request
     function cancelUndelegate(address validator) external {
-        Undelegation memory undelegation = undelegations[msg.sender];
-        emit CallerCheck(msg.sender);
+        Undelegation memory undelegation = undelegations[msg.sender][validator];
         require(
             undelegation.delegator == msg.sender,
             "Only delegator can cancel undelegate"
         );
-        delete undelegations[msg.sender];
+        delete undelegations[msg.sender][validator];
         if (validators[validator].account == address(0)) {
             // we need to readd the validator
             MockIDPOS.ValidatorBasicInfo memory info = MockIDPOS

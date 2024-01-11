@@ -8,6 +8,11 @@ library Utils {
         uint256 amount;
     }
 
+    struct Undelegation {
+        address validator;
+        uint256 amount;
+    }
+
     function calculateSlice(
         uint256 amount,
         uint256 supply

@@ -21,7 +21,8 @@ contract Lara is Ownable, ILara {
     // Reference timestamp for computing epoch number
     uint256 public protocolStartTimestamp;
 
-    uint256 public lastEpochStartBlock;
+    uint256 public lastSnapshot;
+    uint256 public lastRebalance;
 
     // Duration of an epoch in seconds, initially 1000 blocks
     uint256 public epochDuration = 1000;
@@ -33,7 +34,7 @@ contract Lara is Ownable, ILara {
     uint256 public minStakeAmount = 1000 ether;
 
     // State variable for storing the last epoch's total delegated amount
-    uint256 public lastEpochTotalDelegated = 0;
+    uint256 public totalDelegated = 0;
 
     uint256 public commission = 0;
 
@@ -45,9 +46,6 @@ contract Lara is Ownable, ILara {
     // List of validators of the protocol
     address[] public validators;
 
-    // State variable for storing a blocker bool value for the epoch runs
-    bool public isEpochRunning = false;
-
     // StTARA token contract
     IstTara public stTaraToken;
 
@@ -56,11 +54,6 @@ contract Lara is Ownable, ILara {
 
     // APY oracle contract
     IApyOracle public apyOracle;
-
-    // Array of holder data that we need to mint stTARA for after reward calculation
-    Utils.HolderData[] public rewardHolderData;
-
-    Utils.HolderData[] public undelegateRequests;
 
     // Mapping of the total stake at a validator
     mapping(address => uint256) public protocolTotalStakeAtValidator;
@@ -162,7 +155,7 @@ contract Lara is Ownable, ILara {
      * @notice The tokens are not DELEGATED INSTANTLY, but on the next epoch.
      * @param amount the amount to stake
      */
-    function stake(uint256 amount) public payable {
+    function stake(uint256 amount) public payable returns (uint256) {
         if (amount < minStakeAmount)
             revert StakeAmountTooLow(amount, minStakeAmount);
         if (msg.value < amount) revert StakeValueTooLow(msg.value, amount);
@@ -178,39 +171,22 @@ contract Lara is Ownable, ILara {
         if (!isRegistered) {
             delegators.push(msg.sender);
         }
-        // Mint stTARA tokens to user
-        try stTaraToken.mint(msg.sender, amount) {} catch Error(
-            string memory reason
-        ) {
-            revert(reason);
-        }
-        emit Staked(msg.sender, amount);
-    }
+        uint256 remainingAmount = delegateToValidators(address(this).balance);
 
-    /**
-     * Removes the stake of a user from the protocol.
-     * @notice reverts on missing approval for the amount.
-     * @notice reverts if the tokens are already staked, thus not on Lara's balance.
-     * The user needs to provide the amount of stTARA tokens he wants to get back as TARA
-     * @param amount the amount of stTARA tokens to remove
-     */
-    function unstake(uint256 amount) public {
-        require(
-            address(this).balance >= amount,
-            "LARA: Not enough assets unstaked, use requestUndelegate instead"
-        );
-        require(
-            stTaraToken.allowance(msg.sender, address(this)) >= amount,
-            "stTARA: Amount not approved for unstaking"
-        );
-        try stTaraToken.transferFrom(msg.sender, address(this), amount) {
-            try stTaraToken.burn(address(this), amount) {
-                payable(msg.sender).transfer(amount);
-                emit StakeRemoved(msg.sender, amount);
-                emit TaraSent(msg.sender, amount, block.number);
-            } catch Error(string memory reason) {
-                revert(reason);
+        if (protocolStartTimestamp == 0) {
+            protocolStartTimestamp = block.timestamp;
+        }
+        // Mint stTARA tokens to user
+        try stTaraToken.mint(msg.sender, amount - remainingAmount) {
+            if (remainingAmount > 0) {
+                (bool success, ) = address(msg.sender).call{
+                    value: remainingAmount
+                }("");
+                if (!success)
+                    revert("LARA: Failed to send remaining amount to user");
             }
+            emit Staked(msg.sender, amount - remainingAmount);
+            return remainingAmount;
         } catch Error(string memory reason) {
             revert(reason);
         }
@@ -219,46 +195,28 @@ contract Lara is Ownable, ILara {
     /**
      * @notice method for starting a staking epoch.
      */
-    function startEpoch() external {
-        require(!isEpochRunning, "Epoch already running");
-        uint256 remainingAmount = delegateToValidators(address(this).balance);
-
-        stTaraToken.makeHolderSnapshot();
-
+    function snapshot() external {
+        if (lastSnapshot != 0 && block.number < lastSnapshot + epochDuration) {
+            revert EpochDurationNotMet(
+                lastSnapshot,
+                block.number,
+                epochDuration
+            );
+        }
         uint256 totalEpochDelegation = 0;
         try dposContract.getTotalDelegation(address(this)) returns (
             uint256 totalDelegation
         ) {
-            totalEpochDelegation =
-                totalDelegation +
-                address(this).balance -
-                remainingAmount;
+            totalEpochDelegation = totalDelegation;
         } catch Error(string memory reason) {
             revert(reason);
         }
-        lastEpochTotalDelegated = totalEpochDelegation;
+        totalDelegated = totalEpochDelegation;
         if (protocolStartTimestamp == 0) {
             protocolStartTimestamp = block.timestamp;
         }
-        if (lastEpochTotalDelegated == 0) {
+        if (totalDelegated == 0) {
             return;
-        }
-        isEpochRunning = true;
-        lastEpochStartBlock = block.number;
-        emit EpochStarted(totalEpochDelegation, block.timestamp);
-    }
-
-    /**
-     * @notice method for ending a staking epoch.
-     */
-    function endEpoch() public {
-        require(isEpochRunning, "Epoch not running");
-        if (block.number < lastEpochStartBlock + epochDuration) {
-            revert EpochDurationNotMet(
-                lastEpochStartBlock,
-                block.number,
-                epochDuration
-            );
         }
         uint256 balanceBefore = address(this).balance;
         try dposContract.claimAllRewards() {
@@ -275,12 +233,10 @@ contract Lara is Ownable, ILara {
         // iterate through delegators and calculate + allocate their rewards
         uint256 totalSplitRewards = 0;
         uint256 stTARASupply = stTaraToken.totalSupply();
-        Utils.HolderData[] memory lastEpochHolderData = stTaraToken
-            .getHolderSnapshot();
-        for (uint256 i = 0; i < lastEpochHolderData.length; i++) {
-            address delegator = lastEpochHolderData[i].holder;
+        for (uint256 i = 0; i < delegators.length; i++) {
+            address delegator = delegators[i];
             uint256 slice = Utils.calculateSlice(
-                lastEpochHolderData[i].amount,
+                stTaraToken.balanceOf(delegator),
                 stTARASupply
             );
             uint256 delegatorReward = (slice * distributableRewards) /
@@ -302,14 +258,16 @@ contract Lara is Ownable, ILara {
             totalSplitRewards <= distributableRewards,
             "Total split rewards exceed total rewards"
         );
-        payable(treasuryAddress).transfer(epochCommission);
+        (bool success, ) = treasuryAddress.call{value: epochCommission}("");
+        if (!success) revert("LARA: Failed to send commission to treasury");
         emit CommissionWithdrawn(treasuryAddress, epochCommission);
 
-        // execute undelegations
-        executeUndelegations();
-
-        isEpochRunning = false;
-        emit EpochEnded(lastEpochTotalDelegated, rewards);
+        lastSnapshot = block.number;
+        emit SnapshotTaken(
+            totalDelegated,
+            distributableRewards,
+            lastSnapshot + epochDuration
+        );
     }
 
     /**
@@ -319,7 +277,13 @@ contract Lara is Ownable, ILara {
      * The method will call the oracle to get the rebalance list and then redelegate the stake.
      */
     function rebalance() public {
-        require(!isEpochRunning, "LARA: Cannot rebalance during staking epoch");
+        if (block.number < lastRebalance + epochDuration) {
+            revert EpochDurationNotMet(
+                lastRebalance,
+                block.number,
+                epochDuration
+            );
+        }
         IApyOracle.TentativeDelegation[]
             memory delegationList = buildCurrentDelegationArray();
         // Get the rebalance list from the oracle
@@ -354,7 +318,6 @@ contract Lara is Ownable, ILara {
         uint256 amount,
         uint256 rating
     ) internal {
-        require(!isEpochRunning, "Cannot redelegate during staking epoch");
         require(
             protocolTotalStakeAtValidator[from] >= amount,
             "LARA: Amount exceeds the total stake at the validator"
@@ -381,13 +344,12 @@ contract Lara is Ownable, ILara {
             );
         uint256 balanceAfter = address(this).balance;
         // send this amount to the treasury as it is minimal
-        payable(treasuryAddress).transfer(balanceAfter - balanceBefore);
-        emit RedelegationRewardsClaimed(balanceAfter - balanceBefore, from);
-        emit TaraSent(
-            treasuryAddress,
-            balanceAfter - balanceBefore,
-            block.number
+        (bool s, ) = treasuryAddress.call{value: balanceAfter - balanceBefore}(
+            ""
         );
+        if (!s) revert("LARA: Failed to send commission to treasury");
+        emit RedelegationRewardsClaimed(balanceAfter - balanceBefore, from);
+        emit TaraSent(treasuryAddress, balanceAfter - balanceBefore);
 
         protocolTotalStakeAtValidator[from] -= amount;
         protocolValidatorRatingAtDelegation[from] = 0;
@@ -420,9 +382,13 @@ contract Lara is Ownable, ILara {
             );
         undelegated[msg.sender] -= amount;
         uint256 balanceAfter = address(this).balance;
+        if (balanceAfter - balanceBefore == 0) {
+            return;
+        } else {}
         // we need to send the rewards to the user
-        payable(msg.sender).transfer(balanceAfter - balanceBefore);
-        emit TaraSent(msg.sender, balanceAfter - balanceBefore, block.number);
+        (bool s, ) = msg.sender.call{value: balanceAfter - balanceBefore}("");
+        if (!s) revert("LARA: Failed to send undelegation to user");
+        emit TaraSent(msg.sender, balanceAfter - balanceBefore);
     }
 
     /**
@@ -460,72 +426,9 @@ contract Lara is Ownable, ILara {
      * @notice reverts on missing approval for the amount.
      * @param amount the amount of tokens to undelegate
      */
-    function requestUndelegate(uint256 amount) private returns (uint256) {
-        require(!isEpochRunning, "Cannot undelegate during staking epoch");
-        // check if the amount is approved in stTara for the protocol
-        // get the stTARA tokens and burn them
-        uint256 remainingAmount = amount;
-        uint256 undelegatedTotal = 0;
-        address[]
-            memory validatorsWithDelegation = findValidatorsWithDelegation(
-                amount
-            );
-        for (uint16 i = 0; i < validatorsWithDelegation.length; i++) {
-            uint256 toUndelegate = 0;
-            require(
-                protocolTotalStakeAtValidator[validatorsWithDelegation[i]] <=
-                    maxValidatorStakeCapacity,
-                "Validator is not at max capacity"
-            );
-            if (
-                protocolTotalStakeAtValidator[validatorsWithDelegation[i]] <
-                remainingAmount
-            ) {
-                toUndelegate = protocolTotalStakeAtValidator[
-                    validatorsWithDelegation[i]
-                ];
-            } else {
-                toUndelegate = remainingAmount;
-            }
-            uint256 balanceBefore = address(this).balance;
-            (bool success, bytes memory data) = address(dposContract).call(
-                abi.encodeWithSignature(
-                    "undelegate(address,uint256)",
-                    validatorsWithDelegation[i],
-                    toUndelegate
-                )
-            );
-            if (!success)
-                revert UndelegationFailed(
-                    validatorsWithDelegation[i],
-                    msg.sender,
-                    toUndelegate,
-                    abi.decode(data, (string))
-                );
-            undelegatedTotal += toUndelegate;
-            remainingAmount -= toUndelegate;
-            uint256 balanceAfter = address(this).balance;
-            protocolTotalStakeAtValidator[
-                validatorsWithDelegation[i]
-            ] -= toUndelegate;
-            protocolValidatorRatingAtDelegation[
-                validatorsWithDelegation[i]
-            ] = 0;
-
-            emit Undelegated(
-                msg.sender,
-                validatorsWithDelegation[i],
-                toUndelegate
-            );
-            if (undelegatedTotal == amount) break;
-        }
-        require(undelegatedTotal == amount, "Cannot undelegate full amount");
-        undelegated[msg.sender] += undelegatedTotal;
-        return amount - undelegatedTotal;
-    }
-
-    function registerUndelegationRequest(uint256 amount) public {
-        // check if the amount is approved in stTara for the protocol
+    function requestUndelegate(
+        uint256 amount
+    ) public returns (Utils.Undelegation[] memory undelegations) {
         require(
             stTaraToken.allowance(msg.sender, address(this)) >= amount,
             "Amount not approved for unstaking"
@@ -533,28 +436,98 @@ contract Lara is Ownable, ILara {
         // register the undelegation request
         try stTaraToken.transferFrom(msg.sender, address(this), amount) {
             try stTaraToken.burn(address(this), amount) {
-                undelegateRequests.push(
-                    Utils.HolderData({holder: msg.sender, amount: amount})
+                // check if the amount is approved in stTara for the protocol
+                // get the stTARA tokens and burn them
+                uint256 remainingAmount = amount;
+                uint256 undelegatedTotal = 0;
+                address[]
+                    memory validatorsWithDelegation = findValidatorsWithDelegation(
+                        amount
+                    );
+                Utils.Undelegation[]
+                    memory undelegationsList = new Utils.Undelegation[](
+                        validatorsWithDelegation.length
+                    );
+                uint256 totalRewards = 0;
+                for (uint16 i = 0; i < validatorsWithDelegation.length; i++) {
+                    uint256 toUndelegate = 0;
+                    require(
+                        protocolTotalStakeAtValidator[
+                            validatorsWithDelegation[i]
+                        ] <= maxValidatorStakeCapacity,
+                        "Validator is not at max capacity"
+                    );
+                    if (
+                        protocolTotalStakeAtValidator[
+                            validatorsWithDelegation[i]
+                        ] < remainingAmount
+                    ) {
+                        toUndelegate = protocolTotalStakeAtValidator[
+                            validatorsWithDelegation[i]
+                        ];
+                    } else {
+                        toUndelegate = remainingAmount;
+                    }
+                    uint256 balanceBefore = address(this).balance;
+                    (bool success, bytes memory data) = address(dposContract)
+                        .call(
+                            abi.encodeWithSignature(
+                                "undelegate(address,uint256)",
+                                validatorsWithDelegation[i],
+                                toUndelegate
+                            )
+                        );
+                    if (!success)
+                        revert UndelegationFailed(
+                            validatorsWithDelegation[i],
+                            msg.sender,
+                            toUndelegate,
+                            abi.decode(data, (string))
+                        );
+                    undelegatedTotal += toUndelegate;
+                    remainingAmount -= toUndelegate;
+                    uint256 balanceAfter = address(this).balance;
+                    totalRewards += balanceAfter - balanceBefore;
+                    protocolTotalStakeAtValidator[
+                        validatorsWithDelegation[i]
+                    ] -= toUndelegate;
+                    if (
+                        protocolTotalStakeAtValidator[
+                            validatorsWithDelegation[i]
+                        ] == 0
+                    ) {
+                        protocolValidatorRatingAtDelegation[
+                            validatorsWithDelegation[i]
+                        ] = 0;
+                    }
+                    undelegationsList[i] = Utils.Undelegation(
+                        validatorsWithDelegation[i],
+                        toUndelegate
+                    );
+                    emit Undelegated(
+                        msg.sender,
+                        validatorsWithDelegation[i],
+                        toUndelegate
+                    );
+                    if (undelegatedTotal == amount) break;
+                }
+                require(
+                    undelegatedTotal == amount,
+                    "Cannot undelegate full amount"
                 );
+                undelegated[msg.sender] += undelegatedTotal;
+                if (totalRewards > 0) {
+                    (bool success, ) = msg.sender.call{value: totalRewards}("");
+                    if (!success)
+                        revert("LARA: Failed to send rewards to user");
+                    emit TaraSent(msg.sender, totalRewards);
+                }
+                return undelegationsList;
             } catch Error(string memory reason) {
                 revert(reason);
             }
         } catch Error(string memory reason) {
             revert(reason);
-        }
-    }
-
-    function executeUndelegations() internal {
-        for (uint256 i = 0; i < undelegateRequests.length; i++) {
-            uint256 remaining = requestUndelegate(undelegateRequests[i].amount);
-            if (remaining > 0) {
-                undelegateRequests[i].amount = remaining;
-            } else {
-                undelegateRequests[i] = undelegateRequests[
-                    undelegateRequests.length - 1
-                ];
-                undelegateRequests.pop();
-            }
         }
     }
 
@@ -574,7 +547,8 @@ contract Lara is Ownable, ILara {
 
     function delegateToValidators(
         uint256 amount
-    ) internal returns (uint256 remainingAmount) {
+    ) public returns (uint256 remainingAmount) {
+        require(address(this).balance >= amount, "Not enough balance");
         uint256 delegatedAmount = 0;
         IApyOracle.TentativeDelegation[]
             memory nodesList = getValidatorsForAmount(amount);
@@ -609,6 +583,7 @@ contract Lara is Ownable, ILara {
                 nodesList[i].validator
             ] = nodesList[i].rating;
         }
+        totalDelegated += delegatedAmount;
         return amount - delegatedAmount;
     }
 

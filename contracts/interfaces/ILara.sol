@@ -4,6 +4,8 @@ pragma solidity 0.8.20;
 
 import "./IApyOracle.sol";
 
+import "../libs/Utils.sol";
+
 /**
  * @title ILara
  * @dev This interface defines the methods for the Lara contract
@@ -22,9 +24,10 @@ interface ILara {
     /**
      * @dev Event emitted when an epoch starts
      */
-    event EpochStarted(
-        uint256 indexed totalEpochDelegation,
-        uint256 indexed timestamp
+    event SnapshotTaken(
+        uint256 indexed totalDelegation,
+        uint256 indexed totalRewards,
+        uint256 indexed nextSnapshotBlock
     );
 
     /**
@@ -41,14 +44,6 @@ interface ILara {
     );
 
     /**
-     * @dev Event emitted when an epoch ends
-     */
-    event EpochEnded(
-        uint256 indexed totalEpochDelegation,
-        uint256 indexed totalEpochReward
-    );
-
-    /**
      * @dev Event emitted when a user undelegates
      */
     event Undelegated(
@@ -60,11 +55,7 @@ interface ILara {
     /**
      * @dev Event emitted when Tara is sent
      */
-    event TaraSent(
-        address indexed user,
-        uint256 indexed amount,
-        uint256 indexed blockNumber
-    );
+    event TaraSent(address indexed user, uint256 indexed amount);
 
     /**
      * @dev Event emitted when a stake is removed
@@ -133,10 +124,16 @@ interface ILara {
     function setMinStakeAmount(uint256 _minStakeAmount) external;
 
     /**
+     * @dev Function to delegate a certain amount to validators
+     * @param amount The amount to delegate
+     */
+    function delegateToValidators(uint256 amount) external returns (uint256);
+
+    /**
      * @dev Function for a user to stake a certain amount
      * @param amount The amount to stake
      */
-    function stake(uint256 amount) external payable;
+    function stake(uint256 amount) external payable returns (uint256);
 
     /**
      * @notice Rebalance method to rebalance the protocol.
@@ -146,18 +143,19 @@ interface ILara {
      */
     function rebalance() external;
 
-    /**
-     * @dev Function for a user to remove a certain amount of stake
-     * @param amount The amount of stake to remove
-     */
-    function unstake(uint256 amount) external;
+    // /**
+    //  * @dev Function for a user to remove a certain amount of stake
+    //  * @param amount The amount of stake to remove
+    //  */
+    // function unstake(uint256 amount) external;
 
     /**
      * @dev Function for a user to request undelegation of a certain amount
      * @param amount The amount to undelegate
-     * The undelegation will take place at the next epoch end
      */
-    function registerUndelegationRequest(uint256 amount) external;
+    function requestUndelegate(
+        uint256 amount
+    ) external returns (Utils.Undelegation[] memory);
 
     /**
      * @dev Function for a user to confirm undelegation of a certain amount
@@ -173,13 +171,15 @@ interface ILara {
      */
     function cancelUndelegate(address validator, uint256 amount) external;
 
-    /**
-     * @dev Function to start an epoch
-     */
-    function startEpoch() external;
+    // /**
+    //  * @dev Function to start an epoch
+    //  */
+    // function startEpoch() external;
 
-    /**
-     * @dev Function to end an epoch
-     */
-    function endEpoch() external;
+    // /**
+    //  * @dev Function to end an epoch
+    //  */
+    // function endEpoch() external;
+
+    function snapshot() external;
 }

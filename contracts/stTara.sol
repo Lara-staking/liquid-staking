@@ -21,8 +21,6 @@ contract stTARA is ERC20, Ownable, IstTara {
 
     // Address of Lara protocol
     address public lara;
-    address[] public holders;
-    Utils.HolderData[] public holderSnapshot;
 
     constructor() ERC20("Staked TARA", "stTARA") Ownable(msg.sender) {}
 
@@ -36,9 +34,6 @@ contract stTARA is ERC20, Ownable, IstTara {
     }
 
     function mint(address recipient, uint256 amount) external onlyLara {
-        if (balanceOf(recipient) == 0) {
-            holders.push(recipient);
-        }
         super._mint(recipient, amount);
 
         emit Minted(recipient, amount);
@@ -56,36 +51,6 @@ contract stTARA is ERC20, Ownable, IstTara {
         }
         // Burn stTARA tokens
         super._burn(user, amount);
-        // remove the holder
-        if (balanceOf(user) == 0) {
-            for (uint256 i = 0; i < holders.length; i++) {
-                if (holders[i] == user) {
-                    holders[i] = holders[holders.length - 1];
-                    holders.pop();
-                    break;
-                }
-            }
-        }
         emit Burned(user, amount);
-    }
-
-    function makeHolderSnapshot() external {
-        delete holderSnapshot;
-        for (uint256 i = 0; i < holders.length; i++) {
-            holderSnapshot.push(
-                Utils.HolderData({
-                    holder: holders[i],
-                    amount: balanceOf(holders[i])
-                })
-            );
-        }
-    }
-
-    function getHolderSnapshot()
-        external
-        view
-        returns (Utils.HolderData[] memory)
-    {
-        return holderSnapshot;
     }
 }

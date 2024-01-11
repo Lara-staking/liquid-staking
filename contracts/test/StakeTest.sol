@@ -10,6 +10,7 @@ import "../mocks/MockDpos.sol";
 import "../stTara.sol";
 import "./SetUpTest.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
+import {Utils} from "../libs/Utils.sol";
 
 contract StakeTest is Test, TestSetup {
     uint256 epochDuration = 0;
@@ -23,22 +24,81 @@ contract StakeTest is Test, TestSetup {
 
     function stakeAndUnstake(uint256 amount) public {
         // Call the stake function
-        lara.stake{value: amount}(amount);
+        uint256 remaining = lara.stake{value: amount}(amount);
 
+        amount -= remaining;
         // Check the staked amount
-        assertEq(address(lara).balance, amount, "Wrong staked amount");
+        assertEq(
+            mockDpos.getTotalDelegation(address(lara)),
+            amount,
+            "Wrong staked amount after stake"
+        );
         assertEq(
             stTaraToken.balanceOf(address(this)),
             amount,
-            "Wrong staked amount"
+            "Wrong stTARA balance after stake"
         );
+
+        // Check if the validators array size increased by 1
+        uint256 delegations;
+        if (amount % 80000000 ether == 0) {
+            delegations = amount / 80000000 ether;
+        } else {
+            delegations = amount / 80000000 ether + 1;
+        }
+        for (uint8 i = 0; i < delegations; i++) {
+            assertEq(
+                lara.validators(i),
+                validators[i],
+                "Validator not registered"
+            );
+        }
 
         stTaraToken.approve(address(lara), amount);
         // Call the unstake function
-        lara.unstake(amount);
+        uint256 balanceBeforeUndelegate = address(this).balance;
+        Utils.Undelegation[] memory undelegations = lara.requestUndelegate(
+            amount
+        );
+        uint256 balanceAfterUndelegate = address(this).balance;
+        assertEq(
+            stTaraToken.balanceOf(address(this)),
+            0,
+            "Wrong stTARA balance after requestUndelegate"
+        );
 
-        // Check the unstaked amount
-        assertEq(address(lara).balance, 0, "Wrong unstaked amount");
+        assertEq(
+            balanceAfterUndelegate - balanceBeforeUndelegate,
+            333 ether * undelegations.length,
+            "Wrong rewards given after requestUndelegate"
+        );
+        assertEq(
+            lara.undelegated(address(this)),
+            amount,
+            "Wrong undelegated amount in lara"
+        );
+
+        uint256 initialUndelegated = lara.undelegated(address(this));
+        vm.roll(mockDpos.UNDELEGATION_DELAY_BLOCKS() + block.number);
+        for (uint256 i = 0; i < undelegations.length; i++) {
+            uint256 balanceBefore = address(this).balance;
+            lara.confirmUndelegate(
+                undelegations[i].validator,
+                undelegations[i].amount
+            );
+            uint256 balanceAfter = address(this).balance;
+            assertEq(
+                lara.undelegated(address(this)),
+                initialUndelegated - undelegations[i].amount,
+                "Wrong undelegated"
+            );
+            assertEq(
+                balanceAfter - balanceBefore,
+                undelegations[i].amount,
+                "Wrong delegation given"
+            );
+            initialUndelegated = lara.undelegated(address(this));
+        }
     }
 
     function testStakeAndUnstake() public {
@@ -59,12 +119,10 @@ contract StakeTest is Test, TestSetup {
         lara.stake{value: 400000 ether}(500000 ether);
     }
 
-    function testFailUnstakeAmountTooHigh() public {
+    function testFailUnstakeAmountNotApproved() public {
         // Call the function with an amount greater than the staked amount
-        vm.expectRevert(
-            "revert: LARA: Not enough assets unstaked, use requestUndelegate instead"
-        );
-        lara.unstake(6000000 ether);
+        vm.expectRevert("revert: Amount not approved for unstaking");
+        lara.requestUndelegate(6000000 ether);
     }
 
     function testNotRegisteredTwice() public {
@@ -88,6 +146,7 @@ contract StakeTest is Test, TestSetup {
 
     function testFuzz_stakeAndUnstake(uint256 amount) public {
         vm.assume(amount > lara.minStakeAmount());
+        vm.assume(amount < 10000000000 ether);
         vm.deal(address(this), amount);
         stakeAndUnstake(amount);
     }
@@ -99,11 +158,11 @@ contract StakeTest is Test, TestSetup {
 
     function testFuzz_unstakeMoreThanStaked(uint256 amount) public {
         vm.assume(amount > lara.minStakeAmount());
-        vm.assume(amount < 10000000000 ether);
+        vm.assume(amount < 100000000000 ether);
         vm.deal(address(this), amount);
         lara.stake{value: amount}(amount);
         stTaraToken.approve(address(lara), amount + 1);
         vm.expectRevert();
-        lara.unstake(amount + 1);
+        lara.requestUndelegate(amount + 1);
     }
 }
