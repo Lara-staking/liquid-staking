@@ -131,4 +131,16 @@ contract MassRebalanceTest is Test, ManyValidatorsTestSetup {
             "LARA: Total delegated amount should not change"
         );
     }
+
+    function invariant_stakeSameAfterMassRebalance() public {
+        assertTrue(
+            lara.totalDelegated() == stTaraToken.totalSupply(),
+            "Total delegated not equal to total supply"
+        );
+        stakeFromMultipleDelegatorsToMultipleValidators(100000 ether);
+        assertTrue(
+            lara.totalDelegated() == stTaraToken.totalSupply(),
+            "Total delegated not equal to total supply"
+        );
+    }
 }
