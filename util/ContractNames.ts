@@ -3,4 +3,5 @@ export enum ContractNames {
   apyOracle = "ApyOracle",
   lara = "Lara",
   mockDpos = "MockDpos",
+  utils = "Utils",
 }
