@@ -152,7 +152,7 @@ contract Lara is Ownable, ILara {
      * @notice Stake function
      * In the stake function, the user sends the amount of TARA tokens he wants to stake.
      * This method takes the payment and mints the stTARA tokens to the user.
-     * @notice The tokens are not DELEGATED INSTANTLY, but on the next epoch.
+     * @notice The tokens are DELEGATED INSTANTLY.
      * @param amount the amount to stake
      */
     function stake(uint256 amount) public payable returns (uint256) {
@@ -193,7 +193,58 @@ contract Lara is Ownable, ILara {
     }
 
     /**
-     * @notice method for starting a staking epoch.
+     * @notice Delegate function
+     * In the delegate function, the caller can start the staking of any remaining balance in Lara towards the native DPOS contract.
+     * @notice Anyone can call, it will always delegate the given amount from Lara's balance
+     * @param amount the amount to delegate
+     * @return remainingAmount the remaining amount that could not be delegated
+     */
+    function delegateToValidators(
+        uint256 amount
+    ) public returns (uint256 remainingAmount) {
+        require(address(this).balance >= amount, "Not enough balance");
+        uint256 delegatedAmount = 0;
+        IApyOracle.TentativeDelegation[]
+            memory nodesList = getValidatorsForAmount(amount);
+        if (nodesList.length == 0) {
+            revert("No nodes available for delegation");
+        }
+        for (uint256 i = 0; i < nodesList.length; i++) {
+            if (delegatedAmount == amount) break;
+            (bool success, bytes memory data) = address(dposContract).call{
+                value: nodesList[i].amount
+            }(
+                abi.encodeWithSignature(
+                    "delegate(address)",
+                    nodesList[i].validator
+                )
+            );
+            if (!success)
+                revert DelegationFailed(
+                    nodesList[i].validator,
+                    msg.sender,
+                    nodesList[i].amount,
+                    abi.decode(data, (string))
+                );
+            delegatedAmount += nodesList[i].amount;
+            if (!isValidatorRegistered(nodesList[i].validator)) {
+                validators.push(nodesList[i].validator);
+            }
+            protocolTotalStakeAtValidator[nodesList[i].validator] += nodesList[
+                i
+            ].amount;
+            protocolValidatorRatingAtDelegation[
+                nodesList[i].validator
+            ] = nodesList[i].rating;
+        }
+        totalDelegated += delegatedAmount;
+        return amount - delegatedAmount;
+    }
+
+    /**
+     * @notice method to create a protocol snapshot.
+     * A protocol snapshot can be done once every epochDuration blocks.
+     * The method will claim all rewards from the DPOS contract and distribute them to the delegators.
      */
     function snapshot() external {
         if (lastSnapshot != 0 && block.number < lastSnapshot + epochDuration) {
@@ -272,7 +323,7 @@ contract Lara is Ownable, ILara {
 
     /**
      * @notice Rebalance method to rebalance the protocol.
-     * The method is intended to be called by anyone in between epochs.
+     * The method is intended to be called by anyone, at least every epochDuration blocks.
      * In this V0 there is no on-chain trigger or management function for this, will be triggered from outside.
      * The method will call the oracle to get the rebalance list and then redelegate the stake.
      */
@@ -545,48 +596,11 @@ contract Lara is Ownable, ILara {
         }
     }
 
-    function delegateToValidators(
-        uint256 amount
-    ) public returns (uint256 remainingAmount) {
-        require(address(this).balance >= amount, "Not enough balance");
-        uint256 delegatedAmount = 0;
-        IApyOracle.TentativeDelegation[]
-            memory nodesList = getValidatorsForAmount(amount);
-        if (nodesList.length == 0) {
-            revert("No nodes available for delegation");
-        }
-        for (uint256 i = 0; i < nodesList.length; i++) {
-            if (delegatedAmount == amount) break;
-            (bool success, bytes memory data) = address(dposContract).call{
-                value: nodesList[i].amount
-            }(
-                abi.encodeWithSignature(
-                    "delegate(address)",
-                    nodesList[i].validator
-                )
-            );
-            if (!success)
-                revert DelegationFailed(
-                    nodesList[i].validator,
-                    msg.sender,
-                    nodesList[i].amount,
-                    abi.decode(data, (string))
-                );
-            delegatedAmount += nodesList[i].amount;
-            if (!isValidatorRegistered(nodesList[i].validator)) {
-                validators.push(nodesList[i].validator);
-            }
-            protocolTotalStakeAtValidator[nodesList[i].validator] += nodesList[
-                i
-            ].amount;
-            protocolValidatorRatingAtDelegation[
-                nodesList[i].validator
-            ] = nodesList[i].rating;
-        }
-        totalDelegated += delegatedAmount;
-        return amount - delegatedAmount;
-    }
-
+    /**
+     * @notice method to find the validators to delegate to
+     * @param amount the amount to delegate
+     * @return an array of validators to delegate amount of TARA to
+     */
     function findValidatorsWithDelegation(
         uint256 amount
     ) internal view returns (address[] memory) {
@@ -610,6 +624,10 @@ contract Lara is Ownable, ILara {
         return result;
     }
 
+    /**
+     * @notice method to build the current delegation array
+     * Collects the current delegation data from the protocol and builds an array of TentativeDelegation structs
+     */
     function buildCurrentDelegationArray()
         internal
         view
