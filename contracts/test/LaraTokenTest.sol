@@ -115,6 +115,18 @@ contract LaraTokenTest is Test {
 
         laraToken.endPresale();
 
+        assertEq(
+            laraToken.presaleRunning(),
+            false,
+            "Presale: presaleRunning != false"
+        );
+
+        assertEq(
+            laraToken.presaleEndBlock(),
+            block.number,
+            "Presale: presaleEndBlock != block.number"
+        );
+
         uint256 balanceOfLaraTokenAfter = address(laraToken).balance;
 
         assertEq(
@@ -142,5 +154,8 @@ contract LaraTokenTest is Test {
                 "LaraToken total supply did not decrease"
             );
         }
+
+        vm.expectRevert("Presale: end already called");
+        laraToken.endPresale();
     }
 }
