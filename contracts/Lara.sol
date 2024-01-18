@@ -286,8 +286,12 @@ contract Lara is Ownable, ILara {
         uint256 stTARASupply = stTaraToken.totalSupply();
         for (uint256 i = 0; i < delegators.length; i++) {
             address delegator = delegators[i];
+            uint256 delegatorBalance = stTaraToken.balanceOf(delegator);
+            if (delegatorBalance == 0) {
+                continue;
+            }
             uint256 slice = Utils.calculateSlice(
-                stTaraToken.balanceOf(delegator),
+                delegatorBalance,
                 stTARASupply
             );
             uint256 delegatorReward = (slice * distributableRewards) /

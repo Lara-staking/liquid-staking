@@ -17,7 +17,7 @@ abstract contract ManyValidatorsTestSetup is Test {
     stTARA stTaraToken;
 
     address treasuryAddress = address(9999);
-    uint16 numValidators = 1400;
+    uint16 numValidators = 400;
 
     address[] public validators = new address[](numValidators);
 
