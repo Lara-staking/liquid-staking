@@ -6,7 +6,7 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract LaraToken is ERC20, Ownable {
-    uint256 public minSwapAmount = 10000 ether;
+    uint256 public minSwapAmount = 1000 ether;
     uint256 public presaleStartBlock;
     uint256 public presaleEndBlock;
     uint256 public presaleBlockDuration = 151200;
