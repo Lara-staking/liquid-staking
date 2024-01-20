@@ -354,6 +354,7 @@ contract Lara is Ownable, ILara {
                     rebalanceList[i].toRating
                 );
             }
+            lastRebalance = block.number;
         } catch Error(string memory reason) {
             revert(reason);
         }
