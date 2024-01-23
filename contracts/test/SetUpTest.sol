@@ -8,7 +8,7 @@ import "../Lara.sol";
 import "../ApyOracle.sol";
 import "../mocks/MockDpos.sol";
 import "../stTara.sol";
-import {StakeAmountTooLow, StakeValueTooLow} from "../errors/SharedErrors.sol";
+import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
 abstract contract TestSetup is Test {
     Lara lara;
@@ -21,6 +21,10 @@ abstract contract TestSetup is Test {
     uint16 numValidators = 12;
 
     address[] validators = new address[](numValidators);
+
+    fallback() external payable {}
+
+    receive() external payable {}
 
     function setupValidators() public {
         // create a random array of addresses as internal validators

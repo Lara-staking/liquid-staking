@@ -8,7 +8,7 @@ import "../Lara.sol";
 import "../ApyOracle.sol";
 import "../mocks/MockDpos.sol";
 import "../stTara.sol";
-import {StakeAmountTooLow, StakeValueTooLow} from "../errors/SharedErrors.sol";
+import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
 abstract contract ManyValidatorsTestSetup is Test {
     Lara lara;

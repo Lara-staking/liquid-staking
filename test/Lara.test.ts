@@ -40,6 +40,7 @@ describe(ContractNames.lara, function () {
     await setupApyOracle(apyOracle, dataFeed);
     stTara = await deploystTara(v1);
     lara = await deployLara(
+      dataFeed,
       await stTara.getAddress(),
       await mockDpos.getAddress(),
       await apyOracle.getAddress(),
@@ -134,7 +135,6 @@ describe(ContractNames.lara, function () {
     it("should allow staking if values are correct for one validator", async () => {
       const [, , , , staker] = await ethers.getSigners();
       const amountToStake = ethers.parseEther("1001");
-      const stakedAmountBefore = await lara.stakedAmounts(staker.address);
       const stakeTx = lara
         .connect(staker)
         .stake(amountToStake, { value: amountToStake });
@@ -146,11 +146,6 @@ describe(ContractNames.lara, function () {
       await expect(stakeTx)
         .to.emit(lara, "Staked")
         .withArgs(staker.address, amountToStake);
-
-      const stakedAmountAfter = await lara.stakedAmounts(staker.address);
-      expect(stakedAmountAfter).to.equal(
-        stakedAmountBefore + toBigInt(amountToStake)
-      );
 
       // Test that the user cannot burn the protocol balance
       const mintAmount = ethers.parseEther("1010");
@@ -173,7 +168,6 @@ describe(ContractNames.lara, function () {
     it("should allow staking if values are correct for multiple validators", async () => {
       const [, , , , staker] = await ethers.getSigners();
       const amountToStake = ethers.parseEther("60000000");
-      const stakedAmountBefore = await lara.stakedAmounts(staker.address);
 
       const stakeTx3 = lara
         .connect(staker)
@@ -195,13 +189,9 @@ describe(ContractNames.lara, function () {
           amountToStake * toBigInt(-1) - totalGasUsed
         );
       }
-      const stakedAmountAfter = await lara.stakedAmounts(staker.address);
-      expect(stakedAmountAfter).to.equal(
-        stakedAmountBefore + toBigInt(amountToStake)
-      );
     });
 
-    it("should allow staking with amount greater than total capacity", async () => {
+    it("should allow staking with amount greater than total capacity, but should stake only capacity", async () => {
       const [, , , , staker] = await ethers.getSigners();
       const surplusAmount = ethers.parseEther("1000");
       const amountToStake =
@@ -210,38 +200,29 @@ describe(ContractNames.lara, function () {
         toBigInt(v2InitialTotalStake) -
         toBigInt(v3InitialTotalStake) +
         toBigInt(surplusAmount);
-      const stakedAmountBefore = await lara.stakedAmounts(staker.address);
 
       const stakeTx4 = lara
         .connect(staker)
         .stake(amountToStake, { value: amountToStake });
       const receipt = await stakeTx4;
+      console.log("receipt", receipt);
       const tx = await receipt.wait();
       if (tx) {
         const totalGasUsed = tx.gasUsed * receipt.gasPrice;
         await expect(stakeTx4)
           .to.emit(lara, "Staked")
-          .withArgs(staker.address, amountToStake);
+          .withArgs(staker.address, amountToStake - surplusAmount);
         await expect(stakeTx4).to.changeTokenBalance(
           stTara,
           staker,
-          amountToStake - toBigInt(surplusAmount) + ethers.parseEther("1000")
+          amountToStake - toBigInt(surplusAmount)
         );
         await expect(stakeTx4).to.changeEtherBalance(
           staker,
-          (amountToStake -
-            toBigInt(surplusAmount) +
-            ethers.parseEther("1000")) *
-            toBigInt(-1) -
+          (amountToStake - toBigInt(surplusAmount)) * toBigInt(-1) -
             totalGasUsed
         );
       }
-      const stakedAmountAfter = await lara.stakedAmounts(staker.address);
-      expect(stakedAmountAfter).to.equal(
-        stakedAmountBefore +
-          toBigInt(amountToStake - toBigInt(surplusAmount)) +
-          ethers.parseEther("1000")
-      );
     });
   });
 });

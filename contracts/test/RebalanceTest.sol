@@ -9,7 +9,7 @@ import "../ApyOracle.sol";
 import "../mocks/MockDpos.sol";
 import "../stTara.sol";
 import "./SetUpTest.sol";
-import {StakeAmountTooLow, StakeValueTooLow} from "../errors/SharedErrors.sol";
+import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
 contract RebalanceTest is Test, TestSetup {
     function setUp() public {
@@ -18,17 +18,15 @@ contract RebalanceTest is Test, TestSetup {
         super.setupLara();
     }
 
-    function stakeToASingleValidator(uint256 amount) private {
+    function stake(uint256 amount) private {
         vm.assume(amount > 1000 ether);
-        vm.assume(amount < 1000000 ether);
 
-        uint256 laraBalanceBefore = address(lara).balance;
+        uint256 dposBalanceBefore = address(mockDpos).balance;
 
         // Call the function
         lara.stake{value: amount}(amount);
-        checkValidatorTotalStakesAreZero();
 
-        uint256 laraBalanceAfter = address(lara).balance;
+        uint256 dposBalanceAfter = address(mockDpos).balance;
 
         // Check the stTara balance before
         assertEq(
@@ -37,142 +35,42 @@ contract RebalanceTest is Test, TestSetup {
             "Wrong starting balance"
         );
 
-        // Check the lara balance
+        // Check the dpos balance
         assertEq(
-            laraBalanceAfter - laraBalanceBefore,
+            dposBalanceAfter - dposBalanceBefore,
             amount,
-            "Wrong lara balance"
-        );
-
-        // Check the remaining amount
-        uint256 stakedAmount = lara.stakedAmounts(address(this));
-        assertEq(stakedAmount, amount, "Wrong staked amount");
-        assertEq(
-            stTaraToken.balanceOf(address(this)),
-            amount,
-            "Wrong stTara amount given"
+            "Wrong dpos balance"
         );
 
         // Check the delegated amount
-        assertEq(
-            lara.stakedAmounts(address(this)),
-            amount,
-            "Wrong staked amount"
-        );
+        assertEq(lara.totalDelegated(), amount, "Wrong staked amount");
 
         // Check other starting values
-        assertEq(
-            lara.delegatedAmounts(address(this)),
-            0,
-            "Wrong delegated amount"
-        );
-        assertEq(
-            lara.claimableRewards(address(this)),
-            0,
-            "Wrong claimable rewards"
-        );
-        assertEq(
-            lara.undelegated(address(this)),
-            0,
-            "Wrong undelegated amount"
-        );
-
-        address firstDelegator = lara.getDelegatorAtIndex(0);
-        assertEq(firstDelegator, address(this), "Wrong delegator address");
+        assertEq(lara.delegators(0), address(this), "Wrong delegator");
 
         // start the epoch
-        lara.startEpoch();
+        lara.snapshot();
 
-        vm.warp(lara.lastEpochStartBlock() + lara.epochDuration());
-        vm.roll(lara.lastEpochStartBlock() + lara.epochDuration());
-        // end the epoch
-        lara.endEpoch();
-    }
-
-    function stakeToMultipleValidators(uint256 amount) private {
-        uint256 laraBalanceBefore = address(lara).balance;
-
-        // Call the function
-        vm.assume(amount > 80000000 ether);
-        lara.stake{value: amount}(amount);
-        checkValidatorTotalStakesAreZero();
-
-        uint256 laraBalanceAfter = address(lara).balance;
-
-        // Check the stTara balance before
-        assertEq(
-            stTaraToken.balanceOf(address(this)),
-            amount,
-            "Wrong starting balance"
-        );
-
-        // Check the lara balance
-        assertEq(
-            laraBalanceAfter - laraBalanceBefore,
-            amount,
-            "Wrong lara balance"
-        );
-
-        // Check the remaining amount
-        uint256 stakedAmount = lara.stakedAmounts(address(this));
-        assertEq(stakedAmount, amount, "Wrong staked amount");
-        assertEq(
-            stTaraToken.balanceOf(address(this)),
-            amount,
-            "Wrong stTara amount given"
-        );
-
-        // Check the delegated amount
-        assertEq(
-            lara.stakedAmounts(address(this)),
-            amount,
-            "Wrong staked amount"
-        );
-
-        // Check other starting values
-        assertEq(
-            lara.delegatedAmounts(address(this)),
-            0,
-            "Wrong delegated amount"
-        );
-        assertEq(
-            lara.claimableRewards(address(this)),
-            0,
-            "Wrong claimable rewards"
-        );
-        assertEq(
-            lara.undelegated(address(this)),
-            0,
-            "Wrong undelegated amount"
-        );
-
-        address firstDelegator = lara.getDelegatorAtIndex(0);
-        assertEq(firstDelegator, address(this), "Wrong delegator address");
-
-        // start the epoch
-        lara.startEpoch();
-
-        vm.warp(lara.lastEpochStartBlock() + lara.epochDuration());
-        vm.roll(lara.lastEpochStartBlock() + lara.epochDuration());
-        // end the epoch
-        lara.endEpoch();
+        vm.roll(lara.lastSnapshot() + lara.epochDuration());
     }
 
     // ReDelegate from
     function testFuzz_testRedelegateStakeToSingleValidator(
         uint256 amount
     ) public {
-        stakeToASingleValidator(amount);
+        vm.assume(amount < 80000000 ether);
+        stake(amount);
         // re-delegate the total stake from one validator to another
         address validator1 = findValidatorWithStake(amount);
         // address validator2 = validators[validators.length - 1];
 
+        uint256 totalDelgatedbefore = lara.totalDelegated();
         lara.rebalance();
 
         // check that the stake value didn't change
         assertEq(
-            lara.delegatedAmounts(address(this)),
-            amount,
+            lara.totalDelegated(),
+            totalDelgatedbefore,
             "ReDelegate: Wrong delegated amount"
         );
 
@@ -191,7 +89,7 @@ contract RebalanceTest is Test, TestSetup {
     ) public {
         vm.assume(amount > 80000000 ether);
         vm.assume(amount < 800000000 ether);
-        stakeToMultipleValidators(amount);
+        stake(amount);
 
         address firstInOracleNodesList = mockApyOracle.nodesList(0);
 
@@ -226,13 +124,6 @@ contract RebalanceTest is Test, TestSetup {
 
         lara.rebalance();
 
-        // check that the stake value didn't change
-        assertEq(
-            lara.delegatedAmounts(address(this)),
-            amount,
-            "ReDelegate: Wrong delegated amount"
-        );
-
         assertEq(
             lara.protocolTotalStakeAtValidator(firstInOracleNodesList),
             0,
@@ -263,7 +154,7 @@ contract RebalanceTest is Test, TestSetup {
     ) public {
         vm.assume(amount > 80000000 ether);
         vm.assume(amount < 800000000 ether);
-        stakeToMultipleValidators(amount);
+        stake(amount);
 
         address firstInOracleNodesList = mockApyOracle.nodesList(0);
 
@@ -291,13 +182,6 @@ contract RebalanceTest is Test, TestSetup {
         );
 
         lara.rebalance();
-
-        // check that the stake value didn't change
-        assertEq(
-            lara.delegatedAmounts(address(this)),
-            amount,
-            "ReDelegate: Wrong delegated amount"
-        );
 
         assertEq(
             lara.protocolTotalStakeAtValidator(firstInOracleNodesList),

@@ -117,6 +117,10 @@ interface MockIDPOS {
         string calldata endpoint
     ) external payable;
 
+    function getTotalDelegation(
+        address delegator
+    ) external view returns (uint256 total_delegation);
+
     // Returns validator basic info (everything except list of his delegators)
     function getValidator(
         address validator

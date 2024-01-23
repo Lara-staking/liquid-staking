@@ -12,8 +12,9 @@ contract MockDpos is MockIDPOS {
     }
 
     mapping(address => MockIDPOS.ValidatorData) public validators;
+    mapping(address => uint256) public totalDelegations;
     MockIDPOS.ValidatorData[] validatorDatas;
-    mapping(address => Undelegation) public undelegations;
+    mapping(address => mapping(address => Undelegation)) public undelegations;
 
     uint256 public constant UNDELEGATION_DELAY_BLOCKS = 5000;
 
@@ -46,6 +47,12 @@ contract MockDpos is MockIDPOS {
         address validator
     ) external view returns (bool) {
         return validators[validator].account != address(0);
+    }
+
+    function getTotalDelegation(
+        address delegator
+    ) external view returns (uint256 total_delegation) {
+        return totalDelegations[delegator];
     }
 
     function getValidator(
@@ -108,6 +115,7 @@ contract MockDpos is MockIDPOS {
         require(validatorData.account != address(0), "Validator doesn't exist");
         require(msg.value > 0, "Delegation value not provided");
 
+        totalDelegations[msg.sender] += msg.value;
         validatorData.info.total_stake += msg.value;
         require(
             validators[validator].info.total_stake >= msg.value,
@@ -150,6 +158,7 @@ contract MockDpos is MockIDPOS {
             info
         );
         validators[validator] = validatorData;
+        totalDelegations[msg.sender] += msg.value;
         validatorDatas.push(validatorData);
 
         emit ValidatorRegistered(validator);
@@ -169,11 +178,12 @@ contract MockDpos is MockIDPOS {
         } else {
             validators[validator].info.total_stake -= amount;
         }
-        undelegations[msg.sender] = Undelegation({
+        undelegations[msg.sender][validator] = Undelegation({
             delegator: msg.sender,
             amount: amount,
             blockNumberClaimable: block.number + UNDELEGATION_DELAY_BLOCKS
         });
+        totalDelegations[msg.sender] -= amount;
         // simulate rewards
         payable(msg.sender).transfer(333 ether);
         emit Undelegated(msg.sender, validator, amount);
@@ -218,7 +228,7 @@ contract MockDpos is MockIDPOS {
 
     // Confirms undelegate request
     function confirmUndelegate(address validator) external {
-        Undelegation memory undelegation = undelegations[msg.sender];
+        Undelegation memory undelegation = undelegations[msg.sender][validator];
         require(
             undelegation.delegator == msg.sender,
             "Only delegator can confirm undelegate"
@@ -227,22 +237,19 @@ contract MockDpos is MockIDPOS {
             undelegation.blockNumberClaimable <= block.number,
             "Undelegation not yet claimable"
         );
-        delete undelegations[msg.sender];
+        delete undelegations[msg.sender][validator];
         payable(msg.sender).transfer(undelegation.amount);
         emit UndelegateConfirmed(msg.sender, validator, undelegation.amount);
     }
 
-    event CallerCheck(address CallerCheck);
-
     // Cancel undelegate request
     function cancelUndelegate(address validator) external {
-        Undelegation memory undelegation = undelegations[msg.sender];
-        emit CallerCheck(msg.sender);
+        Undelegation memory undelegation = undelegations[msg.sender][validator];
         require(
             undelegation.delegator == msg.sender,
             "Only delegator can cancel undelegate"
         );
-        delete undelegations[msg.sender];
+        delete undelegations[msg.sender][validator];
         if (validators[validator].account == address(0)) {
             // we need to readd the validator
             MockIDPOS.ValidatorBasicInfo memory info = MockIDPOS
@@ -260,6 +267,7 @@ contract MockDpos is MockIDPOS {
         } else {
             validators[validator].info.total_stake += undelegation.amount;
         }
+        totalDelegations[msg.sender] += undelegation.amount;
         emit UndelegateCanceled(msg.sender, validator, undelegation.amount);
     }
 }

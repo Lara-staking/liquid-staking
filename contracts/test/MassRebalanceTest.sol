@@ -9,7 +9,7 @@ import "../ApyOracle.sol";
 import "../mocks/MockDpos.sol";
 import "../stTara.sol";
 import "./SetUpTestLotsOfValidators.sol";
-import {StakeAmountTooLow, StakeValueTooLow} from "../errors/SharedErrors.sol";
+import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
 contract MassRebalanceTest is Test, ManyValidatorsTestSetup {
     function setUp() public {
@@ -21,16 +21,19 @@ contract MassRebalanceTest is Test, ManyValidatorsTestSetup {
     function stakeFromMultipleDelegatorsToMultipleValidators(
         uint256 total
     ) public {
+        uint256 totalStaked = 0;
         for (uint256 i = 1; i < 6; i++) {
             uint256 amount = total / 5;
             address delegator = address(uint160(i));
             uint256 laraBalanceBefore = address(lara).balance;
+            uint256 dposBalanceBefore = address(mockDpos).balance;
             // Call the function
             vm.deal(delegator, amount);
             vm.prank(delegator);
             lara.stake{value: amount}(amount);
-            checkValidatorTotalStakesAreZero();
+            totalStaked += amount;
             uint256 laraBalanceAfter = address(lara).balance;
+            uint256 dposBalanceAfter = address(mockDpos).balance;
 
             // Check the stTara balance before
             assertEq(
@@ -42,45 +45,27 @@ contract MassRebalanceTest is Test, ManyValidatorsTestSetup {
             // Check the lara balance
             assertEq(
                 laraBalanceAfter - laraBalanceBefore,
+                0,
+                "Wrong lara balance"
+            );
+
+            assertEq(
+                dposBalanceAfter - dposBalanceBefore,
                 amount,
                 "Wrong lara balance"
             );
 
             // Check the staked amount
-            assertEq(
-                lara.stakedAmounts(delegator),
-                amount,
-                "Wrong staked amount"
-            );
+            assertEq(lara.totalDelegated(), totalStaked, "Wrong staked amount");
 
-            // Check the other amounts
-            assertEq(
-                lara.delegatedAmounts(delegator),
-                0,
-                "Wrong delegated amount"
-            );
-            assertEq(
-                lara.claimableRewards(delegator),
-                0,
-                "Wrong claimable rewards"
-            );
             assertEq(
                 lara.undelegated(delegator),
                 0,
                 "Wrong undelegated amount"
             );
-
-            address firstDelegator = lara.getDelegatorAtIndex(i - 1);
-            assertEq(firstDelegator, delegator, "Wrong delegator address");
         }
 
-        // start the epoch
-        lara.startEpoch();
-
-        vm.warp(lara.lastEpochStartBlock() + lara.epochDuration());
-        vm.roll(lara.lastEpochStartBlock() + lara.epochDuration());
-        // end the epoch
-        lara.endEpoch();
+        vm.roll(lara.lastSnapshot() + lara.epochDuration());
     }
 
     function testFuzz_testRedelegateStakeFromMultipleDelegatorsToMultipleValidators(
@@ -103,8 +88,7 @@ contract MassRebalanceTest is Test, ManyValidatorsTestSetup {
             "First node in oracle nodes list should have changed"
         );
 
-        uint256 totalDelegatedInLastEpoch = lara
-            .lastEpochTotalDelegatedAmount();
+        uint256 totalDelegatedInLastEpoch = lara.totalDelegated();
 
         lara.rebalance();
 
@@ -113,7 +97,7 @@ contract MassRebalanceTest is Test, ManyValidatorsTestSetup {
             uint256 amount = total / 5;
             address delegator = address(uint160(i));
             assertApproxEqAbs(
-                lara.delegatedAmounts(delegator),
+                stTaraToken.balanceOf(delegator),
                 amount,
                 1000,
                 "ReDelegate: Wrong delegated amount"
@@ -145,6 +129,18 @@ contract MassRebalanceTest is Test, ManyValidatorsTestSetup {
             totalDelegatedAfterRebalance,
             totalDelegatedInLastEpoch,
             "LARA: Total delegated amount should not change"
+        );
+    }
+
+    function invariant_stakeSameAfterMassRebalance() public {
+        assertTrue(
+            lara.totalDelegated() == stTaraToken.totalSupply(),
+            "Total delegated not equal to total supply"
+        );
+        stakeFromMultipleDelegatorsToMultipleValidators(100000 ether);
+        assertTrue(
+            lara.totalDelegated() == stTaraToken.totalSupply(),
+            "Total delegated not equal to total supply"
         );
     }
 }

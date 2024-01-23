@@ -4,8 +4,10 @@ pragma solidity 0.8.20;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IstTara} from "./interfaces/IstTara.sol";
+import {Utils} from "./libs/Utils.sol";
 
-contract stTARA is ERC20, Ownable {
+contract stTARA is ERC20, Ownable, IstTara {
     // Thrown when the user does not have sufficient allowance set for Tara to burn
     error InsufficientUserAllowanceForBurn(
         uint256 amount,
@@ -49,7 +51,6 @@ contract stTARA is ERC20, Ownable {
         }
         // Burn stTARA tokens
         super._burn(user, amount);
-
         emit Burned(user, amount);
     }
 }

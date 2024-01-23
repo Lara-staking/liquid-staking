@@ -37,10 +37,10 @@ async function main() {
   nodes.push("0x5042fa2711fe547e46c2f64852fdaa5982c80697");
   nodes.push("0x6258d8f51ea17e873f69a2a978fe311fd95743dd");
 
-  //   for (const node of nodes) {
-  //     const isEligible = await dpos.isValidatorEligible(node);
-  //     console.log(`Is ${node} eligible: ${isEligible}`);
-  //   }
+  for (const node of nodes) {
+    const isEligible = await dpos.isValidatorEligible(node);
+    console.log(`Is ${node} eligible: ${isEligible}`);
+  }
   const amount = parseEther("1000000");
 
   // delegate the same amount into Lara

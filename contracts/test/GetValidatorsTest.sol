@@ -9,7 +9,7 @@ import "../ApyOracle.sol";
 import "../mocks/MockDpos.sol";
 import "../stTara.sol";
 import "./SetUpTestLotsOfValidators.sol";
-import {StakeAmountTooLow, StakeValueTooLow} from "../errors/SharedErrors.sol";
+import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
 contract GetValidatorsTest is Test, ManyValidatorsTestSetup {
     function setUp() public {
