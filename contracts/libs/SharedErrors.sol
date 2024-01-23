@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Security contact: elod@apeconsulting.xyz
-pragma solidity ^0.8.0;
+pragma solidity 0.8.20;
 
 /**
  * @notice It is returned if the caller is not authorized

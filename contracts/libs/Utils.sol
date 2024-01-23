@@ -16,7 +16,7 @@ library Utils {
     function calculateSlice(
         uint256 amount,
         uint256 supply
-    ) public view returns (uint256) {
+    ) internal pure returns (uint256) {
         return (amount * 1e18) / supply; // The result is in 18 decimal format
     }
 }

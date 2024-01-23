@@ -205,7 +205,6 @@ describe(ContractNames.lara, function () {
         .connect(staker)
         .stake(amountToStake, { value: amountToStake });
       const receipt = await stakeTx4;
-      console.log("receipt", receipt);
       const tx = await receipt.wait();
       if (tx) {
         const totalGasUsed = tx.gasUsed * receipt.gasPrice;

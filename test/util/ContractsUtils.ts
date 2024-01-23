@@ -69,14 +69,7 @@ export async function deployLara(
   apyOracleAddress: string,
   treasuryAddress: string
 ) {
-  const Utils = await ethers.getContractFactory(ContractNames.utils);
-  const utils = await Utils.deploy();
-  const utilDeployment = await utils.waitForDeployment();
-  const Lara = await ethers.getContractFactory(ContractNames.lara, {
-    libraries: {
-      Utils: await utilDeployment.getAddress(),
-    },
-  });
+  const Lara = await ethers.getContractFactory(ContractNames.lara);
   const lara = await Lara.deploy(
     stTaraAddress,
     mockDposAddress,
