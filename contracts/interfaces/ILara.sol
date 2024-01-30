@@ -68,11 +68,6 @@ interface ILara {
     event CommissionWithdrawn(address indexed user, uint256 indexed amount);
 
     /**
-     * @dev Event emitted when compound is changed
-     */
-    event CompoundChanged(address indexed user, bool value);
-
-    /**
      * @dev Event emitted when commission is changed
      */
     event CommissionChanged(uint256 indexed newCommission);

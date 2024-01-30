@@ -10,6 +10,7 @@ contract LaraToken is ERC20, Ownable {
     uint256 public presaleStartBlock;
     uint256 public presaleEndBlock;
     uint256 public presaleBlockDuration = 151200;
+    uint256 public presaleRate = 1724;
     address public treasuryAddress;
     bool public presaleRunning = false;
 
@@ -71,7 +72,7 @@ contract LaraToken is ERC20, Ownable {
             balanceOf(address(this)) >= msg.value,
             "Presale: insufficient balance"
         );
-        uint256 laraAmount = (msg.value * 1724) / 100;
+        uint256 laraAmount = (msg.value * presaleRate) / 100;
         _transfer(address(this), msg.sender, laraAmount);
     }
 }
