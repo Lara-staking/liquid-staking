@@ -285,6 +285,7 @@ contract ApyOracle is IApyOracle {
         uint256 capacity
     ) external OnlyDataFeed {
         maxValidatorStakeCapacity = capacity;
+        emit MaxValidatorStakeUpdated(capacity);
     }
 
     /**

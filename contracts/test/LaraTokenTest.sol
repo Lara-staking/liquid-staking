@@ -18,7 +18,7 @@ contract LaraTokenTest is Test {
         assertEq(laraToken.name(), "Lara");
         assertEq(laraToken.symbol(), "LARA");
         assertEq(laraToken.decimals(), 18);
-        assertEq(laraToken.totalSupply(), 1000000000 * 1e18);
+        assertEq(laraToken.totalSupply(), 10000000000 * 1e18);
         assertEq(laraToken.balanceOf(address(this)), laraToken.totalSupply());
         assertEq(laraToken.owner(), address(this));
     }
@@ -29,7 +29,7 @@ contract LaraTokenTest is Test {
 
         laraToken.transfer(address(laraToken), laraToken.totalSupply() / 10);
 
-        laraToken.startPresale(block.number);
+        laraToken.startPresale();
 
         assertEq(laraToken.presaleStartBlock(), 1, "presaleStartBlock != 1");
         assertEq(laraToken.presaleRunning(), true, "presaleRunning != true");
@@ -55,7 +55,7 @@ contract LaraTokenTest is Test {
     }
 
     function testFuzz_PresaleRandomAmounts(uint256 amount) public {
-        vm.assume(amount < laraToken.totalSupply());
+        vm.assume(amount <= laraToken.swapUpperLimit());
         testStartPresale();
         address presaleAddr = address(vm.addr(777));
         vm.deal(presaleAddr, amount);
@@ -150,7 +150,7 @@ contract LaraTokenTest is Test {
 
             assertEq(
                 laraToken.totalSupply(),
-                1000000000 * 1e18 - erc20BalanceOfLaraTokenBefore,
+                10000000000 * 1e18 - erc20BalanceOfLaraTokenBefore,
                 "LaraToken total supply did not decrease"
             );
         }

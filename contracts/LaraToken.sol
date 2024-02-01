@@ -10,11 +10,17 @@ contract LaraToken is ERC20, Ownable {
     uint256 public presaleStartBlock;
     uint256 public presaleEndBlock;
     uint256 public presaleBlockDuration = 151200;
+    uint256 public swapUpperLimit = 1000000 ether;
+    uint16 public swapPeriod = 900;
     address public treasuryAddress;
     bool public presaleRunning = false;
 
     uint256 private presaleStartCount = 0;
     uint256 private presaleEndCount = 0;
+
+    mapping(address => uint256) public lastSwapBlock;
+
+    event Swapped(address indexed user, uint256 amount);
 
     modifier onlyOnce() {
         require(presaleStartCount == 0, "Presale: start already called");
@@ -27,7 +33,7 @@ contract LaraToken is ERC20, Ownable {
     }
 
     constructor(address _treasury) ERC20("Lara", "LARA") Ownable(msg.sender) {
-        _mint(msg.sender, 1000000000 * 1e18);
+        _mint(msg.sender, 10000000000 * 1e18);
         treasuryAddress = _treasury;
     }
 
@@ -35,8 +41,8 @@ contract LaraToken is ERC20, Ownable {
 
     fallback() external payable {}
 
-    function startPresale(uint256 _presaleStartBlock) external onlyOnce {
-        presaleStartBlock = _presaleStartBlock;
+    function startPresale() external onlyOnce {
+        presaleStartBlock = block.number;
         presaleRunning = true;
         presaleStartCount++;
     }
@@ -71,7 +77,19 @@ contract LaraToken is ERC20, Ownable {
             balanceOf(address(this)) >= msg.value,
             "Presale: insufficient balance"
         );
+        require(
+            msg.value <= swapUpperLimit,
+            "Presale: you can swap max 1000000 LARA"
+        );
+        require(
+            lastSwapBlock[msg.sender] == 0 ||
+                (block.number >=
+                    lastSwapBlock[msg.sender] + presaleBlockDuration),
+            "Presale: you can swap once every 900 blocks"
+        );
+        lastSwapBlock[msg.sender] = block.number;
         uint256 laraAmount = (msg.value * 1724) / 100;
         _transfer(address(this), msg.sender, laraAmount);
+        emit Swapped(msg.sender, laraAmount);
     }
 }
