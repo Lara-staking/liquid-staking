@@ -11,6 +11,7 @@ contract LaraToken is ERC20, Ownable {
     uint256 public presaleEndBlock;
     uint256 public presaleBlockDuration = 151200;
     uint256 public swapUpperLimit = 1000000 ether;
+    uint256 public presaleRate = 1724;
     uint16 public swapPeriod = 900;
     address public treasuryAddress;
     bool public presaleRunning = false;
@@ -88,7 +89,7 @@ contract LaraToken is ERC20, Ownable {
             "Presale: you can swap once every 900 blocks"
         );
         lastSwapBlock[msg.sender] = block.number;
-        uint256 laraAmount = (msg.value * 1724) / 100;
+        uint256 laraAmount = (msg.value * presaleRate) / 100;
         _transfer(address(this), msg.sender, laraAmount);
         emit Swapped(msg.sender, laraAmount);
     }
