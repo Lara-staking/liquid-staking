@@ -18,8 +18,8 @@ contract DeployLaraToken is Script {
             revert("Lara owner is not deployer");
         }
         // check if deployet got the minted supply
-        if (lara.balanceOf(deployerAddress) != 1000000000 * 1e18) {
-            revert("Lara balance is not 1000000000");
+        if (lara.balanceOf(deployerAddress) != 10000000000 * 1e18) {
+            revert("Lara balance is not 10000000000");
         }
 
         // send back 10% of the supply to laraToken for Presale
@@ -31,7 +31,7 @@ contract DeployLaraToken is Script {
         }
 
         //start the presale
-        lara.startPresale(block.number + 10);
+        lara.startPresale();
 
         vm.stopBroadcast();
     }
