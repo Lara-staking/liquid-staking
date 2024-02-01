@@ -44,6 +44,11 @@ interface IApyOracle {
     event NodeDataUpdated(address indexed node, uint16 apy, uint256 pbftCount);
 
     /**
+     * @dev Event to be emitted when node stake room is updated
+     */
+    event MaxValidatorStakeUpdated(uint256 maxValidatorStake);
+
+    /**
      * @dev Function to get the node count
      */
     function getNodeCount() external view returns (uint256);
