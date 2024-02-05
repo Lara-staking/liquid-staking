@@ -84,8 +84,7 @@ contract LaraToken is ERC20, Ownable {
         );
         require(
             lastSwapBlock[msg.sender] == 0 ||
-                (block.number >=
-                    lastSwapBlock[msg.sender] + presaleBlockDuration),
+                (block.number >= lastSwapBlock[msg.sender] + swapPeriod),
             "Presale: you can swap once every 900 blocks"
         );
         lastSwapBlock[msg.sender] = block.number;
