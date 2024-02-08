@@ -174,7 +174,7 @@ contract MockDpos is MockIDPOS {
             revert("Validator has less stake than requested");
         }
         if (totalStake == amount) {
-            delete validators[validator];
+            validators[validator].info.total_stake = 0;
         } else {
             validators[validator].info.total_stake -= amount;
         }

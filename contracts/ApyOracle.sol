@@ -93,18 +93,22 @@ contract ApyOracle is IApyOracle {
         uint256 count = 0;
         for (uint256 i = 0; i < nodeCount; i++) {
             address node = nodesList[i];
-            if (orderedValidators.length == nodeCount) {
-                return new TentativeReDelegation[](0);
-            }
+            // if (orderedValidators.length == nodeCount) {
+            //     return new TentativeReDelegation[](0);
+            // }
             if (orderedValidators.length == i) {
                 break;
             }
             if (orderedValidators[i].validator == node) {
                 continue;
             }
-            if (nodes[nodesList[i]].rating <= orderedValidators[i].rating) {
+            if (
+                nodes[nodesList[i]].rating <=
+                nodes[orderedValidators[i].validator].rating
+            ) {
                 continue;
             }
+
             try DPOS.getValidator(node) returns (
                 DposInterface.ValidatorBasicInfo memory validator
             ) {
