@@ -85,7 +85,6 @@ contract ApyOracle is IApyOracle {
             memory orderedValidators = sortTentativeDelegationsByRating(
                 currentValidators
             );
-
         TentativeReDelegation[]
             memory tentativeReDelegations = new TentativeReDelegation[](
                 nodeCount
@@ -93,50 +92,47 @@ contract ApyOracle is IApyOracle {
         uint256 count = 0;
         for (uint256 i = 0; i < nodeCount; i++) {
             address node = nodesList[i];
-            // if (orderedValidators.length == nodeCount) {
-            //     return new TentativeReDelegation[](0);
-            // }
-            if (orderedValidators.length == i) {
-                break;
-            }
-            if (orderedValidators[i].validator == node) {
-                continue;
-            }
-            if (
-                nodes[nodesList[i]].rating <=
-                nodes[orderedValidators[i].validator].rating
-            ) {
-                continue;
-            }
-
             try DPOS.getValidator(node) returns (
                 DposInterface.ValidatorBasicInfo memory validator
             ) {
                 uint256 totalStake = validator.total_stake;
-                uint256 totalAmount = orderedValidators[i].amount;
                 if (totalStake >= maxValidatorStakeCapacity) {
-                    continue;
-                }
-                if (totalAmount == 0) {
                     continue;
                 }
                 uint256 availableDelegation = maxValidatorStakeCapacity -
                     totalStake;
-                if (availableDelegation > 0) {
-                    uint256 stakeSlot = 0;
-                    if (availableDelegation < totalAmount) {
-                        stakeSlot = availableDelegation;
-                    } else {
-                        stakeSlot = totalAmount;
+                for (uint256 j = 0; j < orderedValidators.length; j++) {
+                    if (orderedValidators[j].validator == node) {
+                        continue;
                     }
-                    totalAmount -= stakeSlot;
-                    tentativeReDelegations[i] = TentativeReDelegation(
-                        orderedValidators[i].validator,
-                        node,
-                        stakeSlot,
-                        nodes[node].rating
-                    );
-                    count++;
+                    if (
+                        nodes[nodesList[i]].rating <=
+                        nodes[orderedValidators[j].validator].rating
+                    ) {
+                        continue;
+                    }
+                    if (orderedValidators[j].amount == 0) {
+                        continue;
+                    }
+                    if (availableDelegation > 0) {
+                        uint256 redelegatable = 0;
+                        if (availableDelegation < orderedValidators[j].amount) {
+                            redelegatable = availableDelegation;
+                        } else {
+                            redelegatable = orderedValidators[j].amount;
+                        }
+                        tentativeReDelegations[count] = TentativeReDelegation(
+                            orderedValidators[j].validator,
+                            node,
+                            redelegatable,
+                            nodes[node].rating
+                        );
+                        availableDelegation -= redelegatable;
+                        orderedValidators[j].amount -= redelegatable;
+                        count++;
+                    } else {
+                        break;
+                    }
                 }
             } catch Error(string memory reason) {
                 revert(reason);
