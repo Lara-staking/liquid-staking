@@ -382,6 +382,11 @@ contract Lara is Ownable, ILara {
             amount <= maxValidatorStakeCapacity,
             "LARA: Amount exceeds max stake of validators in protocol"
         );
+        require(
+            protocolTotalStakeAtValidator[to] + amount <=
+                maxValidatorStakeCapacity,
+            "LARA: Redelegation to new validator exceeds max stake"
+        );
         uint256 balanceBefore = address(this).balance;
         (bool success, bytes memory data) = address(dposContract).call(
             abi.encodeWithSignature(
@@ -408,7 +413,9 @@ contract Lara is Ownable, ILara {
         emit TaraSent(treasuryAddress, balanceAfter - balanceBefore);
 
         protocolTotalStakeAtValidator[from] -= amount;
-        protocolValidatorRatingAtDelegation[from] = 0;
+        if (protocolTotalStakeAtValidator[from] == 0) {
+            protocolValidatorRatingAtDelegation[from] = 0;
+        }
         protocolTotalStakeAtValidator[to] += amount;
         protocolValidatorRatingAtDelegation[to] = rating;
     }
