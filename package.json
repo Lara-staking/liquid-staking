@@ -16,6 +16,7 @@
     "deploy-lara-devnet": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/Lara.s.sol:DeployLara --rpc-url https://rpc.devnet.taraxa.io --broadcast -vvvv",
     "stake-lara-testnet": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/Delegate.s.sol:Delegate --rpc-url https://rpc.testnet.taraxa.io --broadcast --legacy -vvvv",
     "lara-token-testnet": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/TokenLara.s.sol:DeployLaraToken --rpc-url https://rpc.testnet.taraxa.io --broadcast --legacy -vvvv",
+    "lara-token-prnet": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/TokenLara.s.sol:DeployLaraToken --rpc-url https://rpc-pr-2609.prnet.taraxa.io --broadcast --legacy -vvvv",
     "stake-lara-devnet": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/Delegate.s.sol:Delegate --rpc-url https://rpc.devnet.taraxa.io --broadcast --legacy -vvvv",
     "dpos-devnet": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/Dpos.s.sol:DposTest --rpc-url https://rpc.devnet.taraxa.io --broadcast --legacy -vvvv",
     "update-top100-validators": "npx hardhat run --network testnet ./scripts/validators.ts",
@@ -60,6 +61,6 @@
   },
   "dependencies": {
     "@ensdomains/ens-contracts": "^1.0.1",
-    "@openzeppelin/contracts": "^5.0.0"
+    "@openzeppelin/hardhat-upgrades": "^3.0.3"
   }
 }
