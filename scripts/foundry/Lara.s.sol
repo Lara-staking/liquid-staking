@@ -2,6 +2,7 @@
 pragma solidity 0.8.20;
 
 import "forge-std/Script.sol";
+import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 import "../../contracts/stTara.sol";
 import "../../contracts/Lara.sol";
 import "../../contracts/ApyOracle.sol";
@@ -14,19 +15,34 @@ contract DeployLara is Script {
         address treasuryAddress = vm.envAddress("TREASURY_ADDRESS");
         vm.startBroadcast(deployerPrivateKey);
 
-        stTARA stTara = new stTARA();
-        ApyOracle apyOracle = new ApyOracle(deployerAddress, dposAddress);
-        Lara lara = new Lara(
-            address(stTara),
-            dposAddress,
-            address(apyOracle),
-            treasuryAddress
+        address stTaraProxy = Upgrades.deployUUPSProxy(
+            "stTara.sol",
+            abi.encodeCall(stTara.initialize, ())
         );
-        stTara.setLaraAddress(address(lara));
+        stTara stTaraInstance = stTara(stTaraProxy);
+        address oracleProxy = Upgrades.deployUUPSProxy(
+            "ApyOracle.sol",
+            abi.encodeCall(ApyOracle.initialize, (deployerAddress, dposAddress))
+        );
+        ApyOracle apyOracle = ApyOracle(oracleProxy);
+        address laraProxy = Upgrades.deployUUPSProxy(
+            "Lara.sol",
+            abi.encodeCall(
+                Lara.initialize,
+                (
+                    address(stTaraInstance),
+                    dposAddress,
+                    address(apyOracle),
+                    treasuryAddress
+                )
+            )
+        );
+        Lara lara = Lara(payable(laraProxy));
+        stTaraInstance.setLaraAddress(address(lara));
         apyOracle.setLara(address(lara));
 
         // checking if ownership and contract addresses are set properly
-        if (stTara.owner() != deployerAddress) {
+        if (stTaraInstance.owner() != deployerAddress) {
             revert("stTara owner is not Lara");
         }
         if (lara.owner() != deployerAddress) {
@@ -39,7 +55,7 @@ contract DeployLara is Script {
         if (address(apyOracle.DPOS()) != dposAddress) {
             revert("ApyOracle dpos is not dposAddress");
         }
-        if (stTara.lara() != address(lara)) {
+        if (stTaraInstance.lara() != address(lara)) {
             revert("stTara lara is not lara");
         }
         if (address(lara.treasuryAddress()) != treasuryAddress) {
@@ -48,7 +64,7 @@ contract DeployLara is Script {
         if (address(apyOracle.lara()) != address(lara)) {
             revert("apyOracle lara is not lara");
         }
-        if (address(lara.stTaraToken()) != address(stTara)) {
+        if (address(lara.stTaraToken()) != address(stTaraInstance)) {
             revert("lara stTara is not stTara");
         }
         if (address(lara.apyOracle()) != address(apyOracle)) {
