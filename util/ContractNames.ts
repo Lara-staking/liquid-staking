@@ -1,5 +1,5 @@
 export enum ContractNames {
-  stTara = "stTARA",
+  stTara = "stTara",
   apyOracle = "ApyOracle",
   lara = "Lara",
   mockDpos = "MockDpos",
