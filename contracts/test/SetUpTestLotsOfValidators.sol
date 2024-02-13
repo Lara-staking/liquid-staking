@@ -3,6 +3,9 @@ pragma solidity 0.8.20;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
+
+import {Upgrades, Options} from "openzeppelin-foundry-upgrades/Upgrades.sol";
+
 import "../interfaces/IApyOracle.sol";
 import "../Lara.sol";
 import "../ApyOracle.sol";
@@ -14,7 +17,7 @@ abstract contract ManyValidatorsTestSetup is Test {
     Lara lara;
     ApyOracle mockApyOracle;
     MockDpos mockDpos;
-    stTARA stTaraToken;
+    stTara stTaraToken;
 
     address treasuryAddress = address(9999);
     uint16 numValidators = 400;
@@ -49,7 +52,14 @@ abstract contract ManyValidatorsTestSetup is Test {
     }
 
     function setupApyOracle() public {
-        mockApyOracle = new ApyOracle(address(this), address(mockDpos));
+        address proxy = Upgrades.deployUUPSProxy(
+            "ApyOracle.sol",
+            abi.encodeCall(
+                ApyOracle.initialize,
+                (address(this), address(mockDpos))
+            )
+        );
+        mockApyOracle = ApyOracle(proxy);
 
         IApyOracle.NodeData[] memory nodeData = new IApyOracle.NodeData[](
             validators.length
@@ -82,13 +92,24 @@ abstract contract ManyValidatorsTestSetup is Test {
     }
 
     function setupLara() public {
-        stTaraToken = new stTARA();
-        lara = new Lara(
-            address(stTaraToken),
-            address(mockDpos),
-            address(mockApyOracle),
-            treasuryAddress
+        address stTaraProxy = Upgrades.deployUUPSProxy(
+            "stTara.sol",
+            abi.encodeCall(stTara.initialize, ())
         );
+        stTaraToken = stTara(stTaraProxy);
+        address laraProxy = Upgrades.deployUUPSProxy(
+            "Lara.sol",
+            abi.encodeCall(
+                Lara.initialize,
+                (
+                    address(stTaraToken),
+                    address(mockDpos),
+                    address(mockApyOracle),
+                    treasuryAddress
+                )
+            )
+        );
+        lara = Lara(payable(laraProxy));
         stTaraToken.setLaraAddress(address(lara));
         mockApyOracle.setLara(address(lara));
         assertEq(

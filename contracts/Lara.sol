@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {IstTara} from "./interfaces/IstTara.sol";
 import {ILara} from "./interfaces/ILara.sol";
 import {DposInterface} from "./interfaces/IDPOS.sol";
@@ -17,7 +17,7 @@ import {Utils} from "./libs/Utils.sol";
  * @title Lara Contract
  * @dev This contract is used for staking and delegating tokens in the protocol.
  */
-contract Lara is Ownable, ILara {
+contract Lara is Initializable, OwnableUpgradeable, ILara {
     // Reference timestamp for computing epoch number
     uint256 public protocolStartTimestamp;
 
@@ -25,20 +25,20 @@ contract Lara is Ownable, ILara {
     uint256 public lastRebalance;
 
     // Duration of an epoch in seconds, initially 1000 blocks
-    uint256 public epochDuration = 1000;
+    uint256 public epochDuration;
 
     // Maximum staking capacity for a validator
-    uint256 public maxValidatorStakeCapacity = 80000000 ether;
+    uint256 public maxValidatorStakeCapacity;
 
     // Minimum amount allowed for staking
-    uint256 public minStakeAmount = 1000 ether;
+    uint256 public minStakeAmount;
 
     // State variable for storing the last epoch's total delegated amount
-    uint256 public totalDelegated = 0;
+    uint256 public totalDelegated;
 
-    uint256 public commission = 0;
+    uint256 public commission;
 
-    address public treasuryAddress = address(0);
+    address public treasuryAddress;
 
     // List of delegators of the protocol
     address[] public delegators;
@@ -65,22 +65,26 @@ contract Lara is Ownable, ILara {
     mapping(address => uint256) public undelegated;
 
     /**
-     * @dev Constructor for the Lara contract.
+     * @dev Initializer for the Lara contract.
      * @param _sttaraToken The address of the stTARA token contract.
      * @param _dposContract The address of the DPOS contract.
      * @param _apyOracle The address of the APY Oracle contract.
      * @param _treasuryAddress The address of the treasury.
      */
-    constructor(
+    function initialize(
         address _sttaraToken,
         address _dposContract,
         address _apyOracle,
         address _treasuryAddress
-    ) Ownable(msg.sender) {
+    ) public initializer {
+        __Ownable_init(msg.sender);
         stTaraToken = IstTara(_sttaraToken);
         dposContract = DposInterface(_dposContract);
         apyOracle = IApyOracle(_apyOracle);
         treasuryAddress = _treasuryAddress;
+        epochDuration = 1000;
+        maxValidatorStakeCapacity = 80000000 ether;
+        minStakeAmount = 1000 ether;
     }
 
     /**

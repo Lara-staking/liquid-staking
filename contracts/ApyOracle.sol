@@ -2,6 +2,7 @@
 // Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
 
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./interfaces/IApyOracle.sol";
 import "./interfaces/IDPOS.sol";
 
@@ -9,30 +10,31 @@ import "./interfaces/IDPOS.sol";
  * @title ApyOracle
  * @dev This contract implements the IApyOracle interface and provides methods for managing nodes and delegations.
  */
-contract ApyOracle is IApyOracle {
+contract ApyOracle is IApyOracle, Initializable {
+    uint256 public maxValidatorStakeCapacity;
+
+    uint256 public nodeCount;
+
+    address public DATA_FEED;
+
+    address public lara;
+
+    DposInterface public DPOS;
+
+    address[] public nodesList;
+
+    mapping(address => IApyOracle.NodeData) public nodes;
+
     /**
      * @dev Initializes the contract with the given data feed and DPOS contract addresses.
      * @param dataFeed The address of the data feed contract.
      * @param dpos The address of the DPOS contract.
      */
-    constructor(address dataFeed, address dpos) {
+    function initialize(address dataFeed, address dpos) public initializer {
         DATA_FEED = dataFeed;
         DPOS = DposInterface(dpos);
+        maxValidatorStakeCapacity = 80000000 ether;
     }
-
-    uint256 public maxValidatorStakeCapacity = 80000000 ether;
-
-    uint256 public nodeCount;
-
-    address public immutable DATA_FEED;
-
-    address public lara;
-
-    DposInterface public immutable DPOS;
-
-    address[] public nodesList;
-
-    mapping(address => IApyOracle.NodeData) public nodes;
 
     /**
      * @dev Modifier to make a function callable only by the data feed contract.

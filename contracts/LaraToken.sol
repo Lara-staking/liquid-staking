@@ -2,22 +2,22 @@
 // Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
 
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract LaraToken is ERC20, Ownable {
-    uint256 public minSwapAmount = 1000 ether;
+contract LaraToken is ERC20Upgradeable, OwnableUpgradeable {
+    uint256 public minSwapAmount;
     uint256 public presaleStartBlock;
     uint256 public presaleEndBlock;
-    uint256 public presaleBlockDuration = 151200;
-    uint256 public swapUpperLimit = 1000000 ether;
-    uint256 public presaleRate = 1724;
-    uint16 public swapPeriod = 900;
+    uint256 public presaleBlockDuration;
+    uint256 public swapUpperLimit;
+    uint256 public presaleRate;
+    uint16 public swapPeriod;
     address public treasuryAddress;
-    bool public presaleRunning = false;
+    bool public presaleRunning;
 
-    uint256 private presaleStartCount = 0;
-    uint256 private presaleEndCount = 0;
+    uint256 private presaleStartCount;
+    uint256 private presaleEndCount;
 
     mapping(address => uint256) public lastSwapBlock;
 
@@ -33,9 +33,17 @@ contract LaraToken is ERC20, Ownable {
         _;
     }
 
-    constructor(address _treasury) ERC20("Lara", "LARA") Ownable(msg.sender) {
+    function initialize(address _treasury) public initializer {
+        __ERC20_init("Lara", "LARA");
+        __Ownable_init(msg.sender);
         _mint(msg.sender, 10000000000 * 1e18);
         treasuryAddress = _treasury;
+        minSwapAmount = 1000 ether;
+        presaleBlockDuration = 151200;
+        swapUpperLimit = 1000000 ether;
+        presaleRate = 1724;
+        swapPeriod = 900;
+        presaleRunning = false;
     }
 
     receive() external payable {}

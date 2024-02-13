@@ -13,7 +13,8 @@ contract LaraTokenTest is Test {
 
     function setUp() public {
         treasuryAddress = address(1);
-        laraToken = new LaraToken(treasuryAddress);
+        laraToken = new LaraToken();
+        laraToken.initialize(treasuryAddress);
 
         assertEq(laraToken.name(), "Lara");
         assertEq(laraToken.symbol(), "LARA");
