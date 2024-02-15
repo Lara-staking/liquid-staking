@@ -162,7 +162,7 @@ abstract contract TestSetup is Test {
                     apy: 1000 - i * multiplier,
                     fromBlock: 1,
                     toBlock: 15000,
-                    rating: 813 + i * 10 * multiplier
+                    rating: 813 + (validators.length - i) * 10 * multiplier
                 });
             }
         }

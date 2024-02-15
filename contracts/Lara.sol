@@ -153,6 +153,7 @@ contract Lara is Ownable, ILara {
      * In the stake function, the user sends the amount of TARA tokens he wants to stake.
      * This method takes the payment and mints the stTARA tokens to the user.
      * @notice The tokens are DELEGATED INSTANTLY.
+     * @notice The amount that cannot be delegated is returned to the user.
      * @param amount the amount to stake
      */
     function stake(uint256 amount) public payable returns (uint256) {
