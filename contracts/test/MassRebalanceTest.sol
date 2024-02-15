@@ -15,7 +15,8 @@ contract MassRebalanceTest is Test, ManyValidatorsTestSetup {
     function setUp() public {
         super.setupValidators();
         super.setupApyOracle();
-        super.setupLara();
+        super.setupLaraFactoryWithCommission(3);
+        super.createLara();
     }
 
     function stakeFromMultipleDelegatorsToMultipleValidators(
@@ -57,12 +58,6 @@ contract MassRebalanceTest is Test, ManyValidatorsTestSetup {
 
             // Check the staked amount
             assertEq(lara.totalDelegated(), totalStaked, "Wrong staked amount");
-
-            assertEq(
-                lara.undelegated(delegator),
-                0,
-                "Wrong undelegated amount"
-            );
         }
 
         vm.roll(lara.lastSnapshot() + lara.epochDuration());
@@ -111,7 +106,7 @@ contract MassRebalanceTest is Test, ManyValidatorsTestSetup {
         uint256 totalDelegatedAfterRebalance = 0;
         for (uint256 i = 0; i < nodesToBeFilled; i++) {
             assertGt(
-                lara.protocolTotalStakeAtValidator(mockApyOracle.nodesList(i)),
+                lara.totalStakeAtValidator(mockApyOracle.nodesList(i)),
                 0,
                 "LARA: Validator should have stake"
             );
@@ -121,7 +116,7 @@ contract MassRebalanceTest is Test, ManyValidatorsTestSetup {
                 0,
                 "DPOS: Validator should have stake"
             );
-            totalDelegatedAfterRebalance += lara.protocolTotalStakeAtValidator(
+            totalDelegatedAfterRebalance += lara.totalStakeAtValidator(
                 mockApyOracle.nodesList(i)
             );
         }

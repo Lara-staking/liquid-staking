@@ -2,14 +2,15 @@
 // Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../libs/Utils.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Utils} from "../libs/Utils.sol";
+import {IFactoryGoverned} from "./IFactoryGoverned.sol";
 
 /**
  * @title IstTara
  * @dev Interface for the IstTara contract, extending IERC20
  */
-interface IstTara is IERC20 {
+interface IstTara is IERC20, IFactoryGoverned {
     /**
      * @dev Function to mint new tokens
      * @param recipient The address to receive the newly minted tokens
@@ -23,10 +24,4 @@ interface IstTara is IERC20 {
      * @param amount The amount of tokens to burn
      */
     function burn(address user, uint256 amount) external;
-
-    /**
-     * @dev Function to set the Lara contract address
-     * @param laraAddress The address of the Lara contract
-     */
-    function setLaraAddress(address laraAddress) external;
 }

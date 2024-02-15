@@ -2,14 +2,17 @@
 // Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
 
-import "./interfaces/IApyOracle.sol";
-import "./interfaces/IDPOS.sol";
+import {IApyOracle} from "./interfaces/IApyOracle.sol";
+import {DposInterface} from "./interfaces/IDPOS.sol";
+import {IFactoryGoverned} from "./interfaces/IFactoryGoverned.sol";
+import {LaraFactory} from "./LaraFactory.sol";
+import {FactoryGoverned} from "./FactoryGoverned.sol";
 
 /**
  * @title ApyOracle
  * @dev This contract implements the IApyOracle interface and provides methods for managing nodes and delegations.
  */
-contract ApyOracle is IApyOracle {
+contract ApyOracle is IApyOracle, FactoryGoverned {
     /**
      * @dev Initializes the contract with the given data feed and DPOS contract addresses.
      * @param dataFeed The address of the data feed contract.
@@ -26,8 +29,6 @@ contract ApyOracle is IApyOracle {
 
     address public immutable DATA_FEED;
 
-    address public lara;
-
     DposInterface public immutable DPOS;
 
     address[] public nodesList;
@@ -37,28 +38,12 @@ contract ApyOracle is IApyOracle {
     /**
      * @dev Modifier to make a function callable only by the data feed contract.
      */
-    modifier OnlyDataFeed() {
+    modifier onlyDataFeed() {
         require(
             msg.sender == DATA_FEED,
             "ApyOracle: caller is not the data feed"
         );
         _;
-    }
-
-    /**
-     * @dev Modifier to make a function callable only by the Lara contract.
-     */
-    modifier OnlyLara() {
-        require(msg.sender == lara, "ApyOracle: caller is not Lara");
-        _;
-    }
-
-    /**
-     * @dev Sets the Lara contract address.
-     * @param _lara The address of the Lara contract.
-     */
-    function setLara(address _lara) external OnlyDataFeed {
-        lara = _lara;
     }
 
     /**
@@ -76,7 +61,7 @@ contract ApyOracle is IApyOracle {
      */
     function getRebalanceList(
         TentativeDelegation[] memory currentValidators
-    ) external override OnlyLara returns (TentativeReDelegation[] memory) {
+    ) external override onlyLara returns (TentativeReDelegation[] memory) {
         if (currentValidators.length == 0 || nodeCount == 0) {
             return new TentativeReDelegation[](0);
         }
@@ -155,7 +140,7 @@ contract ApyOracle is IApyOracle {
      */
     function getNodesForDelegation(
         uint256 amount
-    ) external OnlyLara returns (TentativeDelegation[] memory) {
+    ) external onlyLara returns (TentativeDelegation[] memory) {
         // we loop through the nodesList and see check if the node's able to capture thw whole amount
         // if not, we take the next node and so on. We return the TentativeDelegation's until the amount is
         // fully captured
@@ -213,7 +198,7 @@ contract ApyOracle is IApyOracle {
      * @dev Updates the node count.
      * @param count The new node count.
      */
-    function updateNodeCount(uint256 count) external override OnlyDataFeed {
+    function updateNodeCount(uint256 count) external override onlyDataFeed {
         nodeCount = count;
     }
 
@@ -242,7 +227,7 @@ contract ApyOracle is IApyOracle {
      */
     function batchUpdateNodeData(
         IApyOracle.NodeData[] memory data
-    ) external override OnlyDataFeed {
+    ) external override onlyDataFeed {
         address[] memory nodeAddresses = new address[](data.length);
         for (uint256 i = 0; i < data.length; i++) {
             nodeAddresses[i] = data[i].account;
@@ -260,7 +245,7 @@ contract ApyOracle is IApyOracle {
     function updateNodeData(
         address node,
         NodeData memory data
-    ) external override OnlyDataFeed {
+    ) external override onlyDataFeed {
         require(
             nodes[node].fromBlock < data.fromBlock,
             "ApyOracle: fromBlock must be greater than the previous one"
@@ -278,12 +263,22 @@ contract ApyOracle is IApyOracle {
     }
 
     /**
+     * @dev Sets the Lara factory contract address.
+     * @param _laraFactory The address of the Lara factory contract.
+     */
+    function setLaraFactory(
+        address _laraFactory
+    ) external override(FactoryGoverned, IFactoryGoverned) onlyDataFeed {
+        laraFactory = LaraFactory(_laraFactory);
+    }
+
+    /**
      * @dev Sets the maximum stake capacity for a validator.
      * @param capacity The new maximum stake capacity.
      */
     function setMaxValidatorStakeCapacity(
         uint256 capacity
-    ) external OnlyDataFeed {
+    ) external onlyDataFeed {
         maxValidatorStakeCapacity = capacity;
         emit MaxValidatorStakeUpdated(capacity);
     }

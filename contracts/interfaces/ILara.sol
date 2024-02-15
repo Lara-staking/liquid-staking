@@ -3,6 +3,7 @@
 pragma solidity 0.8.20;
 
 import "./IApyOracle.sol";
+import "./ILaraBase.sol";
 
 import "../libs/Utils.sol";
 
@@ -10,7 +11,7 @@ import "../libs/Utils.sol";
  * @title ILara
  * @dev This interface defines the methods for the Lara contract
  */
-interface ILara {
+interface ILara is ILaraBase {
     /**
      * @dev Event emitted when a user stakes
      */
@@ -68,16 +69,6 @@ interface ILara {
     event CommissionWithdrawn(address indexed user, uint256 indexed amount);
 
     /**
-     * @dev Event emitted when commission is changed
-     */
-    event CommissionChanged(uint256 indexed newCommission);
-
-    /**
-     * @dev Event emitted when treasury is changed
-     */
-    event TreasuryChanged(address indexed newTreasury);
-
-    /**
      * @dev Function to check if a validator is registered
      * @param validator The address of the validator
      * @return A boolean indicating if the validator is registered
@@ -87,22 +78,16 @@ interface ILara {
     ) external view returns (bool);
 
     /**
+     * @dev Function to get the validator array of the Lara contract
+     * @return An array of validator addresses
+     */
+    function getValidators() external view returns (address[] memory);
+
+    /**
      * @dev Function to set the epoch duration
      * @param _epochDuration The duration of the epoch
      */
     function setEpochDuration(uint256 _epochDuration) external;
-
-    /**
-     * @dev Function to set the commission
-     * @param _commission The new commission
-     */
-    function setCommission(uint256 _commission) external;
-
-    /**
-     * @dev Function to set the treasury address
-     * @param _treasuryAddress The new treasury address
-     */
-    function setTreasuryAddress(address _treasuryAddress) external;
 
     /**
      * @dev Function to set the maximum validator stake capacity
@@ -148,9 +133,7 @@ interface ILara {
      * @dev Function for a user to request undelegation of a certain amount
      * @param amount The amount to undelegate
      */
-    function requestUndelegate(
-        uint256 amount
-    ) external returns (Utils.Undelegation[] memory);
+    function requestUndelegate(address validator, uint256 amount) external;
 
     /**
      * @dev Function for a user to confirm undelegation of a certain amount

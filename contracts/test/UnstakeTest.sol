@@ -19,7 +19,8 @@ contract UnstakeTest is Test, TestSetup {
     function setUp() public {
         super.setupValidators();
         super.setupApyOracle();
-        super.setupLara();
+        super.setupLaraFactoryWithCommission(3);
+        super.createLara();
         epochDuration = lara.epochDuration();
     }
 
@@ -28,6 +29,8 @@ contract UnstakeTest is Test, TestSetup {
             address staker = vm.addr(i + 1);
             vm.deal(staker, amount / 10);
             vm.prank(staker);
+            address payable laraAddress = laraFactory.createLara();
+            lara = Lara(laraAddress);
             lara.stake{value: amount / 10}(amount / 10);
 
             assertEq(
@@ -43,11 +46,33 @@ contract UnstakeTest is Test, TestSetup {
             address staker = vm.addr(i + 1);
             vm.startPrank(staker);
             stTaraToken.approve(address(lara), stTaraToken.balanceOf(staker));
-
-            Utils.Undelegation[] memory undelegations = lara.requestUndelegate(
-                stTaraToken.balanceOf(staker)
+            address laraInstanceOfStaker = laraFactory.laraInstances(
+                address(staker)
             );
-            assertTrue(undelegations.length >= 1, "No undelegations");
+            Lara laraOfStaker = Lara(payable(laraInstanceOfStaker));
+            address[] memory validatorsOfDelegator = laraOfStaker
+                .getValidators();
+            for (uint256 j = 0; j < validatorsOfDelegator.length; j++) {
+                uint256 stTaraBalanceBefore = stTaraToken.balanceOf(staker);
+                uint256 totalStakeAtValidator = laraOfStaker
+                    .totalStakeAtValidator(validatorsOfDelegator[j]);
+                laraOfStaker.requestUndelegate(
+                    validatorsOfDelegator[j],
+                    totalStakeAtValidator
+                );
+                assertEq(
+                    laraOfStaker.totalStakeAtValidator(
+                        validatorsOfDelegator[j]
+                    ),
+                    0,
+                    "Wrong staked amount at validator"
+                );
+                assertEq(
+                    stTaraToken.balanceOf(staker),
+                    stTaraBalanceBefore - totalStakeAtValidator,
+                    "Wrong stTARA balance after requestUndelegate"
+                );
+            }
             assertEq(
                 stTaraToken.balanceOf(staker),
                 0,

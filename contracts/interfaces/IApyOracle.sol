@@ -2,11 +2,13 @@
 // Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
 
+import {IFactoryGoverned} from "./IFactoryGoverned.sol";
+
 /**
  * @title IApyOracle
  * @dev This interface defines the methods for APY Oracle
  */
-interface IApyOracle {
+interface IApyOracle is IFactoryGoverned {
     /**
      * @dev Struct to store node data
      */

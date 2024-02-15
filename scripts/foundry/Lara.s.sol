@@ -4,6 +4,7 @@ pragma solidity 0.8.20;
 import "forge-std/Script.sol";
 import "../../contracts/stTara.sol";
 import "../../contracts/Lara.sol";
+import "../../contracts/LaraFactory.sol";
 import "../../contracts/ApyOracle.sol";
 
 contract DeployLara is Script {
@@ -16,20 +17,20 @@ contract DeployLara is Script {
 
         stTARA stTara = new stTARA();
         ApyOracle apyOracle = new ApyOracle(deployerAddress, dposAddress);
-        Lara lara = new Lara(
+        LaraFactory laraFactory = new LaraFactory(
             address(stTara),
             dposAddress,
             address(apyOracle),
             treasuryAddress
         );
-        stTara.setLaraAddress(address(lara));
-        apyOracle.setLara(address(lara));
+        stTara.setLaraFactory(address(laraFactory));
+        apyOracle.setLaraFactory(address(laraFactory));
 
         // checking if ownership and contract addresses are set properly
         if (stTara.owner() != deployerAddress) {
             revert("stTara owner is not Lara");
         }
-        if (lara.owner() != deployerAddress) {
+        if (laraFactory.owner() != deployerAddress) {
             revert("Lara owner is not deployer");
         }
         // check datafeed
@@ -39,22 +40,22 @@ contract DeployLara is Script {
         if (address(apyOracle.DPOS()) != dposAddress) {
             revert("ApyOracle dpos is not dposAddress");
         }
-        if (stTara.lara() != address(lara)) {
+        if (address(stTara.laraFactory()) != address(laraFactory)) {
             revert("stTara lara is not lara");
         }
-        if (address(lara.treasuryAddress()) != treasuryAddress) {
+        if (address(laraFactory.treasuryAddress()) != treasuryAddress) {
             revert("lara treasury is not treasuryAddress");
         }
-        if (address(apyOracle.lara()) != address(lara)) {
+        if (address(apyOracle.laraFactory()) != address(laraFactory)) {
             revert("apyOracle lara is not lara");
         }
-        if (address(lara.stTaraToken()) != address(stTara)) {
+        if (address(laraFactory.stTaraToken()) != address(stTara)) {
             revert("lara stTara is not stTara");
         }
-        if (address(lara.apyOracle()) != address(apyOracle)) {
+        if (address(laraFactory.apyOracle()) != address(apyOracle)) {
             revert("lara oracle is not apyOracle");
         }
-        if (address(lara.dposContract()) != dposAddress) {
+        if (address(laraFactory.dposContract()) != dposAddress) {
             revert("lara dpos is not dposAddress");
         }
 

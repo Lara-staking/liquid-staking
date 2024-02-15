@@ -27,7 +27,8 @@ contract LaraSetterTest is Test, TestSetup {
         }
         super.setupValidators();
         super.setupApyOracle();
-        super.setupLara();
+        super.setupLaraFactory();
+        super.createLara();
         setupDelegators();
     }
 

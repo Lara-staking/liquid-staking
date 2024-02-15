@@ -15,7 +15,8 @@ contract RebalanceTest is Test, TestSetup {
     function setUp() public {
         super.setupValidators();
         super.setupApyOracle();
-        super.setupLara();
+        super.setupLaraFactoryWithCommission(3);
+        super.createLara();
     }
 
     function stake(uint256 amount) private {
@@ -46,7 +47,7 @@ contract RebalanceTest is Test, TestSetup {
         assertEq(lara.totalDelegated(), amount, "Wrong staked amount");
 
         // Check other starting values
-        assertEq(lara.delegators(0), address(this), "Wrong delegator");
+        assertEq(lara.delegator(), address(this), "Wrong delegator");
 
         // start the epoch
         lara.snapshot();
@@ -74,7 +75,7 @@ contract RebalanceTest is Test, TestSetup {
             "ReDelegate: Wrong delegated amount"
         );
 
-        assertEq(lara.protocolTotalStakeAtValidator(validator1), amount);
+        assertEq(lara.totalStakeAtValidator(validator1), amount);
 
         // check the DPOS mock's validator stake
         assertEq(
@@ -104,11 +105,13 @@ contract RebalanceTest is Test, TestSetup {
             "First node in oracle nodes list should have changed"
         );
 
-        uint256 protocolStakeAtCurrentFirst = lara
-            .protocolTotalStakeAtValidator(firstInOracleNodesList);
+        uint256 protocolStakeAtCurrentFirst = lara.totalStakeAtValidator(
+            firstInOracleNodesList
+        );
 
-        uint256 protocolStakeAtNextFirstBefore = lara
-            .protocolTotalStakeAtValidator(firstInOracleNodesListAfter);
+        uint256 protocolStakeAtNextFirstBefore = lara.totalStakeAtValidator(
+            firstInOracleNodesListAfter
+        );
 
         assertGt(
             protocolStakeAtCurrentFirst,
@@ -125,12 +128,12 @@ contract RebalanceTest is Test, TestSetup {
         lara.rebalance();
 
         assertEq(
-            lara.protocolTotalStakeAtValidator(firstInOracleNodesList),
+            lara.totalStakeAtValidator(firstInOracleNodesList),
             0,
             "Wrong total stake at initial validator"
         );
         assertEq(
-            lara.protocolTotalStakeAtValidator(firstInOracleNodesListAfter),
+            lara.totalStakeAtValidator(firstInOracleNodesListAfter),
             protocolStakeAtCurrentFirst,
             "Wrong total stake at validator after"
         );
@@ -169,11 +172,13 @@ contract RebalanceTest is Test, TestSetup {
             "First node in oracle nodes list should not have changed"
         );
 
-        uint256 protocolStakeAtCurrentFirst = lara
-            .protocolTotalStakeAtValidator(firstInOracleNodesList);
+        uint256 protocolStakeAtCurrentFirst = lara.totalStakeAtValidator(
+            firstInOracleNodesList
+        );
 
-        uint256 protocolStakeAtNextFirstBefore = lara
-            .protocolTotalStakeAtValidator(firstInOracleNodesListAfter);
+        uint256 protocolStakeAtNextFirstBefore = lara.totalStakeAtValidator(
+            firstInOracleNodesListAfter
+        );
 
         assertEq(
             protocolStakeAtCurrentFirst,
@@ -184,12 +189,12 @@ contract RebalanceTest is Test, TestSetup {
         lara.rebalance();
 
         assertEq(
-            lara.protocolTotalStakeAtValidator(firstInOracleNodesList),
+            lara.totalStakeAtValidator(firstInOracleNodesList),
             protocolStakeAtCurrentFirst,
             "Wrong total stake at initial validator"
         );
         assertEq(
-            lara.protocolTotalStakeAtValidator(firstInOracleNodesListAfter),
+            lara.totalStakeAtValidator(firstInOracleNodesListAfter),
             protocolStakeAtCurrentFirst,
             "Wrong total stake at validator after"
         );

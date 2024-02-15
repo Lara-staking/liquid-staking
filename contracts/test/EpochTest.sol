@@ -21,7 +21,7 @@ contract EpochTest is Test, TestSetup {
     function setUp() public {
         super.setupValidators();
         super.setupApyOracle();
-        super.setupLara();
+        super.setupLaraFactoryWithCommission(3);
         epochDuration = lara.epochDuration();
         for (uint32 i = 0; i < 1000; i++) {
             stakers.push(vm.addr(i + 1));

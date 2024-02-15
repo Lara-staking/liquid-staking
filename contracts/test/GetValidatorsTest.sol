@@ -15,7 +15,8 @@ contract GetValidatorsTest is Test, ManyValidatorsTestSetup {
     function setUp() public {
         super.setupValidators();
         super.setupApyOracle();
-        super.setupLara();
+        super.setupLaraFactoryWithCommission(3);
+        super.createLara();
     }
 
     function test_revertOnNotLara() public {
@@ -30,7 +31,7 @@ contract GetValidatorsTest is Test, ManyValidatorsTestSetup {
         // define value
         uint256 amount = 500000 ether;
 
-        address laraAddress = mockApyOracle.lara();
+        address laraAddress = address(lara);
         emit LaraAddress(laraAddress);
         vm.prank(address(laraAddress));
         // call the function

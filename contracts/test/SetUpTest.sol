@@ -5,13 +5,15 @@ import "forge-std/Test.sol";
 import "forge-std/console.sol";
 import "../interfaces/IApyOracle.sol";
 import "../Lara.sol";
+import "../LaraFactory.sol";
 import "../ApyOracle.sol";
 import "../mocks/MockDpos.sol";
 import "../stTara.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
 abstract contract TestSetup is Test {
-    Lara lara;
+    LaraFactory laraFactory;
+    Lara public lara;
     ApyOracle mockApyOracle;
     MockDpos mockDpos;
     stTARA stTaraToken;
@@ -75,45 +77,88 @@ abstract contract TestSetup is Test {
         );
     }
 
-    function setupLara() public {
+    function setupLaraFactory() public {
         stTaraToken = new stTARA();
-        lara = new Lara(
+        laraFactory = new LaraFactory(
             address(stTaraToken),
             address(mockDpos),
             address(mockApyOracle),
             treasuryAddress
         );
-        stTaraToken.setLaraAddress(address(lara));
-        mockApyOracle.setLara(address(lara));
+        stTaraToken.setLaraFactory(address(laraFactory));
+        mockApyOracle.setLaraFactory(address(laraFactory));
         assertEq(
-            mockApyOracle.lara(),
-            address(lara),
-            "Lara address was not set successfully"
+            address(mockApyOracle.laraFactory()),
+            address(laraFactory),
+            "LaraFactory address was not set successfully"
         );
     }
 
-    function setupLaraWithCommission(uint256 commission) public {
+    function setupLaraFactoryWithCommission(uint256 commission) public {
         stTaraToken = new stTARA();
-        lara = new Lara(
+        laraFactory = new LaraFactory(
             address(stTaraToken),
             address(mockDpos),
             address(mockApyOracle),
             treasuryAddress
         );
-        stTaraToken.setLaraAddress(address(lara));
-        mockApyOracle.setLara(address(lara));
+        laraFactory.setCommission(commission);
+        stTaraToken.setLaraFactory(address(laraFactory));
+        mockApyOracle.setLaraFactory(address(laraFactory));
         assertEq(
-            mockApyOracle.lara(),
-            address(lara),
-            "Lara address was not set successfully"
+            address(mockApyOracle.laraFactory()),
+            address(laraFactory),
+            "LaraFactory address was not set successfully"
         );
-        lara.setCommission(commission);
+    }
+
+    function createLara() public {
+        address payable laraAddress = laraFactory.createLara();
+        lara = Lara(laraAddress);
+
+        assertEq(
+            lara.delegator(),
+            address(this),
+            "Delegator should be the contract address"
+        );
+        assertEq(
+            address(lara.apyOracle()),
+            address(mockApyOracle),
+            "ApyOracle should be the mockApyOracle address"
+        );
+        assertEq(
+            address(lara.dposContract()),
+            address(mockDpos),
+            "Dpos should be the mockDpos address"
+        );
+        assertEq(
+            address(lara.stTaraToken()),
+            address(stTaraToken),
+            "stTaraToken should be the stTaraToken address"
+        );
+        assertEq(
+            lara.treasuryAddress(),
+            treasuryAddress,
+            "Treasury address should be the treasuryAddress"
+        );
+        assertEq(lara.commission(), 3, "Commission should be 3");
+        assertEq(
+            lara.owner(),
+            laraFactory.owner(),
+            "Owner should be the laraFactory owner"
+        );
+        assertEq(
+            lara.delegator(),
+            address(this),
+            "Delegator should be the contract address"
+        );
     }
 
     function checkValidatorTotalStakesAreZero() public {
+        require(address(lara) != address(0), "Lara address is not set");
         for (uint256 i = 0; i < validators.length; i++) {
             assertEq(
-                lara.protocolTotalStakeAtValidator(validators[i]),
+                lara.totalStakeAtValidator(validators[i]),
                 0,
                 "Validator total stake should be zero"
             );
@@ -131,8 +176,9 @@ abstract contract TestSetup is Test {
     function findValidatorWithStake(
         uint256 stake
     ) public view returns (address) {
+        require(address(lara) != address(0), "Lara address is not set");
         for (uint256 i = 0; i < validators.length; i++) {
-            if (lara.protocolTotalStakeAtValidator(validators[i]) == stake) {
+            if (lara.totalStakeAtValidator(validators[i]) == stake) {
                 return validators[i];
             }
         }

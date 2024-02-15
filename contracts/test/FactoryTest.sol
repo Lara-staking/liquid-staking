@@ -11,10 +11,14 @@ import "../stTara.sol";
 import "./SetUpTest.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
-contract UndelegateTest is Test, TestSetup {
+contract FactoryTest is Test, TestSetup {
     function setUp() public {
         super.setupValidators();
         super.setupApyOracle();
-        super.setupLara();
+        super.setupLaraFactoryWithCommission(3);
+    }
+
+    function test_firstDelegatorCreatesLara() public {
+        super.createLara();
     }
 }
