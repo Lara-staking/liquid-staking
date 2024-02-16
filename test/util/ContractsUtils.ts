@@ -62,22 +62,24 @@ export async function deployMockDpos() {
   return await mockDpos.waitForDeployment();
 }
 
-export async function deployLara(
+export async function deployLaraFactory(
   deployer: SignerWithAddress,
   stTaraAddress: string,
   mockDposAddress: string,
   apyOracleAddress: string,
   treasuryAddress: string
 ) {
-  const Lara = await ethers.getContractFactory(ContractNames.lara);
-  const lara = await Lara.deploy(
+  const LaraFactory = await ethers.getContractFactory(
+    ContractNames.laraFactory
+  );
+  const laraFactory = await LaraFactory.deploy(
     stTaraAddress,
     mockDposAddress,
     apyOracleAddress,
     treasuryAddress
   );
 
-  const laraDeployment = await lara.waitForDeployment();
+  const laraDeployment = await laraFactory.waitForDeployment();
   const oracleContract = await ethers.getContractAt(
     ContractNames.apyOracle,
     apyOracleAddress
@@ -93,7 +95,7 @@ export async function deployLara(
 export async function setLaraAddressForOracle(
   dataFeed: SignerWithAddress,
   apyOracle: ApyOracle,
-  laraAddress: string
+  laraFactoryAddress: string
 ) {
-  await apyOracle.connect(dataFeed).setLara(laraAddress);
+  await apyOracle.connect(dataFeed).setLaraFactory(laraFactoryAddress);
 }
