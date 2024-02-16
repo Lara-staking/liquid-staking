@@ -21,4 +21,17 @@ contract FactoryTest is Test, TestSetup {
     function test_firstDelegatorCreatesLara() public {
         super.createLara();
     }
+
+    function testFuzz_anyAddressCanCreateLara(address sample) public {
+        vm.assume(sample != address(0));
+        vm.prank(sample);
+        address payable laraContract = laraFactory.createLara();
+        Lara laraC = Lara(laraContract);
+        assertEq(laraC.owner(), address(laraFactory.owner()), "Wrong owner");
+        assertEq(
+            laraFactory.laraInstances(sample),
+            laraContract,
+            "Wrong lara instance"
+        );
+    }
 }

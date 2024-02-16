@@ -12,7 +12,14 @@ import "./SetUpTestLotsOfValidators.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
 contract ManyValidatorEpochTest is Test, ManyValidatorsTestSetup {
-    uint256 epochDuration = 0;
+    uint256 epochDuration;
+    uint256 stakeAmount = 5000 ether;
+    uint256 totalStakes = 0;
+
+    uint256 amountOfStakers = 200;
+
+    uint8 firstRun = 1;
+    uint8 secondRun = 2;
 
     uint256[] balancesBefore;
 
@@ -22,113 +29,120 @@ contract ManyValidatorEpochTest is Test, ManyValidatorsTestSetup {
         super.setupValidators();
         super.setupApyOracle();
         super.setupLaraFactoryWithCommission(3);
-        epochDuration = lara.epochDuration();
-        for (uint32 i = 0; i < 1000; i++) {
-            stakers.push(vm.addr(i + 1));
-            vm.deal(stakers[i], 500000 ether);
-        }
-        balancesBefore = new uint256[](stakers.length);
+        epochDuration = laraFactory.epochDuration();
     }
 
-    event ExpectedReward(uint256 expectedReward);
-
     function stake() public {
+        for (uint32 i = 0; i < amountOfStakers; i++) {
+            stakers.push(vm.addr(i + 1));
+            vm.deal(stakers[i], stakeAmount * (firstRun + secondRun));
+        }
+        balancesBefore = new uint256[](stakers.length);
+        uint256 totalDelegation = 0;
         for (uint32 i = 0; i < stakers.length; i++) {
-            vm.prank(stakers[i]);
-            lara.stake{value: 50000 ether}(50000 ether);
+            vm.startPrank(stakers[i]);
+            address payable stakerLaraContract = laraFactory.createLara();
+            Lara stakerLara = Lara(stakerLaraContract);
+            stakerLara.stake{value: stakeAmount}(stakeAmount);
+            totalDelegation += stakeAmount;
+            vm.stopPrank();
+            assertEq(
+                stakerLara.commission(),
+                laraFactory.commission(),
+                "Wrong commission value"
+            );
             assertEq(
                 stTaraToken.balanceOf(stakers[i]),
-                50000 ether,
+                stakeAmount,
                 "Wrong stTARA value for staker"
+            );
+            assertEq(
+                mockDpos.getTotalDelegation(address(stakerLara)),
+                stakeAmount,
+                "MockDPOS: Wrong total stake"
             );
         }
         assertEq(
-            mockDpos.getTotalDelegation(address(lara)),
-            50000 ether * stakers.length,
-            "MockDPOS: Wrong total stake"
+            totalDelegation,
+            stakeAmount * stakers.length,
+            "MockDPOS: Wrong general total stake"
         );
+        totalStakes = totalDelegation;
     }
 
-    function run(uint8 epochNumbers) public {
+    function runTestScenario(uint8 epochNumbers) public {
         stake(); // 50 users stake 50000 ether each
-        uint256 lastTreasuryBalance = 0;
-        uint256 lastEpochTotalRewards = 0;
-        uint256 lastEpochCommission = 0;
-        uint256 totalDelegated = 50000 ether * stakers.length;
 
-        lara.setCommission(2);
-        for (uint8 j = 0; j <= epochNumbers; j++) {
+        for (uint8 j = 0; j < epochNumbers; j++) {
             for (uint32 i = 0; i < stakers.length; i++) {
                 balancesBefore[i] = stTaraToken.balanceOf(stakers[i]);
             }
-            uint256 totalSupplyBefore = stTaraToken.totalSupply();
-            uint256 treasuryBalanceBefore = address(lara.treasuryAddress())
-                .balance;
-            assertEq(
-                treasuryBalanceBefore,
-                lastTreasuryBalance + lastEpochCommission,
-                "Wrong total treasury balance before snapshot"
-            );
-            lastTreasuryBalance = treasuryBalanceBefore;
-            lara.snapshot();
-            lara.delegateToValidators(address(lara).balance);
-
-            assertEq(lara.lastSnapshot(), block.number, "Wrong snapshot block");
-
-            uint256 expectedEpochReward = 100 ether + (totalDelegated / 100);
-            emit ExpectedReward(expectedEpochReward);
-            uint256 lastEpochExpectedCommission = (expectedEpochReward *
-                lara.commission()) / 100;
-            uint256 expectedDelegatorRewards = expectedEpochReward -
-                lastEpochExpectedCommission;
-            totalDelegated += expectedDelegatorRewards;
-            assertEq(
-                lara.totalDelegated(),
-                totalDelegated,
-                "Wrong delegated protocol value after snapshot"
-            );
-            assertEq(
-                mockDpos.getTotalDelegation(address(lara)),
-                totalDelegated,
-                "DPOS: Wrong total delegation value after snapshot"
-            );
-            assertEq(
-                address(lara.treasuryAddress()).balance,
-                lastTreasuryBalance + lastEpochExpectedCommission,
-                "Wrong treasury balance"
-            );
-            assertEq(
-                address(lara).balance,
-                0,
-                "Wrong total Lara balance after snapshot"
-            );
-            for (uint32 i = 0; i < stakers.length; i++) {
-                uint256 slice = Utils.calculateSlice(
-                    balancesBefore[i],
-                    totalSupplyBefore
+            for (uint32 i = 0; i < laraFactory.laraInstanceCount(); i++) {
+                Lara laraInstance = Lara(
+                    payable(laraFactory.laraInstances(stakers[i]))
                 );
-                uint256 currentBalance = stTaraToken.balanceOf(stakers[i]);
-                uint256 expectedReward = (expectedDelegatorRewards * slice) /
-                    100 /
-                    1e18;
+                uint256 treasuryBalanceBefore = address(
+                    laraFactory.treasuryAddress()
+                ).balance;
+                uint256 totalDelegated = laraInstance.totalDelegated();
+                laraInstance.snapshot();
+                uint256 newBalance = address(laraInstance).balance;
+                uint256 expectedEpochReward = 100 ether + (totalStakes / 100);
+                uint256 lastEpochExpectedCommission = (expectedEpochReward *
+                    laraInstance.commission()) / 100;
+                uint256 expectedDelegatorRewards = expectedEpochReward -
+                    lastEpochExpectedCommission;
+                totalDelegated += expectedDelegatorRewards;
+
+                vm.prank(stakers[i]);
+                laraInstance.delegateToValidators(newBalance);
+                totalStakes += newBalance;
                 assertEq(
-                    currentBalance,
-                    expectedReward + balancesBefore[i],
-                    "Wrong stTara value for user after epoch end"
+                    laraInstance.lastSnapshot(),
+                    block.number,
+                    "Wrong snapshot block"
+                );
+
+                assertEq(
+                    laraInstance.totalDelegated(),
+                    totalDelegated,
+                    "Wrong delegated protocol value after snapshot"
+                );
+                assertEq(
+                    mockDpos.getTotalDelegation(address(laraInstance)),
+                    totalDelegated,
+                    "DPOS: Wrong total delegation value after snapshot"
+                );
+                assertEq(
+                    laraFactory.treasuryAddress().balance,
+                    address(laraInstance.treasuryAddress()).balance,
+                    "Wrong global treasury balance after snapshot"
+                );
+                assertEq(
+                    address(laraInstance.treasuryAddress()).balance -
+                        lastEpochExpectedCommission,
+                    treasuryBalanceBefore,
+                    "Wrong treasury balance after snapshot"
+                );
+                assertEq(
+                    address(laraInstance).balance,
+                    0,
+                    "Wrong total Lara balance after compound"
                 );
             }
-            lastEpochTotalRewards = expectedDelegatorRewards;
-            lastEpochCommission = lastEpochExpectedCommission;
-
-            vm.roll(epochDuration + lara.lastSnapshot());
+            vm.roll(
+                epochDuration +
+                    Lara(payable(laraFactory.laraInstances(stakers[0])))
+                        .lastSnapshot()
+            );
         }
     }
 
     function testSingleEpoch() public {
-        run(0);
+        runTestScenario(firstRun);
     }
 
     function testRunMultipleEpochs() public {
-        run(5);
+        runTestScenario(secondRun);
     }
 }

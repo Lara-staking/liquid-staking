@@ -35,11 +35,11 @@ contract Lara is Ownable, ILara {
     uint256 public minStakeAmount = 1000 ether;
 
     // State variable for storing the last epoch's total delegated amount
-    uint256 public totalDelegated = 0;
+    uint256 public totalDelegated;
 
-    uint256 public commission = 0;
+    uint256 public commission;
 
-    address public treasuryAddress = address(0);
+    address public treasuryAddress;
 
     address public delegator;
 
@@ -301,10 +301,9 @@ contract Lara is Ownable, ILara {
         ) {
             revert(reason);
         }
-        (bool success, ) = treasuryAddress.call{value: rewards}("");
+        (bool success, ) = treasuryAddress.call{value: epochCommission}("");
         if (!success) revert("LARA: Failed to send commission to treasury");
         emit CommissionWithdrawn(treasuryAddress, epochCommission);
-        emit TaraSent(treasuryAddress, rewards);
 
         lastSnapshot = block.number;
         emit SnapshotTaken(

@@ -23,6 +23,8 @@ contract LaraFactory is Ownable, ILaraFactory {
 
     uint256 public commission;
 
+    uint32 public laraInstanceCount;
+
     address public treasuryAddress;
 
     // StTARA token contract
@@ -114,6 +116,7 @@ contract LaraFactory is Ownable, ILaraFactory {
         laraInstances[msg.sender] = address(lara);
         laraAddresses.push(address(lara));
         laraActive[address(lara)] = true;
+        laraInstanceCount++;
         emit LaraCreated(address(lara), msg.sender);
         return payable(address(lara));
     }
