@@ -21,7 +21,9 @@ contract GetValidatorsTest is Test, ManyValidatorsTestSetup {
 
     function test_revertOnNotLara() public {
         // call the function
-        vm.expectRevert("ApyOracle: caller is not Lara");
+        vm.expectRevert(
+            "Only an active Lara contract instance can call this function"
+        );
         mockApyOracle.getNodesForDelegation(100000 ether);
     }
 

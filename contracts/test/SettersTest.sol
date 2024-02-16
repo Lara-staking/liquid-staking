@@ -27,7 +27,7 @@ contract LaraSetterTest is Test, TestSetup {
         }
         super.setupValidators();
         super.setupApyOracle();
-        super.setupLaraFactory();
+        super.setupLaraFactoryWithCommission(3);
         super.createLara();
         setupDelegators();
     }
@@ -39,10 +39,7 @@ contract LaraSetterTest is Test, TestSetup {
 
         if (setter != owner) {
             vm.prank(setter);
-            bytes4 selector = bytes4(
-                keccak256(bytes("OwnableUnauthorizedAccount(address)"))
-            );
-            vm.expectRevert(abi.encodeWithSelector(selector, setter));
+            vm.expectRevert("LARA: Not owner or delegator");
             lara.setMaxValidatorStakeCapacity(1000 ether);
             return;
         } else {

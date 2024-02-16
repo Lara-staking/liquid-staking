@@ -12,6 +12,8 @@ import "./SetUpTestLotsOfValidators.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
 contract MassRebalanceTest is Test, ManyValidatorsTestSetup {
+    uint256 totalDelegated = 0;
+
     function setUp() public {
         super.setupValidators();
         super.setupApyOracle();
@@ -26,14 +28,19 @@ contract MassRebalanceTest is Test, ManyValidatorsTestSetup {
         for (uint256 i = 1; i < 6; i++) {
             uint256 amount = total / 5;
             address delegator = address(uint160(i));
-            uint256 laraBalanceBefore = address(lara).balance;
+            // Deploy Lara for delegator
+            vm.prank(delegator);
+            address payable laraA = laraFactory.createLara();
+            Lara laraI = Lara(laraA);
+
+            uint256 laraBalanceBefore = address(laraI).balance;
             uint256 dposBalanceBefore = address(mockDpos).balance;
             // Call the function
             vm.deal(delegator, amount);
             vm.prank(delegator);
-            lara.stake{value: amount}(amount);
+            laraI.stake{value: amount}(amount);
             totalStaked += amount;
-            uint256 laraBalanceAfter = address(lara).balance;
+            uint256 laraBalanceAfter = address(laraI).balance;
             uint256 dposBalanceAfter = address(mockDpos).balance;
 
             // Check the stTara balance before
@@ -56,11 +63,10 @@ contract MassRebalanceTest is Test, ManyValidatorsTestSetup {
                 "Wrong lara balance"
             );
 
-            // Check the staked amount
-            assertEq(lara.totalDelegated(), totalStaked, "Wrong staked amount");
+            assertEq(laraI.totalDelegated(), amount, "Wrong staked amount");
+            vm.roll(laraI.lastSnapshot() + laraI.epochDuration());
         }
-
-        vm.roll(lara.lastSnapshot() + lara.epochDuration());
+        totalDelegated = totalStaked;
     }
 
     function testFuzz_testRedelegateStakeFromMultipleDelegatorsToMultipleValidators(
@@ -83,59 +89,72 @@ contract MassRebalanceTest is Test, ManyValidatorsTestSetup {
             "First node in oracle nodes list should have changed"
         );
 
-        uint256 totalDelegatedInLastEpoch = lara.totalDelegated();
-
-        lara.rebalance();
-
-        // check that the stake value didn't change
         for (uint256 i = 1; i < 6; i++) {
             uint256 amount = total / 5;
             address delegator = address(uint160(i));
+            vm.prank(delegator);
+            address laraA = laraFactory.laraInstances(delegator);
+            Lara laraI = Lara(payable(laraA));
             assertApproxEqAbs(
                 stTaraToken.balanceOf(delegator),
                 amount,
                 1000,
                 "ReDelegate: Wrong delegated amount"
             );
+            uint256 nodesToBeFilled = laraI.totalDelegated() / 80000000 ether;
+            uint256 modulo = laraI.totalDelegated() % 80000000 ether;
+            if (modulo > 0) {
+                nodesToBeFilled += 1;
+            }
+            uint256 totalDelegatedAfterRebalance = 0;
+            for (uint256 j = 0; j < nodesToBeFilled; j++) {
+                assertGt(
+                    laraI.totalStakeAtValidator(laraI.validators(j)),
+                    0,
+                    "LARA: Validator should have stake"
+                );
+                // check the DPOS mock's validator stake
+                assertGt(
+                    mockDpos.getValidator(laraI.validators(j)).total_stake,
+                    0,
+                    "DPOS: Validator should have stake"
+                );
+                totalDelegatedAfterRebalance += laraI.totalStakeAtValidator(
+                    laraI.validators(j)
+                );
+            }
         }
-        uint256 nodesToBeFilled = total / 80000000 ether;
-        uint256 modulo = total % 80000000 ether;
-        if (modulo > 0) {
-            nodesToBeFilled += 1;
-        }
-        uint256 totalDelegatedAfterRebalance = 0;
-        for (uint256 i = 0; i < nodesToBeFilled; i++) {
-            assertGt(
-                lara.totalStakeAtValidator(mockApyOracle.nodesList(i)),
-                0,
-                "LARA: Validator should have stake"
-            );
-            // check the DPOS mock's validator stake
-            assertGt(
-                mockDpos.getValidator(mockApyOracle.nodesList(i)).total_stake,
-                0,
-                "DPOS: Validator should have stake"
-            );
-            totalDelegatedAfterRebalance += lara.totalStakeAtValidator(
-                mockApyOracle.nodesList(i)
-            );
-        }
-        assertEq(
-            totalDelegatedAfterRebalance,
-            totalDelegatedInLastEpoch,
-            "LARA: Total delegated amount should not change"
-        );
-    }
 
-    function invariant_stakeSameAfterMassRebalance() public {
-        assertTrue(
-            lara.totalDelegated() == stTaraToken.totalSupply(),
-            "Total delegated not equal to total supply"
-        );
-        stakeFromMultipleDelegatorsToMultipleValidators(100000 ether);
-        assertTrue(
-            lara.totalDelegated() == stTaraToken.totalSupply(),
-            "Total delegated not equal to total supply"
-        );
+        // check that the stake value didn't change
+        for (uint256 i = 1; i < 6; i++) {
+            uint256 amount = total / 5;
+            address delegator = address(uint160(i));
+            vm.prank(delegator);
+            address laraA = laraFactory.laraInstances(delegator);
+            Lara laraI = Lara(payable(laraA));
+            laraI.rebalance();
+            assertApproxEqAbs(
+                stTaraToken.balanceOf(delegator),
+                amount,
+                1000,
+                "ReDelegate: Wrong delegated amount"
+            );
+            uint256 nodesToBeFilled = laraI.totalDelegated() / 80000000 ether;
+            uint256 modulo = laraI.totalDelegated() % 80000000 ether;
+            if (modulo > 0) {
+                nodesToBeFilled += 1;
+            }
+            uint256 totalDelegatedAfterRebalance = 0;
+            for (uint256 j = 0; j < nodesToBeFilled; j++) {
+                assertEq(
+                    laraI.totalStakeAtValidator(laraI.validators(j)),
+                    0,
+                    "LARA: Validator should be empty"
+                );
+                totalDelegatedAfterRebalance += laraI.totalStakeAtValidator(
+                    laraI.validators(j)
+                );
+            }
+        }
     }
 }

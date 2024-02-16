@@ -10,13 +10,6 @@ import {LaraFactory} from "./LaraFactory.sol";
 import {FactoryGoverned} from "./FactoryGoverned.sol";
 
 contract stTARA is ERC20, Ownable, IstTara, FactoryGoverned {
-    // Thrown when the user does not have sufficient allowance set for Tara to burn
-    error InsufficientUserAllowanceForBurn(
-        uint256 amount,
-        uint256 senderBalance,
-        uint256 protocolBalance
-    );
-
     // Events
     event Minted(address indexed user, uint256 amount);
     event Burned(address indexed user, uint256 amount);
@@ -30,13 +23,6 @@ contract stTARA is ERC20, Ownable, IstTara, FactoryGoverned {
     }
 
     function burn(address user, uint256 amount) external onlyLara {
-        // Check if the amount is approved for caller to burn
-        if (amount > allowance(user, msg.sender))
-            revert InsufficientUserAllowanceForBurn(
-                amount,
-                balanceOf(user),
-                allowance(user, msg.sender)
-            );
         // Burn stTARA tokens
         super._burn(user, amount);
         emit Burned(user, amount);
