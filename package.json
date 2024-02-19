@@ -11,6 +11,7 @@
     "deploy-stats:testnet": "yarn run hardhat run --network testnet scripts/deploy_stats_oracle.ts",
     "foundry-test": "forge test -vv",
     "deploy-lara-testnet": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/Lara.s.sol:DeployLara --rpc-url https://rpc.testnet.taraxa.io --broadcast --legacy -vvvv",
+    "deploy-tns-testnet": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/TNSDeployer.s.sol:TNSDeployer --rpc-url https://rpc.testnet.taraxa.io --broadcast --legacy -vvvv",
     "prnet-deploy-lara": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/Lara.s.sol:DeployLara --rpc-url https://rpc-pr-2609.prnet.taraxa.io --broadcast --legacy -vvvv",
     "deploy-only-lara-testnet": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/OnlyLara.s.sol:DeployLara --rpc-url https://rpc.testnet.taraxa.io --broadcast --legacy -vvvv",
     "deploy-lara-devnet": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/Lara.s.sol:DeployLara --rpc-url https://rpc.devnet.taraxa.io --broadcast -vvvv",
