@@ -104,6 +104,14 @@ contract Lara is Ownable, ILara {
         _;
     }
 
+    modifier hasUndelegated(address validator, uint256 amount) {
+        require(
+            undelegated[msg.sender][validator] >= amount,
+            "LARA: Sender has not undelegated the amount"
+        );
+        _;
+    }
+
     /**
      * @dev Fallback function to receive Ether.
      */
@@ -417,11 +425,7 @@ contract Lara is Ownable, ILara {
     function confirmUndelegate(
         address validator,
         uint256 amount
-    ) public onlyOwnerOrDelegator {
-        require(
-            undelegated[msg.sender][validator] >= amount,
-            "LARA: Msg.sender has not undelegated the amount"
-        );
+    ) public onlyOwnerOrDelegator hasUndelegated(validator, amount) {
         uint256 balanceBefore = address(this).balance;
         (bool success, bytes memory data) = address(dposContract).call(
             abi.encodeWithSignature("confirmUndelegate(address)", validator)
@@ -453,11 +457,7 @@ contract Lara is Ownable, ILara {
     function cancelUndelegate(
         address validator,
         uint256 amount
-    ) public onlyOwnerOrDelegator {
-        require(
-            undelegated[msg.sender][validator] >= amount,
-            "LARA: Msg.sender has not undelegated the amount"
-        );
+    ) public onlyOwnerOrDelegator hasUndelegated(validator, amount) {
         (bool success, bytes memory data) = address(dposContract).call(
             abi.encodeWithSignature("cancelUndelegate(address)", validator)
         );

@@ -25,6 +25,8 @@ contract LaraFactory is Ownable, ILaraFactory {
 
     uint32 public laraInstanceCount;
 
+    uint32 public activeLaraInstanceCount;
+
     address public treasuryAddress;
 
     // StTARA token contract
@@ -117,15 +119,48 @@ contract LaraFactory is Ownable, ILaraFactory {
         laraAddresses.push(address(lara));
         laraActive[address(lara)] = true;
         laraInstanceCount++;
+        activeLaraInstanceCount++;
         emit LaraCreated(address(lara), msg.sender);
         return payable(address(lara));
     }
 
-    function deactivateLara() external {
-        require(
-            laraInstances[msg.sender] != address(0),
-            "LaraFactory: Lara not created"
-        );
-        laraActive[msg.sender] = false;
+    function deactivateLara(address delegator) external {
+        address laraAddress;
+        if (msg.sender != owner()) {
+            require(
+                laraInstances[msg.sender] != address(0),
+                "LaraFactory: Lara not created"
+            );
+            laraAddress = laraInstances[msg.sender];
+        } else {
+            require(
+                laraInstances[delegator] != address(0),
+                "LaraFactory: Lara not created"
+            );
+            laraAddress = laraInstances[delegator];
+        }
+        laraActive[laraAddress] = false;
+        activeLaraInstanceCount--;
+        emit LaraDeactivated(laraAddress, msg.sender);
+    }
+
+    function activateLara(address delegator) external {
+        address laraAddress;
+        if (msg.sender != owner()) {
+            require(
+                laraInstances[msg.sender] != address(0),
+                "LaraFactory: Lara not created"
+            );
+            laraAddress = laraInstances[msg.sender];
+        } else {
+            require(
+                laraInstances[delegator] != address(0),
+                "LaraFactory: Lara not created"
+            );
+            laraAddress = laraInstances[delegator];
+        }
+        laraActive[laraAddress] = true;
+        activeLaraInstanceCount++;
+        emit LaraActivated(laraAddress, msg.sender);
     }
 }

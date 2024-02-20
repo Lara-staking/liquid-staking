@@ -34,4 +34,53 @@ contract FactoryTest is Test, TestSetup {
             "Wrong lara instance"
         );
     }
+
+    function testFuzz_anyAddressCanCreateAndDeactivateLara(
+        address sample
+    ) public {
+        vm.assume(sample != address(0));
+        vm.startPrank(sample);
+        address payable laraContract = laraFactory.createLara();
+        Lara laraC = Lara(laraContract);
+        assertEq(laraC.owner(), address(laraFactory.owner()), "Wrong owner");
+        assertEq(
+            laraFactory.laraInstances(sample),
+            laraContract,
+            "Wrong lara instance"
+        );
+        laraFactory.deactivateLara(sample);
+        assertEq(
+            laraFactory.laraActive(laraContract),
+            false,
+            "Lara should be deactivated"
+        );
+        laraFactory.activateLara(sample);
+        assertEq(
+            laraFactory.laraActive(laraContract),
+            true,
+            "Lara should be activated"
+        );
+        vm.stopPrank();
+
+        // reverts on non-owner or delegator calls
+        vm.startPrank(vm.addr(23));
+        vm.expectRevert("LaraFactory: Lara not created");
+        laraFactory.deactivateLara(sample);
+        vm.stopPrank();
+
+        // owner calls should succeed
+
+        laraFactory.deactivateLara(sample);
+        assertEq(
+            laraFactory.laraActive(laraContract),
+            false,
+            "Lara should be deactivated"
+        );
+        laraFactory.activateLara(sample);
+        assertEq(
+            laraFactory.laraActive(laraContract),
+            true,
+            "Lara should be activated"
+        );
+    }
 }
