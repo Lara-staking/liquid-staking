@@ -140,6 +140,10 @@ contract LaraFactory is Ownable, ILaraFactory {
             );
             laraAddress = laraInstances[delegator];
         }
+        require(
+            laraActive[laraAddress] == true,
+            "LaraFactory: Lara already deactivated"
+        );
         laraActive[laraAddress] = false;
         activeLaraInstanceCount--;
         emit LaraDeactivated(laraAddress, msg.sender);
@@ -160,6 +164,10 @@ contract LaraFactory is Ownable, ILaraFactory {
             );
             laraAddress = laraInstances[delegator];
         }
+        require(
+            laraActive[laraAddress] == false,
+            "LaraFactory: Lara already activated"
+        );
         laraActive[laraAddress] = true;
         activeLaraInstanceCount++;
         emit LaraActivated(laraAddress, msg.sender);
