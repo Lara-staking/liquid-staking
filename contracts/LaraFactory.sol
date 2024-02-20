@@ -121,6 +121,7 @@ contract LaraFactory is Ownable, ILaraFactory {
         laraInstanceCount++;
         activeLaraInstanceCount++;
         emit LaraCreated(address(lara), msg.sender);
+        emit LaraActivated(address(lara), msg.sender);
         return payable(address(lara));
     }
 
