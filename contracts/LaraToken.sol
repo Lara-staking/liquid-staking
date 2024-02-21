@@ -11,7 +11,7 @@ contract LaraToken is ERC20, Ownable {
     uint256 public presaleEndBlock;
     uint256 public presaleBlockDuration = 151200;
     uint256 public swapUpperLimit = 1000000 ether;
-    uint256 public presaleRate = 1724;
+    uint256 public presaleRate = 172;
     uint16 public swapPeriod = 900;
     address public treasuryAddress;
     bool public presaleRunning = false;
@@ -34,7 +34,7 @@ contract LaraToken is ERC20, Ownable {
     }
 
     constructor(address _treasury) ERC20("Lara", "LARA") Ownable(msg.sender) {
-        _mint(msg.sender, 10000000000 * 1e18);
+        _mint(msg.sender, 1000000000 * 1e18);
         treasuryAddress = _treasury;
     }
 
@@ -75,7 +75,7 @@ contract LaraToken is ERC20, Ownable {
         require(presaleStartBlock > 0, "Presale: presale not started");
         require(msg.value >= minSwapAmount, "Presale: amount too low");
         require(
-            balanceOf(address(this)) >= msg.value,
+            balanceOf(address(this)) >= msg.value * presaleRate,
             "Presale: insufficient balance"
         );
         require(
