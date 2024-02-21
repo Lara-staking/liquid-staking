@@ -94,6 +94,47 @@ contract LaraTokenTest is Test {
         }
     }
 
+    function test_userHitsLimitAndNeedsToWait() public {
+        testStartPresale();
+        uint256 totalTaraAmount = 1800000 ether;
+        address presaleAddr = address(vm.addr(666));
+        vm.deal(presaleAddr, totalTaraAmount);
+
+        vm.startPrank(presaleAddr);
+        uint256 firstAmount = totalTaraAmount / 3;
+        laraToken.swap{value: firstAmount}();
+        uint256 balanceAfterFirstSwap = laraToken.balanceOf(presaleAddr);
+        assertEq(
+            laraToken.balanceOf(presaleAddr),
+            (firstAmount * laraToken.presaleRate()) / 100,
+            "first swap amount != balance"
+        );
+        uint256 secondAmount = totalTaraAmount / 3;
+        laraToken.swap{value: secondAmount}();
+        assertEq(
+            laraToken.balanceOf(presaleAddr),
+            balanceAfterFirstSwap +
+                (secondAmount * laraToken.presaleRate()) /
+                100,
+            "second swap amount != balance"
+        );
+        uint256 balanceAfterSecondSwap = laraToken.balanceOf(presaleAddr);
+
+        uint256 thirdAmount = totalTaraAmount / 3;
+        vm.expectRevert("Presale: you can swap once every 900 blocks");
+        laraToken.swap{value: thirdAmount}();
+
+        vm.roll(laraToken.presaleStartBlock() + laraToken.swapPeriod());
+
+        laraToken.swap{value: thirdAmount}();
+        assertEq(
+            laraToken.balanceOf(presaleAddr),
+            balanceAfterSecondSwap +
+                ((thirdAmount * laraToken.presaleRate()) / 100),
+            "third swap amount != balance"
+        );
+    }
+
     function testEndPresale_failsOnBlockFirstTheSucceeds() public {
         testPresaleGivesRightAmounts();
 
