@@ -202,7 +202,13 @@ contract Lara is Ownable, ILaraStrategy {
             startTimestamp = block.timestamp;
         }
         // Mint stTARA tokens to user
-        try stTaraToken.mint(msg.sender, amount - remainingAmount) {
+        try
+            stTaraToken.mint(
+                msg.sender,
+                amount - remainingAmount,
+                address(this)
+            )
+        {
             if (remainingAmount > 0) {
                 (bool success, ) = address(msg.sender).call{
                     value: remainingAmount
@@ -304,9 +310,9 @@ contract Lara is Ownable, ILaraStrategy {
         uint256 epochCommission = (rewards * commission) / 100;
         uint256 distributableRewards = rewards - epochCommission;
 
-        try stTaraToken.mint(delegator, distributableRewards) {} catch Error(
-            string memory reason
-        ) {
+        try
+            stTaraToken.mint(delegator, distributableRewards, address(this))
+        {} catch Error(string memory reason) {
             revert(reason);
         }
         (bool success, ) = treasuryAddress.call{value: rewards}("");
@@ -477,7 +483,7 @@ contract Lara is Ownable, ILaraStrategy {
                 amount,
                 abi.decode(data, (string))
             );
-        try stTaraToken.mint(msg.sender, amount) {
+        try stTaraToken.mint(msg.sender, amount, address(this)) {
             undelegated[msg.sender][validator] -= amount;
             totalStakeAtValidator[validator] += amount;
         } catch Error(string memory reason) {

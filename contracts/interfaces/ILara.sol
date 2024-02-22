@@ -37,6 +37,11 @@ interface ILara is ILaraBase {
     event AllRewardsClaimed(uint256 indexed amount);
 
     /**
+     * @dev Event emitted when staking rewards are claimed
+     */
+    event StakingRewardsClaimed(address indexed staker, uint256 indexed amount);
+
+    /**
      * @dev Event emitted when redelegation rewards are claimed
      */
     event RedelegationRewardsClaimed(
@@ -67,6 +72,21 @@ interface ILara is ILaraBase {
      * @dev Event emitted when commission is withdrawn
      */
     event CommissionWithdrawn(address indexed user, uint256 indexed amount);
+
+    /**
+     * @dev Event emitted when a stake is transferred
+     */
+    event StakeTransfered(
+        address indexed from,
+        address indexed to,
+        uint256 indexed amount
+    );
+
+    /**
+     * @dev Getter func for the stake of a user
+     * @param user The address of the user
+     */
+    function stakeOf(address user) external view returns (uint256);
 
     /**
      * @dev Function to check if a validator is registered

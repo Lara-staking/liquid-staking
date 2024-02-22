@@ -45,7 +45,8 @@ contract Lara is Ownable, ILara {
 
     bool public isInitialized = false;
 
-    // List of validators of the protocol
+    address[] public owners;
+    // List of validators of the lara instance
     address[] public validators;
 
     // StTARA token contract
@@ -62,6 +63,8 @@ contract Lara is Ownable, ILara {
 
     // Mapping of the validator rating at the time of delegation
     mapping(address => uint256) public validatorRatingAtDelegation;
+
+    mapping(address => uint256) public stakes;
 
     // Mapping of the undelegated amount of a user
     mapping(address => mapping(address => uint256)) public undelegated;
@@ -89,6 +92,14 @@ contract Lara is Ownable, ILara {
         delegator = _delegator;
         isInitialized = true;
         commission = _commission;
+    }
+
+    modifier onlyStTara() {
+        require(
+            msg.sender == address(stTaraToken),
+            "LARA: Only stTARA contract"
+        );
+        _;
     }
 
     modifier onlyDelegator() {
@@ -122,8 +133,12 @@ contract Lara is Ownable, ILara {
      */
     receive() external payable {}
 
+    function stakeOf(address staker) public view returns (uint256) {
+        return stakes[staker];
+    }
+
     /**
-     * @notice Checks if a validator is registered in the protocol
+     * @notice Checks if a validator is registered in the lara instance
      * @param validator the validator address
      * @return true if the validator is registered, false otherwise
      */
@@ -181,6 +196,31 @@ contract Lara is Ownable, ILara {
         minStakeAmount = _minStakeAmount;
     }
 
+    function transferStake(
+        address from,
+        address to,
+        uint256 amount
+    ) public onlyStTara {
+        require(
+            stakes[from] >= amount,
+            "Not enough stake in Lara instance for seller"
+        );
+        require(
+            stakes[to] + amount <= totalDelegated,
+            "Not enough capacity in Lara instance for buyer"
+        );
+        // 1 take snapshot.
+        this.snapshot();
+        // 2. get the from owner, deduct the amount
+        stakes[from] -= amount;
+        // 3. get the to owner, add the amount
+        stakes[to] += amount;
+
+        this.addStakerIfNotInArray(to);
+        this.removeStakersWithZeroStake();
+        emit StakeTransfered(from, to, amount);
+    }
+
     /**
      * @notice Stake function
      * In the stake function, the user sends the amount of TARA tokens he wants to stake.
@@ -197,12 +237,17 @@ contract Lara is Ownable, ILara {
         if (msg.value < amount) revert StakeValueTooLow(msg.value, amount);
 
         uint256 remainingAmount = delegateToValidators(address(this).balance);
-
         if (startTimestamp == 0) {
             startTimestamp = block.timestamp;
         }
         // Mint stTARA tokens to user
-        try stTaraToken.mint(msg.sender, amount - remainingAmount) {
+        try
+            stTaraToken.mint(
+                msg.sender,
+                amount - remainingAmount,
+                address(this)
+            )
+        {
             if (remainingAmount > 0) {
                 (bool success, ) = address(msg.sender).call{
                     value: remainingAmount
@@ -210,6 +255,8 @@ contract Lara is Ownable, ILara {
                 if (!success)
                     revert("LARA: Failed to send remaining amount to user");
             }
+            stakes[msg.sender] += amount - remainingAmount;
+            addStakerIfNotInArray(msg.sender);
             emit Staked(msg.sender, amount - remainingAmount);
             return remainingAmount;
         } catch Error(string memory reason) {
@@ -269,13 +316,18 @@ contract Lara is Ownable, ILara {
      * A protocol snapshot can be done once every epochDuration blocks.
      * The method will claim all rewards from the DPOS contract and distribute them to the delegators.
      */
+
     function snapshot() external {
-        if (lastSnapshot != 0 && block.number < lastSnapshot + epochDuration) {
-            revert EpochDurationNotMet(
-                lastSnapshot,
-                block.number,
-                epochDuration
-            );
+        if (msg.sender != address(stTaraToken) && msg.sender != address(this)) {
+            if (
+                lastSnapshot != 0 && block.number < lastSnapshot + epochDuration
+            ) {
+                revert EpochDurationNotMet(
+                    lastSnapshot,
+                    block.number,
+                    epochDuration
+                );
+            }
         }
         uint256 totalEpochDelegation = 0;
         try dposContract.getTotalDelegation(address(this)) returns (
@@ -293,9 +345,18 @@ contract Lara is Ownable, ILara {
             return;
         }
         uint256 balanceBefore = address(this).balance;
-        try dposContract.claimAllRewards() {
-            // do nothing
-        } catch Error(string memory reason) {
+        // dpos (address of THIS lara => delegation TARA amount)
+        // 1 lara => 70% of its stake =>
+        // 2 lara => 130% of its stake =>
+        // in the factory add a method of a "system-wide snapshot"
+
+        // 1. go through the lara instance & claim all rewards => sum it up
+        // 2. mint the stTARA to factory
+        // 3. get the holders of stTAra and disburse proportionally
+
+        try dposContract.claimAllRewards() {} catch Error(
+            string memory reason
+        ) {
             revert RewardClaimFailed(reason);
         }
         uint256 balanceAfter = address(this).balance;
@@ -304,10 +365,18 @@ contract Lara is Ownable, ILara {
         uint256 epochCommission = (rewards * commission) / 100;
         uint256 distributableRewards = rewards - epochCommission;
 
-        try stTaraToken.mint(delegator, distributableRewards) {} catch Error(
-            string memory reason
-        ) {
-            revert(reason);
+        for (uint256 i = 0; i < owners.length; i++) {
+            uint256 userStake = stakes[owners[i]];
+            if (userStake == 0) {
+                continue;
+            }
+            uint256 userRewards = (distributableRewards * userStake) /
+                totalDelegated;
+            try stTaraToken.mint(owners[i], userRewards, address(this)) {
+                emit StakingRewardsClaimed(owners[i], userRewards);
+            } catch Error(string memory reason) {
+                revert(reason);
+            }
         }
         (bool success, ) = treasuryAddress.call{value: epochCommission}("");
         if (!success) revert("LARA: Failed to send commission to treasury");
@@ -322,7 +391,7 @@ contract Lara is Ownable, ILara {
     }
 
     /**
-     * @notice Rebalance method to rebalance the protocol.
+     * @notice Rebalance method to rebalance the lara instance.
      * The method is intended to be called by anyone, at least every epochDuration blocks.
      * In this V0 there is no on-chain trigger or management function for this, will be triggered from outside.
      * The method will call the oracle to get the rebalance list and then redelegate the stake.
@@ -357,7 +426,7 @@ contract Lara is Ownable, ILara {
     }
 
     /**
-     * ReDelegate method to move stake from one validator to another inside the protocol.
+     * ReDelegate method to move stake from one validator to another inside the lara instance.
      * The method is intended to be called by the protocol owner on a need basis.
      * In this V0 there is no on-chain trigger or management function for this, will be triggered from outside.
      * @param from the validator from which to move stake
@@ -376,7 +445,7 @@ contract Lara is Ownable, ILara {
         );
         require(
             amount <= maxValidatorStakeCapacity,
-            "LARA: Amount exceeds max stake of validators in protocol"
+            "LARA: Amount exceeds max stake of validators in the instance"
         );
         require(
             totalStakeAtValidator[to] + amount <= maxValidatorStakeCapacity,
@@ -468,7 +537,7 @@ contract Lara is Ownable, ILara {
                 amount,
                 abi.decode(data, (string))
             );
-        try stTaraToken.mint(msg.sender, amount) {
+        try stTaraToken.mint(msg.sender, amount, address(this)) {
             undelegated[msg.sender][validator] -= amount;
             totalStakeAtValidator[validator] += amount;
         } catch Error(string memory reason) {
@@ -518,6 +587,9 @@ contract Lara is Ownable, ILara {
                     );
                 uint256 balanceAfter = address(this).balance;
                 totalRewards += balanceAfter - balanceBefore;
+                totalRewards =
+                    (totalRewards * stakeOf(msg.sender)) /
+                    totalDelegated;
                 totalStakeAtValidator[validator] -= amount;
                 if (totalStakeAtValidator[validator] == 0) {
                     validatorRatingAtDelegation[validator] = 0;
@@ -572,5 +644,26 @@ contract Lara is Ownable, ILara {
             );
         }
         return result;
+    }
+
+    function addStakerIfNotInArray(address staker) public {
+        for (uint256 i = 0; i < owners.length; i++) {
+            if (owners[i] == staker) {
+                return;
+            }
+        }
+        owners.push(staker);
+    }
+
+    function removeStakersWithZeroStake() public {
+        uint256 i = 0;
+        while (i < owners.length) {
+            if (stakes[owners[i]] == 0) {
+                owners[i] = owners[owners.length - 1];
+                owners.pop();
+            } else {
+                i++;
+            }
+        }
     }
 }

@@ -16,7 +16,11 @@ interface IstTara is IERC20, IFactoryGoverned {
      * @param recipient The address to receive the newly minted tokens
      * @param amount The amount of tokens to mint
      */
-    function mint(address recipient, uint256 amount) external;
+    function mint(
+        address recipient,
+        uint256 amount,
+        address originLaraInstance
+    ) external;
 
     /**
      * @dev Function to burn tokens from a specific address

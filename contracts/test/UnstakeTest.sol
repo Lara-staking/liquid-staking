@@ -41,6 +41,8 @@ contract UnstakeTest is Test, TestSetup {
         }
     }
 
+    event Value(uint256 value);
+
     function multipleFullUnstakes() public {
         for (uint256 i = 0; i < stakes; i++) {
             address staker = vm.addr(i + 1);
@@ -59,6 +61,15 @@ contract UnstakeTest is Test, TestSetup {
                     address(laraOfStaker),
                     totalStakeAtValidator
                 );
+                uint256 expectedRewards = 100 ether +
+                    laraOfStaker.totalDelegated() /
+                    100;
+                uint256 afterCommission = expectedRewards -
+                    ((expectedRewards * laraOfStaker.commission()) / 100);
+                uint256 rewardOfUser = (afterCommission *
+                    lara.stakeOf(staker)) / lara.totalDelegated();
+                emit Value(rewardOfUser);
+                uint256 stakeBefore = laraOfStaker.stakeOf(staker);
                 laraOfStaker.requestUndelegate(
                     validatorsOfDelegator[j],
                     totalStakeAtValidator
@@ -70,16 +81,19 @@ contract UnstakeTest is Test, TestSetup {
                     0,
                     "Wrong staked amount at validator"
                 );
+                emit Value(stTaraBalanceBefore);
+                emit Value(totalStakeAtValidator);
+                emit Value(rewardOfUser);
                 assertEq(
-                    stTaraToken.balanceOf(staker),
-                    stTaraBalanceBefore - totalStakeAtValidator,
-                    "Wrong stTARA balance after requestUndelegate"
+                    laraOfStaker.stakeOf(staker),
+                    stakeBefore - totalStakeAtValidator,
+                    "Wrong staked amount at Lara"
                 );
             }
             assertEq(
-                stTaraToken.balanceOf(staker),
+                laraOfStaker.stakeOf(staker),
                 0,
-                "Wrong stTARA balance after requestUndelegate"
+                "Wrong stTARA stake after requestUndelegate"
             );
             vm.stopPrank();
         }
@@ -96,7 +110,6 @@ contract UnstakeTest is Test, TestSetup {
             address[] memory validatorsOfDelegator = laraOfStaker
                 .getValidators();
             for (uint256 j = 0; j < validatorsOfDelegator.length; j++) {
-                uint256 stTaraBalanceBefore = stTaraToken.balanceOf(staker);
                 uint256 totalStakeAtValidator = laraOfStaker
                     .totalStakeAtValidator(validatorsOfDelegator[j]);
                 vm.expectRevert("Amount not approved for unstaking");
