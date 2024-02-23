@@ -68,6 +68,6 @@ describe(ContractNames.stTara, () => {
 
     await expect(
       stTara.connect(minter).transferFrom(recipient.address, target, amount)
-    ).to.be.revertedWithCustomError(stTara, "ERC20InsufficientAllowance");
+    ).to.be.revertedWith("stTARA: transfer amount exceeds balance");
   });
 });
