@@ -47,6 +47,14 @@
       "symbol": "TPEPE",
       "decimals": 18,
       "logoURI": "https://m.media-amazon.com/images/I/41v09y9lP0L.jpg"
+    },
+    {
+      "chainId": 842,
+      "address": "0x3F48CB103C3172C24a9F6cF3be92d571bF7072af",
+      "name": "Lara Token",
+      "symbol": "LARA",
+      "decimals": 18,
+      "logoURI": "https://avatars.githubusercontent.com/u/147614687?s=48&v=4"
     }
   ],
   "taraxaTestnetTokenList": {
