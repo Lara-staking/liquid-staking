@@ -25,6 +25,11 @@ contract ApyOracle is IApyOracle, Initializable {
 
     mapping(address => IApyOracle.NodeData) public nodes;
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
     /**
      * @dev Initializes the contract with the given data feed and DPOS contract addresses.
      * @param dataFeed The address of the data feed contract.
@@ -40,10 +45,7 @@ contract ApyOracle is IApyOracle, Initializable {
      * @dev Modifier to make a function callable only by the data feed contract.
      */
     modifier OnlyDataFeed() {
-        require(
-            msg.sender == DATA_FEED,
-            "ApyOracle: caller is not the data feed"
-        );
+        require(msg.sender == DATA_FEED, "ApyOracle: caller is not the data feed");
         _;
     }
 
@@ -76,41 +78,32 @@ contract ApyOracle is IApyOracle, Initializable {
      * @param currentValidators The current validators.
      * @return An array of tentative re-delegations.
      */
-    function getRebalanceList(
-        TentativeDelegation[] memory currentValidators
-    ) external override OnlyLara returns (TentativeReDelegation[] memory) {
+    function getRebalanceList(TentativeDelegation[] memory currentValidators)
+        external
+        override
+        OnlyLara
+        returns (TentativeReDelegation[] memory)
+    {
         if (currentValidators.length == 0 || nodeCount == 0) {
             return new TentativeReDelegation[](0);
         }
         // order the currentValidators by rating
-        TentativeDelegation[]
-            memory orderedValidators = sortTentativeDelegationsByRating(
-                currentValidators
-            );
-        TentativeReDelegation[]
-            memory tentativeReDelegations = new TentativeReDelegation[](
-                nodeCount
-            );
+        TentativeDelegation[] memory orderedValidators = sortTentativeDelegationsByRating(currentValidators);
+        TentativeReDelegation[] memory tentativeReDelegations = new TentativeReDelegation[](nodeCount);
         uint256 count = 0;
         for (uint256 i = 0; i < nodeCount; i++) {
             address node = nodesList[i];
-            try DPOS.getValidator(node) returns (
-                DposInterface.ValidatorBasicInfo memory validator
-            ) {
+            try DPOS.getValidator(node) returns (DposInterface.ValidatorBasicInfo memory validator) {
                 uint256 totalStake = validator.total_stake;
                 if (totalStake >= maxValidatorStakeCapacity) {
                     continue;
                 }
-                uint256 availableDelegation = maxValidatorStakeCapacity -
-                    totalStake;
+                uint256 availableDelegation = maxValidatorStakeCapacity - totalStake;
                 for (uint256 j = 0; j < orderedValidators.length; j++) {
                     if (orderedValidators[j].validator == node) {
                         continue;
                     }
-                    if (
-                        nodes[nodesList[i]].rating <=
-                        nodes[orderedValidators[j].validator].rating
-                    ) {
+                    if (nodes[nodesList[i]].rating <= nodes[orderedValidators[j].validator].rating) {
                         continue;
                     }
                     if (orderedValidators[j].amount == 0) {
@@ -124,10 +117,7 @@ contract ApyOracle is IApyOracle, Initializable {
                             redelegatable = orderedValidators[j].amount;
                         }
                         tentativeReDelegations[count] = TentativeReDelegation(
-                            orderedValidators[j].validator,
-                            node,
-                            redelegatable,
-                            nodes[node].rating
+                            orderedValidators[j].validator, node, redelegatable, nodes[node].rating
                         );
                         availableDelegation -= redelegatable;
                         orderedValidators[j].amount -= redelegatable;
@@ -141,9 +131,7 @@ contract ApyOracle is IApyOracle, Initializable {
             }
         }
         // Create a new array with the exact length
-        TentativeReDelegation[] memory result = new TentativeReDelegation[](
-            count
-        );
+        TentativeReDelegation[] memory result = new TentativeReDelegation[](count);
         for (uint256 i = 0; i < count; i++) {
             result[i] = tentativeReDelegations[i];
         }
@@ -155,28 +143,22 @@ contract ApyOracle is IApyOracle, Initializable {
      * @param amount The amount to be delegated.
      * @return An array of tentative delegations.
      */
-    function getNodesForDelegation(
-        uint256 amount
-    ) external OnlyLara returns (TentativeDelegation[] memory) {
+    function getNodesForDelegation(uint256 amount) external OnlyLara returns (TentativeDelegation[] memory) {
         // we loop through the nodesList and see check if the node's able to capture thw whole amount
         // if not, we take the next node and so on. We return the TentativeDelegation's until the amount is
         // fully captured
-        TentativeDelegation[]
-            memory tentativeDelegations = new TentativeDelegation[](nodeCount);
+        TentativeDelegation[] memory tentativeDelegations = new TentativeDelegation[](nodeCount);
         uint256 tentativeDelegationsCount = 0;
         uint256 totalAmount = amount;
         for (uint256 i = 0; i < nodeCount; i++) {
             address node = nodesList[i];
-            try DPOS.getValidator(node) returns (
-                DposInterface.ValidatorBasicInfo memory validator
-            ) {
+            try DPOS.getValidator(node) returns (DposInterface.ValidatorBasicInfo memory validator) {
                 uint256 totalStake = validator.total_stake;
 
                 if (totalStake >= maxValidatorStakeCapacity) {
                     continue;
                 }
-                uint256 availableDelegation = maxValidatorStakeCapacity -
-                    totalStake;
+                uint256 availableDelegation = maxValidatorStakeCapacity - totalStake;
                 if (totalAmount == 0) {
                     break;
                 }
@@ -188,13 +170,8 @@ contract ApyOracle is IApyOracle, Initializable {
                         stakeSlot = totalAmount;
                     }
                     totalAmount -= stakeSlot;
-                    tentativeDelegations[
-                        tentativeDelegationsCount
-                    ] = TentativeDelegation(
-                        node,
-                        stakeSlot,
-                        nodes[node].rating
-                    );
+                    tentativeDelegations[tentativeDelegationsCount] =
+                        TentativeDelegation(node, stakeSlot, nodes[node].rating);
                     tentativeDelegationsCount++;
                 }
             } catch Error(string memory reason) {
@@ -202,9 +179,7 @@ contract ApyOracle is IApyOracle, Initializable {
             }
         }
         // Create a new array with the exact length
-        TentativeDelegation[] memory result = new TentativeDelegation[](
-            tentativeDelegationsCount
-        );
+        TentativeDelegation[] memory result = new TentativeDelegation[](tentativeDelegationsCount);
         for (uint256 i = 0; i < tentativeDelegationsCount; i++) {
             result[i] = tentativeDelegations[i];
         }
@@ -232,9 +207,7 @@ contract ApyOracle is IApyOracle, Initializable {
      * @param node The address of the node.
      * @return The data of the node.
      */
-    function getNodeData(
-        address node
-    ) external view override returns (IApyOracle.NodeData memory) {
+    function getNodeData(address node) external view override returns (IApyOracle.NodeData memory) {
         return nodes[node];
     }
 
@@ -242,9 +215,7 @@ contract ApyOracle is IApyOracle, Initializable {
      * @dev Updates the data of multiple nodes at once.
      * @param data An array of node data.
      */
-    function batchUpdateNodeData(
-        IApyOracle.NodeData[] memory data
-    ) external override OnlyDataFeed {
+    function batchUpdateNodeData(IApyOracle.NodeData[] memory data) external override OnlyDataFeed {
         address[] memory nodeAddresses = new address[](data.length);
         for (uint256 i = 0; i < data.length; i++) {
             nodeAddresses[i] = data[i].account;
@@ -259,18 +230,9 @@ contract ApyOracle is IApyOracle, Initializable {
      * @param node The address of the node.
      * @param data The new data of the node.
      */
-    function updateNodeData(
-        address node,
-        NodeData memory data
-    ) external override OnlyDataFeed {
-        require(
-            nodes[node].fromBlock < data.fromBlock,
-            "ApyOracle: fromBlock must be greater than the previous one"
-        );
-        require(
-            data.fromBlock < data.toBlock,
-            "ApyOracle: fromBlock must be less than toBlock"
-        );
+    function updateNodeData(address node, NodeData memory data) external override OnlyDataFeed {
+        require(nodes[node].fromBlock < data.fromBlock, "ApyOracle: fromBlock must be greater than the previous one");
+        require(data.fromBlock < data.toBlock, "ApyOracle: fromBlock must be less than toBlock");
         if (nodes[node].account == address(0)) {
             nodeCount++;
             nodesList.push(node);
@@ -283,9 +245,7 @@ contract ApyOracle is IApyOracle, Initializable {
      * @dev Sets the maximum stake capacity for a validator.
      * @param capacity The new maximum stake capacity.
      */
-    function setMaxValidatorStakeCapacity(
-        uint256 capacity
-    ) external OnlyDataFeed {
+    function setMaxValidatorStakeCapacity(uint256 capacity) external OnlyDataFeed {
         maxValidatorStakeCapacity = capacity;
         emit MaxValidatorStakeUpdated(capacity);
     }
@@ -295,9 +255,11 @@ contract ApyOracle is IApyOracle, Initializable {
      * @param delegations The array of tentative delegations to sort.
      * @return The sorted array of tentative delegations.
      */
-    function sortTentativeDelegationsByRating(
-        TentativeDelegation[] memory delegations
-    ) private pure returns (TentativeDelegation[] memory) {
+    function sortTentativeDelegationsByRating(TentativeDelegation[] memory delegations)
+        private
+        pure
+        returns (TentativeDelegation[] memory)
+    {
         uint256 n = delegations.length;
         for (uint256 i = 0; i < n; i++) {
             for (uint256 j = 0; j < n - i - 1; j++) {

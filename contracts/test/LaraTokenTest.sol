@@ -13,8 +13,7 @@ contract LaraTokenTest is Test {
 
     function setUp() public {
         treasuryAddress = address(1);
-        laraToken = new LaraToken();
-        laraToken.initialize(treasuryAddress);
+        laraToken = new LaraToken(treasuryAddress);
 
         assertEq(laraToken.name(), "Lara");
         assertEq(laraToken.symbol(), "LARA");
@@ -48,10 +47,7 @@ contract LaraTokenTest is Test {
             vm.prank(presaleAddr);
             laraToken.swap{value: presaleAddr.balance}();
 
-            assertEq(
-                laraToken.balanceOf(presaleAddr),
-                (laraToken.minSwapAmount() * 1724) / 100
-            );
+            assertEq(laraToken.balanceOf(presaleAddr), (laraToken.minSwapAmount() * 1724) / 100);
         }
     }
 
@@ -72,24 +68,13 @@ contract LaraTokenTest is Test {
             } else {
                 assertEq(laraToken.presaleRunning(), true);
 
-                if (
-                    !((amount * 1724) / 100 >
-                        laraToken.balanceOf(address(laraToken)))
-                ) {
+                if (!((amount * 1724) / 100 > laraToken.balanceOf(address(laraToken)))) {
                     uint256 presaleBalance = presaleAddr.balance;
                     vm.prank(presaleAddr);
                     laraToken.swap{value: amount}();
 
-                    assertEq(
-                        presaleBalance - presaleAddr.balance,
-                        amount,
-                        "presaleAddr TARA balance != amount"
-                    );
-                    assertEq(
-                        laraToken.balanceOf(presaleAddr),
-                        (amount * 1724) / 100,
-                        "amounts do not match"
-                    );
+                    assertEq(presaleBalance - presaleAddr.balance, amount, "presaleAddr TARA balance != amount");
+                    assertEq(laraToken.balanceOf(presaleAddr), (amount * 1724) / 100, "amounts do not match");
                 }
             }
         }
@@ -104,50 +89,26 @@ contract LaraTokenTest is Test {
         vm.expectRevert("Presale: presale not ended");
         laraToken.endPresale();
 
-        vm.roll(
-            laraToken.presaleStartBlock() + laraToken.presaleBlockDuration()
-        );
+        vm.roll(laraToken.presaleStartBlock() + laraToken.presaleBlockDuration());
 
         uint256 balanceOfTreasuryBefore = address(treasuryAddress).balance;
-        uint256 erc20BalanceOfLaraTokenBefore = laraToken.balanceOf(
-            address(laraToken)
-        );
+        uint256 erc20BalanceOfLaraTokenBefore = laraToken.balanceOf(address(laraToken));
         uint256 balanceOfLaraTokenBefore = address(laraToken).balance;
 
         laraToken.endPresale();
 
-        assertEq(
-            laraToken.presaleRunning(),
-            false,
-            "Presale: presaleRunning != false"
-        );
+        assertEq(laraToken.presaleRunning(), false, "Presale: presaleRunning != false");
 
-        assertEq(
-            laraToken.presaleEndBlock(),
-            block.number,
-            "Presale: presaleEndBlock != block.number"
-        );
+        assertEq(laraToken.presaleEndBlock(), block.number, "Presale: presaleEndBlock != block.number");
 
         uint256 balanceOfLaraTokenAfter = address(laraToken).balance;
 
-        assertEq(
-            balanceOfLaraTokenAfter,
-            balanceOfTreasuryBefore,
-            "LaraToken still has some $LARA after presale"
-        );
+        assertEq(balanceOfLaraTokenAfter, balanceOfTreasuryBefore, "LaraToken still has some $LARA after presale");
 
-        assertEq(
-            balanceOfLaraTokenBefore,
-            treasuryAddress.balance,
-            "Treasury balance != LaraToken balance"
-        );
+        assertEq(balanceOfLaraTokenBefore, treasuryAddress.balance, "Treasury balance != LaraToken balance");
 
         if (erc20BalanceOfLaraTokenBefore > 0) {
-            assertEq(
-                laraToken.balanceOf(address(laraToken)),
-                0,
-                "LaraToken still has some $LARA"
-            );
+            assertEq(laraToken.balanceOf(address(laraToken)), 0, "LaraToken still has some $LARA");
 
             assertEq(
                 laraToken.totalSupply(),

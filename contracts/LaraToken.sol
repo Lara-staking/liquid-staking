@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
-// Security contact: elod@apeconsulting.xyz
+// Security contact: elod.varga@taraxa.io
 pragma solidity 0.8.20;
 
-import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
-import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract LaraToken is ERC20Upgradeable, OwnableUpgradeable {
+contract LaraToken is ERC20, Ownable {
     uint256 public minSwapAmount;
     uint256 public presaleStartBlock;
     uint256 public presaleEndBlock;
@@ -33,9 +33,7 @@ contract LaraToken is ERC20Upgradeable, OwnableUpgradeable {
         _;
     }
 
-    function initialize(address _treasury) public initializer {
-        __ERC20_init("Lara", "LARA");
-        __Ownable_init(msg.sender);
+    constructor(address _treasury) public ERC20("Lara", "LARA") Ownable(msg.sender) {
         _mint(msg.sender, 10000000000 * 1e18);
         treasuryAddress = _treasury;
         minSwapAmount = 1000 ether;
@@ -59,17 +57,12 @@ contract LaraToken is ERC20Upgradeable, OwnableUpgradeable {
     function endPresale() external onlyOnceEnd {
         require(presaleStartBlock > 0, "Presale: presale not started");
         require(presaleRunning, "Presale: presale not running");
-        require(
-            block.number >= presaleStartBlock + presaleBlockDuration,
-            "Presale: presale not ended"
-        );
+        require(block.number >= presaleStartBlock + presaleBlockDuration, "Presale: presale not ended");
         require(presaleEndBlock == 0, "Presale: already ended");
         presaleRunning = false;
         presaleEndCount++;
         presaleEndBlock = block.number;
-        (bool success, ) = treasuryAddress.call{value: address(this).balance}(
-            ""
-        );
+        (bool success,) = treasuryAddress.call{value: address(this).balance}("");
         if (!success) {
             revert("Presale: transfer failed");
         }
@@ -82,17 +75,10 @@ contract LaraToken is ERC20Upgradeable, OwnableUpgradeable {
         require(presaleRunning, "Presale: presale not running");
         require(presaleStartBlock > 0, "Presale: presale not started");
         require(msg.value >= minSwapAmount, "Presale: amount too low");
+        require(balanceOf(address(this)) >= msg.value, "Presale: insufficient balance");
+        require(msg.value <= swapUpperLimit, "Presale: you can swap max 1000000 LARA");
         require(
-            balanceOf(address(this)) >= msg.value,
-            "Presale: insufficient balance"
-        );
-        require(
-            msg.value <= swapUpperLimit,
-            "Presale: you can swap max 1000000 LARA"
-        );
-        require(
-            lastSwapBlock[msg.sender] == 0 ||
-                (block.number >= lastSwapBlock[msg.sender] + swapPeriod),
+            lastSwapBlock[msg.sender] == 0 || (block.number >= lastSwapBlock[msg.sender] + swapPeriod),
             "Presale: you can swap once every 900 blocks"
         );
         lastSwapBlock[msg.sender] = block.number;

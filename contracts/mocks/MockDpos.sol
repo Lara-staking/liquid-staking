@@ -20,50 +20,32 @@ contract MockDpos is MockIDPOS {
 
     constructor(address[] memory _internalValidators) payable {
         for (uint256 i = 0; i < _internalValidators.length; ++i) {
-            MockIDPOS.ValidatorBasicInfo memory info = MockIDPOS
-                .ValidatorBasicInfo(
-                    0,
-                    0,
-                    100,
-                    uint64(block.number),
-                    0,
-                    msg.sender,
-                    "Sample description",
-                    "https://endpoint.some"
-                );
-            MockIDPOS.ValidatorData memory validatorData = MockIDPOS
-                .ValidatorData(_internalValidators[i], info);
+            MockIDPOS.ValidatorBasicInfo memory info = MockIDPOS.ValidatorBasicInfo(
+                0, 0, 100, uint64(block.number), 0, msg.sender, "Sample description", "https://endpoint.some"
+            );
+            MockIDPOS.ValidatorData memory validatorData = MockIDPOS.ValidatorData(_internalValidators[i], info);
             validators[_internalValidators[i]] = validatorData;
             validatorDatas.push(validatorData);
         }
         require(
-            validators[_internalValidators[_internalValidators.length - 1]]
-                .account != address(0),
+            validators[_internalValidators[_internalValidators.length - 1]].account != address(0),
             "Failed to set own validators"
         );
     }
 
-    function isValidatorRegistered(
-        address validator
-    ) external view returns (bool) {
+    function isValidatorRegistered(address validator) external view returns (bool) {
         return validators[validator].account != address(0);
     }
 
-    function getTotalDelegation(
-        address delegator
-    ) external view returns (uint256 total_delegation) {
+    function getTotalDelegation(address delegator) external view returns (uint256 total_delegation) {
         return totalDelegations[delegator];
     }
 
-    function getValidator(
-        address validator
-    ) external view returns (MockIDPOS.ValidatorBasicInfo memory) {
+    function getValidator(address validator) external view returns (MockIDPOS.ValidatorBasicInfo memory) {
         return validators[validator].info;
     }
 
-    function getValidators(
-        uint32 batch
-    ) external view returns (ValidatorData[] memory validatorsOut, bool end) {
+    function getValidators(uint32 batch) external view returns (ValidatorData[] memory validatorsOut, bool end) {
         if (batch == 0) {
             if (validatorDatas.length < 100) {
                 batch = uint32(validatorDatas.length);
@@ -72,11 +54,8 @@ contract MockDpos is MockIDPOS {
             }
         }
         ValidatorData[] memory _validators = new ValidatorData[](batch);
-        for (uint8 i = 0; i < batch; ) {
-            _validators[i] = ValidatorData(
-                validatorDatas[i].account,
-                validatorDatas[i].info
-            );
+        for (uint8 i = 0; i < batch;) {
+            _validators[i] = ValidatorData(validatorDatas[i].account, validatorDatas[i].info);
             unchecked {
                 ++i;
             }
@@ -84,10 +63,11 @@ contract MockDpos is MockIDPOS {
         return (_validators, false);
     }
 
-    function getValidatorsFor(
-        address owner,
-        uint32 batch
-    ) external view returns (ValidatorData[] memory validatorsOut, bool end) {
+    function getValidatorsFor(address owner, uint32 batch)
+        external
+        view
+        returns (ValidatorData[] memory validatorsOut, bool end)
+    {
         if (batch == 0) {
             if (validatorDatas.length < 100) {
                 batch = uint32(validatorDatas.length);
@@ -96,12 +76,9 @@ contract MockDpos is MockIDPOS {
             }
         }
         ValidatorData[] memory _validators = new ValidatorData[](batch);
-        for (uint8 i = 0; i < batch; ) {
+        for (uint8 i = 0; i < batch;) {
             if (validatorDatas[i].info.owner == owner) {
-                _validators[i] = ValidatorData(
-                    validatorDatas[i].account,
-                    validatorDatas[i].info
-                );
+                _validators[i] = ValidatorData(validatorDatas[i].account, validatorDatas[i].info);
             }
             unchecked {
                 ++i;
@@ -117,10 +94,7 @@ contract MockDpos is MockIDPOS {
 
         totalDelegations[msg.sender] += msg.value;
         validatorData.info.total_stake += msg.value;
-        require(
-            validators[validator].info.total_stake >= msg.value,
-            "Validator stake not reigstered"
-        );
+        require(validators[validator].info.total_stake >= msg.value, "Validator stake not reigstered");
         emit Delegated(msg.sender, validatorData.account, msg.value);
     }
 
@@ -134,29 +108,13 @@ contract MockDpos is MockIDPOS {
     ) external payable override {
         require(proof.length != 0, "Invalid proof");
         require(vrf_key.length != 0, "VRF Public key not porvided");
-        require(
-            validators[validator].account == address(0),
-            "DPOS: Validator already registered"
-        );
-        require(
-            msg.value >= 1000000000000000000000,
-            "Base delegation value not provided"
-        );
+        require(validators[validator].account == address(0), "DPOS: Validator already registered");
+        require(msg.value >= 1000000000000000000000, "Base delegation value not provided");
 
         MockIDPOS.ValidatorBasicInfo memory info = MockIDPOS.ValidatorBasicInfo(
-            msg.value,
-            0,
-            commission,
-            uint64(block.number),
-            0,
-            msg.sender,
-            description,
-            endpoint
+            msg.value, 0, commission, uint64(block.number), 0, msg.sender, description, endpoint
         );
-        MockIDPOS.ValidatorData memory validatorData = MockIDPOS.ValidatorData(
-            validator,
-            info
-        );
+        MockIDPOS.ValidatorData memory validatorData = MockIDPOS.ValidatorData(validator, info);
         validators[validator] = validatorData;
         totalDelegations[msg.sender] += msg.value;
         validatorDatas.push(validatorData);
@@ -165,10 +123,7 @@ contract MockDpos is MockIDPOS {
     }
 
     function undelegate(address validator, uint256 amount) external override {
-        require(
-            validators[validator].account != address(0),
-            "Validator doesn't exist"
-        );
+        require(validators[validator].account != address(0), "Validator doesn't exist");
         uint256 totalStake = validators[validator].info.total_stake;
         if (totalStake < amount) {
             revert("Validator has less stake than requested");
@@ -194,9 +149,7 @@ contract MockDpos is MockIDPOS {
     function claimAllRewards() external {
         uint256 totalStakes = 0;
         for (uint256 i = 0; i < validatorDatas.length; i++) {
-            totalStakes += validators[validatorDatas[i].account]
-                .info
-                .total_stake;
+            totalStakes += validators[validatorDatas[i].account].info.total_stake;
         }
         // give out 1% of the total stakes as rewards + 100 ETH
         uint256 rewards = totalStakes / 100;
@@ -204,23 +157,10 @@ contract MockDpos is MockIDPOS {
         payable(msg.sender).transfer(100 ether + rewards);
     }
 
-    function reDelegate(
-        address validator_from,
-        address validator_to,
-        uint256 amount
-    ) external {
-        require(
-            validators[validator_from].account != address(0),
-            "Validator doesn't exist"
-        );
-        require(
-            validators[validator_to].account != address(0),
-            "Validator doesn't exist"
-        );
-        require(
-            validators[validator_from].info.total_stake >= amount,
-            "Not enough stake"
-        );
+    function reDelegate(address validator_from, address validator_to, uint256 amount) external {
+        require(validators[validator_from].account != address(0), "Validator doesn't exist");
+        require(validators[validator_to].account != address(0), "Validator doesn't exist");
+        require(validators[validator_from].info.total_stake >= amount, "Not enough stake");
         validators[validator_from].info.total_stake -= amount;
         validators[validator_to].info.total_stake += amount;
         emit Redelegated(msg.sender, validator_from, validator_to, amount);
@@ -229,14 +169,8 @@ contract MockDpos is MockIDPOS {
     // Confirms undelegate request
     function confirmUndelegate(address validator) external {
         Undelegation memory undelegation = undelegations[msg.sender][validator];
-        require(
-            undelegation.delegator == msg.sender,
-            "Only delegator can confirm undelegate"
-        );
-        require(
-            undelegation.blockNumberClaimable <= block.number,
-            "Undelegation not yet claimable"
-        );
+        require(undelegation.delegator == msg.sender, "Only delegator can confirm undelegate");
+        require(undelegation.blockNumberClaimable <= block.number, "Undelegation not yet claimable");
         delete undelegations[msg.sender][validator];
         payable(msg.sender).transfer(undelegation.amount);
         emit UndelegateConfirmed(msg.sender, validator, undelegation.amount);
@@ -245,24 +179,20 @@ contract MockDpos is MockIDPOS {
     // Cancel undelegate request
     function cancelUndelegate(address validator) external {
         Undelegation memory undelegation = undelegations[msg.sender][validator];
-        require(
-            undelegation.delegator == msg.sender,
-            "Only delegator can cancel undelegate"
-        );
+        require(undelegation.delegator == msg.sender, "Only delegator can cancel undelegate");
         delete undelegations[msg.sender][validator];
         if (validators[validator].account == address(0)) {
             // we need to readd the validator
-            MockIDPOS.ValidatorBasicInfo memory info = MockIDPOS
-                .ValidatorBasicInfo(
-                    undelegation.amount,
-                    0,
-                    100,
-                    uint64(block.number),
-                    0,
-                    msg.sender,
-                    "Sample description",
-                    "https://endpoint.some"
-                );
+            MockIDPOS.ValidatorBasicInfo memory info = MockIDPOS.ValidatorBasicInfo(
+                undelegation.amount,
+                0,
+                100,
+                uint64(block.number),
+                0,
+                msg.sender,
+                "Sample description",
+                "https://endpoint.some"
+            );
             validators[validator] = MockIDPOS.ValidatorData(validator, info);
         } else {
             validators[validator].info.total_stake += undelegation.amount;

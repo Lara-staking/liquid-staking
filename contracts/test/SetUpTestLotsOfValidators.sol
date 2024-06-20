@@ -7,14 +7,14 @@ import "forge-std/console.sol";
 import {Upgrades, Options} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 
 import "../interfaces/IApyOracle.sol";
-import "../Lara.sol";
+import "./utils/LaraHarness.sol";
 import "../ApyOracle.sol";
 import "../mocks/MockDpos.sol";
 import "../stTara.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
 abstract contract ManyValidatorsTestSetup is Test {
-    Lara lara;
+    LaraHarness lara;
     ApyOracle mockApyOracle;
     MockDpos mockDpos;
     stTara stTaraToken;
@@ -39,31 +39,17 @@ abstract contract ManyValidatorsTestSetup is Test {
         mockDpos = new MockDpos{value: 12000000 ether}(validators);
 
         // check if MockDPos was initialized successfully
-        assertEq(
-            mockDpos.isValidatorRegistered(validators[0]),
-            true,
-            "MockDpos was not initialized successfully"
-        );
-        assertEq(
-            mockDpos.isValidatorRegistered(validators[1]),
-            true,
-            "MockDpos was not initialized successfully"
-        );
+        assertEq(mockDpos.isValidatorRegistered(validators[0]), true, "MockDpos was not initialized successfully");
+        assertEq(mockDpos.isValidatorRegistered(validators[1]), true, "MockDpos was not initialized successfully");
     }
 
     function setupApyOracle() public {
         address proxy = Upgrades.deployUUPSProxy(
-            "ApyOracle.sol",
-            abi.encodeCall(
-                ApyOracle.initialize,
-                (address(this), address(mockDpos))
-            )
+            "ApyOracle.sol", abi.encodeCall(ApyOracle.initialize, (address(this), address(mockDpos)))
         );
         mockApyOracle = ApyOracle(proxy);
 
-        IApyOracle.NodeData[] memory nodeData = new IApyOracle.NodeData[](
-            validators.length
-        );
+        IApyOracle.NodeData[] memory nodeData = new IApyOracle.NodeData[](validators.length);
         for (uint16 i = 0; i < validators.length; i++) {
             nodeData[i] = IApyOracle.NodeData({
                 account: validators[i],
@@ -79,67 +65,35 @@ abstract contract ManyValidatorsTestSetup is Test {
         mockApyOracle.batchUpdateNodeData(nodeData);
 
         // check if the node data was set successfully
-        assertEq(
-            mockApyOracle.getNodeCount(),
-            numValidators,
-            "Node data was not set successfully"
-        );
-        assertEq(
-            mockApyOracle.getNodeData(validators[0]).account,
-            validators[0],
-            "Node data was not set successfully"
-        );
+        assertEq(mockApyOracle.getNodeCount(), numValidators, "Node data was not set successfully");
+        assertEq(mockApyOracle.getNodeData(validators[0]).account, validators[0], "Node data was not set successfully");
     }
 
     function setupLara() public {
-        address stTaraProxy = Upgrades.deployUUPSProxy(
-            "stTara.sol",
-            abi.encodeCall(stTara.initialize, ())
-        );
+        address stTaraProxy = Upgrades.deployUUPSProxy("stTara.sol", abi.encodeCall(stTara.initialize, ()));
         stTaraToken = stTara(stTaraProxy);
         address laraProxy = Upgrades.deployUUPSProxy(
-            "Lara.sol",
+            "LaraHarness.sol",
             abi.encodeCall(
-                Lara.initialize,
-                (
-                    address(stTaraToken),
-                    address(mockDpos),
-                    address(mockApyOracle),
-                    treasuryAddress
-                )
+                LaraHarness.initializeIt,
+                (address(stTaraToken), address(mockDpos), address(mockApyOracle), treasuryAddress)
             )
         );
-        lara = Lara(payable(laraProxy));
+        lara = LaraHarness(payable(laraProxy));
         stTaraToken.setLaraAddress(address(lara));
         mockApyOracle.setLara(address(lara));
-        assertEq(
-            mockApyOracle.lara(),
-            address(lara),
-            "Lara address was not set successfully"
-        );
+        assertEq(mockApyOracle.lara(), address(lara), "Lara address was not set successfully");
     }
 
     function checkValidatorTotalStakesAreZero() public {
         for (uint256 i = 0; i < validators.length; i++) {
-            assertEq(
-                lara.protocolTotalStakeAtValidator(validators[i]),
-                0,
-                "Validator total stake should be zero"
-            );
-            uint256 total_stake = mockDpos
-                .getValidator(validators[i])
-                .total_stake;
-            assertEq(
-                total_stake,
-                0,
-                "Validator total stake should be zero in mockDpos"
-            );
+            assertEq(lara.protocolTotalStakeAtValidator(validators[i]), 0, "Validator total stake should be zero");
+            uint256 total_stake = mockDpos.getValidator(validators[i]).total_stake;
+            assertEq(total_stake, 0, "Validator total stake should be zero in mockDpos");
         }
     }
 
-    function findValidatorWithStake(
-        uint256 stake
-    ) public view returns (address) {
+    function findValidatorWithStake(uint256 stake) public view returns (address) {
         for (uint256 i = 0; i < validators.length; i++) {
             if (lara.protocolTotalStakeAtValidator(validators[i]) == stake) {
                 return validators[i];
@@ -149,9 +103,7 @@ abstract contract ManyValidatorsTestSetup is Test {
     }
 
     function batchUpdateNodeData(uint16 multiplier, bool reverse) public {
-        IApyOracle.NodeData[] memory nodeData = new IApyOracle.NodeData[](
-            validators.length
-        );
+        IApyOracle.NodeData[] memory nodeData = new IApyOracle.NodeData[](validators.length);
         if (reverse) {
             for (uint16 i = uint16(validators.length); i > 0; i--) {
                 nodeData[validators.length - i] = IApyOracle.NodeData({

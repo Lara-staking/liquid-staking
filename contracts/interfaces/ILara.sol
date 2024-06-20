@@ -25,9 +25,7 @@ interface ILara {
      * @dev Event emitted when an epoch starts
      */
     event SnapshotTaken(
-        uint256 indexed totalDelegation,
-        uint256 indexed totalRewards,
-        uint256 indexed nextSnapshotBlock
+        uint256 indexed totalDelegation, uint256 indexed totalRewards, uint256 indexed nextSnapshotBlock
     );
 
     /**
@@ -38,19 +36,12 @@ interface ILara {
     /**
      * @dev Event emitted when redelegation rewards are claimed
      */
-    event RedelegationRewardsClaimed(
-        uint256 indexed amount,
-        address indexed validator
-    );
+    event RedelegationRewardsClaimed(uint256 indexed amount, address indexed validator);
 
     /**
      * @dev Event emitted when a user undelegates
      */
-    event Undelegated(
-        address indexed user,
-        address indexed validator,
-        uint256 indexed amount
-    );
+    event Undelegated(address indexed user, address indexed validator, uint256 indexed amount);
 
     /**
      * @dev Event emitted when Tara is sent
@@ -82,9 +73,7 @@ interface ILara {
      * @param validator The address of the validator
      * @return A boolean indicating if the validator is registered
      */
-    function isValidatorRegistered(
-        address validator
-    ) external view returns (bool);
+    function isValidatorRegistered(address validator) external view returns (bool);
 
     /**
      * @dev Function to set the epoch duration
@@ -108,21 +97,13 @@ interface ILara {
      * @dev Function to set the maximum validator stake capacity
      * @param _maxValidatorStakeCapacity The new maximum validator stake capacity
      */
-    function setMaxValidatorStakeCapacity(
-        uint256 _maxValidatorStakeCapacity
-    ) external;
+    function setMaxValidatorStakeCapacity(uint256 _maxValidatorStakeCapacity) external;
 
     /**
      * @dev Function to set the minimum stake amount
      * @param _minStakeAmount The new minimum stake amount
      */
     function setMinStakeAmount(uint256 _minStakeAmount) external;
-
-    /**
-     * @dev Function to delegate a certain amount to validators
-     * @param amount The amount to delegate
-     */
-    function delegateToValidators(uint256 amount) external returns (uint256);
 
     /**
      * @dev Function for a user to stake a certain amount
@@ -148,9 +129,7 @@ interface ILara {
      * @dev Function for a user to request undelegation of a certain amount
      * @param amount The amount to undelegate
      */
-    function requestUndelegate(
-        uint256 amount
-    ) external returns (Utils.Undelegation[] memory);
+    function requestUndelegate(uint256 amount) external returns (Utils.Undelegation[] memory);
 
     /**
      * @dev Function for a user to confirm undelegation of a certain amount

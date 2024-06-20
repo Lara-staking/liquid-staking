@@ -12,11 +12,7 @@ contract DeployLaraToken is Script {
         address treasuryAddress = vm.envAddress("TREASURY_ADDRESS");
         vm.startBroadcast(deployerPrivateKey);
 
-        address laraTokenProxy = Upgrades.deployUUPSProxy(
-            "LaraToken.sol",
-            abi.encodeCall(LaraToken.initialize, (treasuryAddress))
-        );
-        LaraToken lara = LaraToken(payable(laraTokenProxy));
+        LaraToken lara = new LaraToken(treasuryAddress);
 
         // checking if ownership and contract addresses are set properly
         if (lara.owner() != deployerAddress) {
