@@ -1,24 +1,29 @@
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import { ContractNames } from "../../util/ContractNames";
 import { ApyOracle } from "../../typechain/contracts";
-import { StTARA } from "../../typechain";
+import { StTara } from "../../typechain";
 
 export async function deployApyOracle(
   dataFeedAddress: string,
   dposAddress: string
 ): Promise<ApyOracle> {
   const ApyOracle = await ethers.getContractFactory(ContractNames.apyOracle);
-  const apyOracle = await ApyOracle.deploy(dataFeedAddress, dposAddress);
+  const apyOracle = await upgrades.deployProxy(ApyOracle, [
+    dataFeedAddress,
+    dposAddress,
+  ]);
 
-  return await apyOracle.waitForDeployment();
+  return (await apyOracle.waitForDeployment()) as any as ApyOracle;
 }
 
-export async function deploystTara(owner: SignerWithAddress): Promise<StTARA> {
+export async function deploystTara(owner: SignerWithAddress): Promise<StTara> {
   const StTara = await ethers.getContractFactory(ContractNames.stTara);
-  const stTara = await StTara.connect(owner).deploy();
+  const stTara = await upgrades.deployProxy(StTara, [], {
+    initialOwner: owner.address,
+  });
 
-  return (await stTara.waitForDeployment()) as StTARA;
+  return (await stTara.waitForDeployment()) as any as StTara;
 }
 
 export async function setupApyOracle(
@@ -70,12 +75,12 @@ export async function deployLara(
   treasuryAddress: string
 ) {
   const Lara = await ethers.getContractFactory(ContractNames.lara);
-  const lara = await Lara.deploy(
+  const lara = await upgrades.deployProxy(Lara, [
     stTaraAddress,
     mockDposAddress,
     apyOracleAddress,
-    treasuryAddress
-  );
+    treasuryAddress,
+  ]);
 
   const laraDeployment = await lara.waitForDeployment();
   const oracleContract = await ethers.getContractAt(

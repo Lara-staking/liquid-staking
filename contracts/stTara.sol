@@ -2,12 +2,12 @@
 // Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
 
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {IstTara} from "./interfaces/IstTara.sol";
 import {Utils} from "./libs/Utils.sol";
 
-contract stTARA is ERC20, Ownable, IstTara {
+contract stTara is ERC20Upgradeable, OwnableUpgradeable, IstTara {
     // Thrown when the user does not have sufficient allowance set for Tara to burn
     error InsufficientUserAllowanceForBurn(
         uint256 amount,
@@ -22,7 +22,10 @@ contract stTARA is ERC20, Ownable, IstTara {
     // Address of Lara protocol
     address public lara;
 
-    constructor() ERC20("Staked TARA", "stTARA") Ownable(msg.sender) {}
+    function initialize() public initializer {
+        __ERC20_init("Staked TARA", "stTARA");
+        __Ownable_init(msg.sender);
+    }
 
     modifier onlyLara() {
         require(msg.sender == lara, "Only Lara can call this function");

@@ -1,4 +1,6 @@
 [profile.default]
+build_info = true
+extra_output = ["storageLayout"]
 solc =  "0.8.20"
 evm_version = 'berlin'
 src = 'contracts'

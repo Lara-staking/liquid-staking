@@ -6,6 +6,7 @@ import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "hardhat-contract-sizer";
 import "@nomicfoundation/hardhat-foundry";
+import "@openzeppelin/hardhat-upgrades";
 import "solidity-docgen";
 import { ethers } from "ethers";
 dotenv.config();

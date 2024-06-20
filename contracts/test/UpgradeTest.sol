@@ -11,21 +11,60 @@ import "../Lara.sol";
 import "../ApyOracle.sol";
 import "../mocks/MockDpos.sol";
 import "../stTara.sol";
+import "./LaraV2.sol";
+import "./Deployer.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
-abstract contract ManyValidatorsTestSetup is Test {
+contract UpgradeTest is Test {
     Lara lara;
     ApyOracle mockApyOracle;
     MockDpos mockDpos;
     stTara stTaraToken;
 
     address treasuryAddress = address(9999);
-    uint16 numValidators = 400;
 
-    address[] public validators = new address[](numValidators);
+    uint16 numValidators = 12;
 
-    function updateNodeData(IApyOracle.NodeData[] memory nodeData) public {
-        mockApyOracle.batchUpdateNodeData(nodeData);
+    address[] validators = new address[](numValidators);
+
+    Deployer d;
+
+    fallback() external payable {}
+
+    receive() external payable {}
+
+    function setUp() public {
+        d = new Deployer();
+    }
+
+    function testUpgradeProxy() public {
+        setupValidators();
+        setupApyOracle();
+        setupLara();
+
+        address treasury = lara.treasuryAddress();
+
+        Upgrades.upgradeProxy(
+            address(lara),
+            "LaraV2.sol",
+            abi.encodeCall(
+                LaraV2.initialize_V2,
+                (
+                    address(stTaraToken),
+                    address(mockDpos),
+                    address(mockApyOracle),
+                    treasuryAddress
+                )
+            )
+        );
+
+        LaraV2 laraV2 = LaraV2(payable(address(lara)));
+
+        assertEq(
+            laraV2.treasuryAddress(),
+            treasury,
+            "Treasury address should be the same"
+        );
     }
 
     function setupValidators() public {
@@ -61,32 +100,25 @@ abstract contract ManyValidatorsTestSetup is Test {
         );
         mockApyOracle = ApyOracle(proxy);
 
-        IApyOracle.NodeData[] memory nodeData = new IApyOracle.NodeData[](
-            validators.length
-        );
-        for (uint16 i = 0; i < validators.length; i++) {
-            nodeData[i] = IApyOracle.NodeData({
-                account: validators[i],
-                rank: i,
-                apy: i,
-                fromBlock: 1,
-                toBlock: 15000,
-                rating: 813 //meaning 8.13
-            });
-        }
-
         // setting up the two validators in the mockApyOracle
-        mockApyOracle.batchUpdateNodeData(nodeData);
+        for (uint16 i = 0; i < validators.length; i++) {
+            mockApyOracle.updateNodeData(
+                validators[i],
+                IApyOracle.NodeData({
+                    account: validators[i],
+                    rank: i,
+                    apy: i * 1000,
+                    fromBlock: 1,
+                    toBlock: 15000,
+                    rating: 813 //meaning 8.13
+                })
+            );
+        }
 
         // check if the node data was set successfully
         assertEq(
             mockApyOracle.getNodeCount(),
             numValidators,
-            "Node data was not set successfully"
-        );
-        assertEq(
-            mockApyOracle.getNodeData(validators[0]).account,
-            validators[0],
             "Node data was not set successfully"
         );
     }
@@ -117,6 +149,25 @@ abstract contract ManyValidatorsTestSetup is Test {
             address(lara),
             "Lara address was not set successfully"
         );
+    }
+
+    function setupLaraWithCommission(uint256 commission) public {
+        stTaraToken = new stTara();
+        lara = new Lara();
+        lara.initialize(
+            address(stTaraToken),
+            address(mockDpos),
+            address(mockApyOracle),
+            treasuryAddress
+        );
+        stTaraToken.setLaraAddress(address(lara));
+        mockApyOracle.setLara(address(lara));
+        assertEq(
+            mockApyOracle.lara(),
+            address(lara),
+            "Lara address was not set successfully"
+        );
+        lara.setCommission(commission);
     }
 
     function checkValidatorTotalStakesAreZero() public {
@@ -157,10 +208,10 @@ abstract contract ManyValidatorsTestSetup is Test {
                 nodeData[validators.length - i] = IApyOracle.NodeData({
                     account: validators[i - 1],
                     rank: uint16(validators.length - i),
-                    apy: 1000 + i * multiplier,
+                    apy: 1000 - i * multiplier,
                     fromBlock: 1,
                     toBlock: 15000,
-                    rating: 813 + i * multiplier //meaning 8.13
+                    rating: 813 + i * 10 * multiplier //meaning 8.13
                 });
             }
         } else {
@@ -171,7 +222,7 @@ abstract contract ManyValidatorsTestSetup is Test {
                     apy: 1000 - i * multiplier,
                     fromBlock: 1,
                     toBlock: 15000,
-                    rating: 813 + i * 10 * multiplier
+                    rating: 813 + (validators.length - i) * 10 * multiplier
                 });
             }
         }

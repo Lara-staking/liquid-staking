@@ -2,6 +2,7 @@
 pragma solidity 0.8.20;
 
 import "forge-std/Script.sol";
+import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 import "../../contracts/LaraToken.sol";
 
 contract DeployLaraToken is Script {
@@ -11,7 +12,11 @@ contract DeployLaraToken is Script {
         address treasuryAddress = vm.envAddress("TREASURY_ADDRESS");
         vm.startBroadcast(deployerPrivateKey);
 
-        LaraToken lara = new LaraToken(treasuryAddress);
+        address laraTokenProxy = Upgrades.deployUUPSProxy(
+            "LaraToken.sol",
+            abi.encodeCall(LaraToken.initialize, (treasuryAddress))
+        );
+        LaraToken lara = LaraToken(payable(laraTokenProxy));
 
         // checking if ownership and contract addresses are set properly
         if (lara.owner() != deployerAddress) {
