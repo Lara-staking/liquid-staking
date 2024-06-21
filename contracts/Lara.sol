@@ -218,7 +218,7 @@ contract Lara is Initializable, OwnableUpgradeable, ILara {
     function _delegateToValidators(uint256 amount) internal returns (uint256 remainingAmount) {
         require(address(this).balance >= amount, "Not enough balance");
         uint256 delegatedAmount = 0;
-        IApyOracle.TentativeDelegation[] memory nodesList = getValidatorsForAmount(amount);
+        IApyOracle.TentativeDelegation[] memory nodesList = _getValidatorsForAmount(amount);
         if (nodesList.length == 0) {
             revert("No nodes available for delegation");
         }
@@ -318,13 +318,13 @@ contract Lara is Initializable, OwnableUpgradeable, ILara {
         if (block.number < lastRebalance + epochDuration) {
             revert EpochDurationNotMet(lastRebalance, block.number, epochDuration);
         }
-        IApyOracle.TentativeDelegation[] memory delegationList = buildCurrentDelegationArray();
+        IApyOracle.TentativeDelegation[] memory delegationList = _buildCurrentDelegationArray();
         // Get the rebalance list from the oracle
         try apyOracle.getRebalanceList(delegationList) returns (IApyOracle.TentativeReDelegation[] memory rebalanceList)
         {
             // Go through the rebalance list and redelegate
             for (uint256 i = 0; i < rebalanceList.length; i++) {
-                reDelegate(
+                _reDelegate(
                     rebalanceList[i].from, rebalanceList[i].to, rebalanceList[i].amount, rebalanceList[i].toRating
                 );
             }
@@ -342,7 +342,7 @@ contract Lara is Initializable, OwnableUpgradeable, ILara {
      * @param to the validator to which to move stake
      * @param amount the amount to move
      */
-    function reDelegate(address from, address to, uint256 amount, uint256 rating) internal {
+    function _reDelegate(address from, address to, uint256 amount, uint256 rating) internal {
         require(protocolTotalStakeAtValidator[from] >= amount, "LARA: Amount exceeds the total stake at the validator");
         require(amount <= maxValidatorStakeCapacity, "LARA: Amount exceeds max stake of validators in protocol");
         require(
@@ -432,7 +432,7 @@ contract Lara is Initializable, OwnableUpgradeable, ILara {
                 // get the stTARA tokens and burn them
                 uint256 remainingAmount = amount;
                 uint256 undelegatedTotal = 0;
-                address[] memory validatorsWithDelegation = findValidatorsWithDelegation(amount);
+                address[] memory validatorsWithDelegation = _findValidatorsWithDelegation(amount);
                 Utils.Undelegation[] memory undelegationsList =
                     new Utils.Undelegation[](validatorsWithDelegation.length);
                 uint256 totalRewards = 0;
@@ -488,7 +488,7 @@ contract Lara is Initializable, OwnableUpgradeable, ILara {
         }
     }
 
-    function getValidatorsForAmount(uint256 amount) internal returns (IApyOracle.TentativeDelegation[] memory) {
+    function _getValidatorsForAmount(uint256 amount) internal returns (IApyOracle.TentativeDelegation[] memory) {
         try apyOracle.getNodesForDelegation(amount) returns (IApyOracle.TentativeDelegation[] memory nodesList) {
             if (nodesList.length == 0) {
                 revert("No nodes available for delegation");
@@ -504,7 +504,7 @@ contract Lara is Initializable, OwnableUpgradeable, ILara {
      * @param amount the amount to delegate
      * @return an array of validators to delegate amount of TARA to
      */
-    function findValidatorsWithDelegation(uint256 amount) internal view returns (address[] memory) {
+    function _findValidatorsWithDelegation(uint256 amount) internal view returns (address[] memory) {
         uint8 count = 0;
         uint256 stakeRequired = amount;
         for (uint256 i = 0; i < validators.length; i++) {
@@ -526,7 +526,7 @@ contract Lara is Initializable, OwnableUpgradeable, ILara {
      * @notice method to build the current delegation array
      * Collects the current delegation data from the protocol and builds an array of TentativeDelegation structs
      */
-    function buildCurrentDelegationArray() internal view returns (IApyOracle.TentativeDelegation[] memory) {
+    function _buildCurrentDelegationArray() internal view returns (IApyOracle.TentativeDelegation[] memory) {
         IApyOracle.TentativeDelegation[] memory result = new IApyOracle.TentativeDelegation[](validators.length);
         for (uint256 i = 0; i < validators.length; i++) {
             result[i] = IApyOracle.TentativeDelegation(
