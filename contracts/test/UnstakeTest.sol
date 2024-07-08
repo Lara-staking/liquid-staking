@@ -30,11 +30,7 @@ contract UnstakeTest is Test, TestSetup {
             vm.prank(staker);
             lara.stake{value: amount / 10}(amount / 10);
 
-            assertEq(
-                stTaraToken.balanceOf(staker),
-                amount / 10,
-                "Wrong stTARA balance after stake"
-            );
+            assertEq(stTaraToken.balanceOf(staker), amount / 10, "Wrong stTARA balance after stake");
         }
     }
 
@@ -44,15 +40,9 @@ contract UnstakeTest is Test, TestSetup {
             vm.startPrank(staker);
             stTaraToken.approve(address(lara), stTaraToken.balanceOf(staker));
 
-            Utils.Undelegation[] memory undelegations = lara.requestUndelegate(
-                stTaraToken.balanceOf(staker)
-            );
-            assertTrue(undelegations.length >= 1, "No undelegations");
-            assertEq(
-                stTaraToken.balanceOf(staker),
-                0,
-                "Wrong stTARA balance after requestUndelegate"
-            );
+            uint64[] memory undelegationIds = lara.requestUndelegate(stTaraToken.balanceOf(staker));
+            assertTrue(undelegationIds.length >= 1, "No undelegations");
+            assertEq(stTaraToken.balanceOf(staker), 0, "Wrong stTARA balance after requestUndelegate");
             vm.stopPrank();
         }
     }

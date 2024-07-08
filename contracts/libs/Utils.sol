@@ -9,14 +9,12 @@ library Utils {
     }
 
     struct Undelegation {
+        uint256 id;
         address validator;
         uint256 amount;
     }
 
-    function calculateSlice(
-        uint256 amount,
-        uint256 supply
-    ) internal pure returns (uint256) {
+    function calculateSlice(uint256 amount, uint256 supply) internal pure returns (uint256) {
         return (amount * 1e18) / supply; // The result is in 18 decimal format
     }
 }

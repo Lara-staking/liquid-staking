@@ -41,7 +41,7 @@ interface ILara {
     /**
      * @dev Event emitted when a user undelegates
      */
-    event Undelegated(address indexed user, address indexed validator, uint256 indexed amount);
+    event Undelegated(uint256 indexed id, address indexed user, address indexed validator, uint256 amount);
 
     /**
      * @dev Event emitted when Tara is sent
@@ -128,22 +128,21 @@ interface ILara {
     /**
      * @dev Function for a user to request undelegation of a certain amount
      * @param amount The amount to undelegate
+     * @return undelegation_ids The ids of the undelegations done
      */
-    function requestUndelegate(uint256 amount) external returns (Utils.Undelegation[] memory);
+    function requestUndelegate(uint256 amount) external returns (uint64[] memory undelegation_ids);
 
     /**
      * @dev Function for a user to confirm undelegation of a certain amount
-     * @param validator The address of the validator
-     * @param amount The amount to undelegate
+     * @param id The id of the undelegation
      */
-    function confirmUndelegate(address validator, uint256 amount) external;
+    function confirmUndelegate(uint64 id) external;
 
     /**
      * @dev Function for a user to cancel undelegation of a certain amount
-     * @param validator The address of the validator
-     * @param amount The amount to undelegate
+     * @param id The id of the undelegation
      */
-    function cancelUndelegate(address validator, uint256 amount) external;
+    function cancelUndelegate(uint64 id) external;
 
     // /**
     //  * @dev Function to start an epoch

@@ -20,7 +20,8 @@ import {
     UndelegationFailed,
     RedelegationFailed,
     ConfirmUndelegationFailed,
-    CancelUndelegationFailed
+    CancelUndelegationFailed,
+    UndelegationNotFound
 } from "./libs/SharedErrors.sol";
 
 import {Utils} from "./libs/Utils.sol";
@@ -75,6 +76,9 @@ contract Lara is Initializable, OwnableUpgradeable, ILara {
 
     // Mapping of the undelegated amount of a user
     mapping(address => uint256) public undelegated;
+
+    // Mapping of individual undelegations by user
+    mapping(address => mapping(uint64 => DposInterface.UndelegationV2Data)) public undelegations;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -373,23 +377,27 @@ contract Lara is Initializable, OwnableUpgradeable, ILara {
     /**
      * Confirm undelegate method to confirm the undelegation of a user from a certain validator.
      * Will fail if called before the undelegation period is over.
-     * @param validator the validator from which to undelegate
-     * @param amount the amount to undelegate
+     * @param id the id of the undelegation
      * @notice msg.sender is the delegator
      */
-    function confirmUndelegate(address validator, uint256 amount) public {
-        require(undelegated[msg.sender] >= amount, "LARA: Msg.sender has not undelegated the amount");
+    function confirmUndelegate(uint64 id) public {
+        if (undelegations[msg.sender][id].undelegation_id == 0) {
+            revert UndelegationNotFound(msg.sender, id);
+        }
+
+        address validator = undelegations[msg.sender][id].undelegation_data.validator;
         uint256 balanceBefore = address(this).balance;
         (bool success, bytes memory data) =
-            address(dposContract).call(abi.encodeWithSignature("confirmUndelegate(address)", validator));
+            address(dposContract).call(abi.encodeWithSignature("confirmUndelegateV2(address,uint256)", validator, id));
         if (!success) {
-            revert ConfirmUndelegationFailed(msg.sender, validator, amount, abi.decode(data, (string)));
+            revert ConfirmUndelegationFailed(msg.sender, validator, id, abi.decode(data, (string)));
         }
-        undelegated[msg.sender] -= amount;
         uint256 balanceAfter = address(this).balance;
         if (balanceAfter - balanceBefore == 0) {
             return;
         } else {}
+        undelegated[msg.sender] -= undelegations[msg.sender][id].undelegation_data.stake;
+        delete undelegations[msg.sender][id];
         // we need to send the rewards to the user
         (bool s,) = msg.sender.call{value: balanceAfter - balanceBefore}("");
         if (!s) revert("LARA: Failed to send undelegation to user");
@@ -399,19 +407,23 @@ contract Lara is Initializable, OwnableUpgradeable, ILara {
     /**
      * Cancel undelegate method to cancel the undelegation of a user from a certain validator.
      * The undelegated value will be returned to the origin validator.
-     * @param validator the validator from which to undelegate
-     * @param amount the amount to undelegate
+     * @param id the id of the undelegation
      */
-    function cancelUndelegate(address validator, uint256 amount) public {
-        require(undelegated[msg.sender] >= amount, "LARA: Msg.sender has not undelegated the amount");
+    function cancelUndelegate(uint64 id) public {
+        if (undelegations[msg.sender][id].undelegation_id == 0) {
+            revert UndelegationNotFound(msg.sender, id);
+        }
+        uint256 amount = undelegations[msg.sender][id].undelegation_data.stake;
+        address validator = undelegations[msg.sender][id].undelegation_data.validator;
         (bool success, bytes memory data) =
-            address(dposContract).call(abi.encodeWithSignature("cancelUndelegate(address)", validator));
+            address(dposContract).call(abi.encodeWithSignature("cancelUndelegateV2(address,uint256)", validator, id));
         if (!success) {
-            revert CancelUndelegationFailed(msg.sender, validator, amount, abi.decode(data, (string)));
+            revert CancelUndelegationFailed(msg.sender, validator, id, abi.decode(data, (string)));
         }
         try stTaraToken.mint(msg.sender, amount) {
-            undelegated[msg.sender] -= amount;
             protocolTotalStakeAtValidator[validator] += amount;
+            undelegated[msg.sender] -= amount;
+            delete undelegations[msg.sender][id];
         } catch Error(string memory reason) {
             revert(reason);
         }
@@ -422,8 +434,9 @@ contract Lara is Initializable, OwnableUpgradeable, ILara {
      * The user needs to provide the amount of stTARA tokens he wants to undelegate. The protocol will burn them.
      * @notice reverts on missing approval for the amount.
      * @param amount the amount of tokens to undelegate
+     * @return undelegation_ids The ids of the undelegations done
      */
-    function requestUndelegate(uint256 amount) public returns (Utils.Undelegation[] memory undelegations) {
+    function requestUndelegate(uint256 amount) public returns (uint64[] memory undelegation_ids) {
         require(stTaraToken.allowance(msg.sender, address(this)) >= amount, "Amount not approved for unstaking");
         // register the undelegation request
         try stTaraToken.transferFrom(msg.sender, address(this), amount) {
@@ -433,8 +446,7 @@ contract Lara is Initializable, OwnableUpgradeable, ILara {
                 uint256 remainingAmount = amount;
                 uint256 undelegatedTotal = 0;
                 address[] memory validatorsWithDelegation = _findValidatorsWithDelegation(amount);
-                Utils.Undelegation[] memory undelegationsList =
-                    new Utils.Undelegation[](validatorsWithDelegation.length);
+                uint64[] memory undelegation_ids = new uint64[](validatorsWithDelegation.length);
                 uint256 totalRewards = 0;
                 for (uint16 i = 0; i < validatorsWithDelegation.length; i++) {
                     uint256 toUndelegate = 0;
@@ -448,15 +460,11 @@ contract Lara is Initializable, OwnableUpgradeable, ILara {
                         toUndelegate = remainingAmount;
                     }
                     uint256 balanceBefore = address(this).balance;
-                    (bool success, bytes memory data) = address(dposContract).call(
-                        abi.encodeWithSignature(
-                            "undelegate(address,uint256)", validatorsWithDelegation[i], toUndelegate
-                        )
-                    );
-                    if (!success) {
-                        revert UndelegationFailed(
-                            validatorsWithDelegation[i], msg.sender, toUndelegate, abi.decode(data, (string))
-                        );
+                    uint64 undelegationId;
+                    try dposContract.undelegateV2(validatorsWithDelegation[i], toUndelegate) returns (uint64 id) {
+                        undelegationId = id;
+                    } catch {
+                        revert UndelegationFailed(validatorsWithDelegation[i], msg.sender, toUndelegate);
                     }
                     undelegatedTotal += toUndelegate;
                     remainingAmount -= toUndelegate;
@@ -466,8 +474,10 @@ contract Lara is Initializable, OwnableUpgradeable, ILara {
                     if (protocolTotalStakeAtValidator[validatorsWithDelegation[i]] == 0) {
                         protocolValidatorRatingAtDelegation[validatorsWithDelegation[i]] = 0;
                     }
-                    undelegationsList[i] = Utils.Undelegation(validatorsWithDelegation[i], toUndelegate);
-                    emit Undelegated(msg.sender, validatorsWithDelegation[i], toUndelegate);
+                    undelegations[msg.sender][undelegationId] =
+                        dposContract.getUndelegationV2(address(this), validatorsWithDelegation[i], undelegationId);
+                    undelegation_ids[i] = undelegationId;
+                    emit Undelegated(undelegationId, msg.sender, validatorsWithDelegation[i], toUndelegate);
                     if (undelegatedTotal == amount) break;
                 }
                 require(undelegatedTotal == amount, "Cannot undelegate full amount");
@@ -479,7 +489,6 @@ contract Lara is Initializable, OwnableUpgradeable, ILara {
                     }
                     emit TaraSent(msg.sender, totalRewards);
                 }
-                return undelegationsList;
             } catch Error(string memory reason) {
                 revert(reason);
             }
