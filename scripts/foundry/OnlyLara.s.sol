@@ -3,9 +3,9 @@ pragma solidity 0.8.20;
 
 import "forge-std/Script.sol";
 import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
-import "../../contracts/interfaces/IstTara.sol";
-import "../../contracts/Lara.sol";
-import "../../contracts/ApyOracle.sol";
+import {IstTara} from "../../contracts/interfaces/IstTara.sol";
+import {Lara} from "../../contracts/Lara.sol";
+import {ApyOracle} from "../../contracts/ApyOracle.sol";
 
 contract DeployLara is Script {
     function run() external {
@@ -18,11 +18,7 @@ contract DeployLara is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         address laraProxy = Upgrades.deployUUPSProxy(
-            "Lara.sol",
-            abi.encodeCall(
-                Lara.initialize,
-                (stTaraAddress, dposAddress, oracleAddress, treasuryAddress)
-            )
+            "Lara.sol", abi.encodeCall(Lara.initialize, (stTaraAddress, dposAddress, oracleAddress, treasuryAddress))
         );
         Lara lara = Lara(payable(laraProxy));
         IstTara stTara = IstTara(stTaraAddress);
