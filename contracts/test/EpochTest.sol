@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import "forge-std/Test.sol";
-import "forge-std/console.sol";
-import "../interfaces/IApyOracle.sol";
-import "../Lara.sol";
-import "../ApyOracle.sol";
-import "../mocks/MockDpos.sol";
-import "../stTara.sol";
-import "./SetUpTest.sol";
+import {Test} from "forge-std/Test.sol";
+import {console} from "forge-std/console.sol";
+import {IApyOracle} from "../interfaces/IApyOracle.sol";
+import {Lara} from "../Lara.sol";
+import {ApyOracle} from "../ApyOracle.sol";
+import {MockDpos} from "../mocks/MockDpos.sol";
+import {stTara} from "../stakedTara.sol";
+import {TestSetup} from "./SetUpTest.sol";
+import {Utils} from "../libs/Utils.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
 contract EpochTest is Test, TestSetup {
@@ -36,16 +37,10 @@ contract EpochTest is Test, TestSetup {
         for (uint32 i = 0; i < stakers.length; i++) {
             vm.prank(stakers[i]);
             lara.stake{value: 50000 ether}(50000 ether);
-            assertEq(
-                stTaraToken.balanceOf(stakers[i]),
-                50000 ether,
-                "Wrong stTARA value for staker"
-            );
+            assertEq(stTaraToken.balanceOf(stakers[i]), 50000 ether, "Wrong stTARA value for staker");
         }
         assertEq(
-            mockDpos.getTotalDelegation(address(lara)),
-            50000 ether * stakers.length,
-            "MockDPOS: Wrong total stake"
+            mockDpos.getTotalDelegation(address(lara)), 50000 ether * stakers.length, "MockDPOS: Wrong total stake"
         );
     }
 
@@ -62,8 +57,7 @@ contract EpochTest is Test, TestSetup {
                 balancesBefore[i] = stTaraToken.balanceOf(stakers[i]);
             }
             uint256 totalSupplyBefore = stTaraToken.totalSupply();
-            uint256 treasuryBalanceBefore = address(lara.treasuryAddress())
-                .balance;
+            uint256 treasuryBalanceBefore = address(lara.treasuryAddress()).balance;
             assertEq(
                 treasuryBalanceBefore,
                 lastTreasuryBalance + lastEpochCommission,
@@ -77,16 +71,10 @@ contract EpochTest is Test, TestSetup {
 
             uint256 expectedEpochReward = 100 ether + (totalDelegated / 100);
             emit ExpectedReward(expectedEpochReward);
-            uint256 lastEpochExpectedCommission = (expectedEpochReward *
-                lara.commission()) / 100;
-            uint256 expectedDelegatorRewards = expectedEpochReward -
-                lastEpochExpectedCommission;
+            uint256 lastEpochExpectedCommission = (expectedEpochReward * lara.commission()) / 100;
+            uint256 expectedDelegatorRewards = expectedEpochReward - lastEpochExpectedCommission;
             totalDelegated += expectedDelegatorRewards;
-            assertEq(
-                lara.totalDelegated(),
-                totalDelegated,
-                "Wrong delegated protocol value after snapshot"
-            );
+            assertEq(lara.totalDelegated(), totalDelegated, "Wrong delegated protocol value after snapshot");
             assertEq(
                 mockDpos.getTotalDelegation(address(lara)),
                 totalDelegated,
@@ -97,24 +85,13 @@ contract EpochTest is Test, TestSetup {
                 lastTreasuryBalance + lastEpochExpectedCommission,
                 "Wrong treasury balance"
             );
-            assertEq(
-                address(lara).balance,
-                0,
-                "Wrong total Lara balance after snapshot"
-            );
+            assertEq(address(lara).balance, 0, "Wrong total Lara balance after snapshot");
             for (uint32 i = 0; i < stakers.length; i++) {
-                uint256 slice = Utils.calculateSlice(
-                    balancesBefore[i],
-                    totalSupplyBefore
-                );
+                uint256 slice = Utils.calculateSlice(balancesBefore[i], totalSupplyBefore);
                 uint256 currentBalance = stTaraToken.balanceOf(stakers[i]);
-                uint256 expectedReward = (expectedDelegatorRewards * slice) /
-                    100 /
-                    1e18;
+                uint256 expectedReward = (expectedDelegatorRewards * slice) / 100 / 1e18;
                 assertEq(
-                    currentBalance,
-                    expectedReward + balancesBefore[i],
-                    "Wrong stTara value for user after epoch end"
+                    currentBalance, expectedReward + balancesBefore[i], "Wrong stTara value for user after epoch end"
                 );
             }
             lastEpochTotalRewards = expectedDelegatorRewards;

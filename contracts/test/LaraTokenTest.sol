@@ -2,8 +2,8 @@
 // Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
 
-import "forge-std/Test.sol";
-import "forge-std/console.sol";
+import {Test} from "forge-std/Test.sol";
+import {console} from "forge-std/console.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {LaraToken} from "../LaraToken.sol";
 

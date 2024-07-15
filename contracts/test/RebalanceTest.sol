@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import "forge-std/Test.sol";
-import "forge-std/console.sol";
-import "../interfaces/IApyOracle.sol";
-import "../Lara.sol";
-import "../ApyOracle.sol";
-import "../mocks/MockDpos.sol";
-import "../stTara.sol";
-import "./SetUpTest.sol";
+import {Test} from "forge-std/Test.sol";
+import {console} from "forge-std/console.sol";
+import {IApyOracle} from "../interfaces/IApyOracle.sol";
+import {Lara} from "../Lara.sol";
+import {ApyOracle} from "../ApyOracle.sol";
+import {MockDpos} from "../mocks/MockDpos.sol";
+import {stTara} from "../stakedTara.sol";
+import {TestSetup} from "./SetUpTest.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
 contract RebalanceTest is Test, TestSetup {
@@ -29,18 +29,10 @@ contract RebalanceTest is Test, TestSetup {
         uint256 dposBalanceAfter = address(mockDpos).balance;
 
         // Check the stTara balance before
-        assertEq(
-            stTaraToken.balanceOf(address(this)),
-            amount,
-            "Wrong starting balance"
-        );
+        assertEq(stTaraToken.balanceOf(address(this)), amount, "Wrong starting balance");
 
         // Check the dpos balance
-        assertEq(
-            dposBalanceAfter - dposBalanceBefore,
-            amount,
-            "Wrong dpos balance"
-        );
+        assertEq(dposBalanceAfter - dposBalanceBefore, amount, "Wrong dpos balance");
 
         // Check the delegated amount
         assertEq(lara.totalDelegated(), amount, "Wrong staked amount");
@@ -55,9 +47,7 @@ contract RebalanceTest is Test, TestSetup {
     }
 
     // ReDelegate from
-    function testFuzz_testRedelegateStakeToSingleValidator(
-        uint256 amount
-    ) public {
+    function testFuzz_testRedelegateStakeToSingleValidator(uint256 amount) public {
         vm.assume(amount < 80000000 ether);
         stake(amount);
         // re-delegate the total stake from one validator to another
@@ -68,25 +58,15 @@ contract RebalanceTest is Test, TestSetup {
         lara.rebalance();
 
         // check that the stake value didn't change
-        assertEq(
-            lara.totalDelegated(),
-            totalDelgatedbefore,
-            "ReDelegate: Wrong delegated amount"
-        );
+        assertEq(lara.totalDelegated(), totalDelgatedbefore, "ReDelegate: Wrong delegated amount");
 
         assertEq(lara.protocolTotalStakeAtValidator(validator1), amount);
 
         // check the DPOS mock's validator stake
-        assertEq(
-            mockDpos.getValidator(validator1).total_stake,
-            amount,
-            "Wrong validator stake"
-        );
+        assertEq(mockDpos.getValidator(validator1).total_stake, amount, "Wrong validator stake");
     }
 
-    function testFuzz_testRedelegateStakeToMultipleValidators(
-        uint256 amount
-    ) public {
+    function testFuzz_testRedelegateStakeToMultipleValidators(uint256 amount) public {
         vm.assume(amount > 80000000 ether);
         vm.assume(amount < 800000000 ether);
         stake(amount);
@@ -99,35 +79,21 @@ contract RebalanceTest is Test, TestSetup {
         address firstInOracleNodesListAfter = mockApyOracle.nodesList(0);
 
         assertNotEq(
-            firstInOracleNodesList,
-            firstInOracleNodesListAfter,
-            "First node in oracle nodes list should have changed"
+            firstInOracleNodesList, firstInOracleNodesListAfter, "First node in oracle nodes list should have changed"
         );
 
-        uint256 protocolStakeAtCurrentFirst = lara
-            .protocolTotalStakeAtValidator(firstInOracleNodesList);
+        uint256 protocolStakeAtCurrentFirst = lara.protocolTotalStakeAtValidator(firstInOracleNodesList);
 
-        uint256 protocolStakeAtNextFirstBefore = lara
-            .protocolTotalStakeAtValidator(firstInOracleNodesListAfter);
+        uint256 protocolStakeAtNextFirstBefore = lara.protocolTotalStakeAtValidator(firstInOracleNodesListAfter);
 
-        assertGt(
-            protocolStakeAtCurrentFirst,
-            0,
-            "Protocol stake at first node should be bigger than zero"
-        );
+        assertGt(protocolStakeAtCurrentFirst, 0, "Protocol stake at first node should be bigger than zero");
 
-        assertEq(
-            protocolStakeAtNextFirstBefore,
-            0,
-            "Protocol stake at first node should still be zero"
-        );
+        assertEq(protocolStakeAtNextFirstBefore, 0, "Protocol stake at first node should still be zero");
 
         lara.rebalance();
 
         assertEq(
-            lara.protocolTotalStakeAtValidator(firstInOracleNodesList),
-            0,
-            "Wrong total stake at initial validator"
+            lara.protocolTotalStakeAtValidator(firstInOracleNodesList), 0, "Wrong total stake at initial validator"
         );
         assertEq(
             lara.protocolTotalStakeAtValidator(firstInOracleNodesListAfter),
@@ -149,9 +115,7 @@ contract RebalanceTest is Test, TestSetup {
         );
     }
 
-    function testFuzz_testDoNotRedelegateStakeToMultipleValidators(
-        uint256 amount
-    ) public {
+    function testFuzz_testDoNotRedelegateStakeToMultipleValidators(uint256 amount) public {
         vm.assume(amount > 80000000 ether);
         vm.assume(amount < 800000000 ether);
         stake(amount);
@@ -169,11 +133,9 @@ contract RebalanceTest is Test, TestSetup {
             "First node in oracle nodes list should not have changed"
         );
 
-        uint256 protocolStakeAtCurrentFirst = lara
-            .protocolTotalStakeAtValidator(firstInOracleNodesList);
+        uint256 protocolStakeAtCurrentFirst = lara.protocolTotalStakeAtValidator(firstInOracleNodesList);
 
-        uint256 protocolStakeAtNextFirstBefore = lara
-            .protocolTotalStakeAtValidator(firstInOracleNodesListAfter);
+        uint256 protocolStakeAtNextFirstBefore = lara.protocolTotalStakeAtValidator(firstInOracleNodesListAfter);
 
         assertEq(
             protocolStakeAtCurrentFirst,

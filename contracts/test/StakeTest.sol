@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import "forge-std/Test.sol";
-import "forge-std/console.sol";
-import "../interfaces/IApyOracle.sol";
-import "../Lara.sol";
-import "../ApyOracle.sol";
-import "../mocks/MockDpos.sol";
-import "../stTara.sol";
-import "./SetUpTest.sol";
+import {Test} from "forge-std/Test.sol";
+import {console} from "forge-std/console.sol";
+import {IApyOracle} from "../interfaces/IApyOracle.sol";
+import {Lara} from "../Lara.sol";
+import {ApyOracle} from "../ApyOracle.sol";
+import {MockDpos} from "../mocks/MockDpos.sol";
+import {stTara} from "../stakedTara.sol";
+import {TestSetup} from "./SetUpTest.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 import {Utils} from "../libs/Utils.sol";
 
@@ -118,7 +118,7 @@ contract StakeTest is Test, TestSetup {
 
     function test_Revert_On_StakeAmountTooLow() public {
         // Call the function with an amount less than the minimum stake amount
-        vm.expectRevert(StakeAmountTooLow.selector);
+        vm.expectRevert(abi.encodeWithSelector(StakeAmountTooLow.selector, 500 ether, lara.minStakeAmount()));
         lara.stake{value: 500 ether}(500 ether);
     }
 
@@ -130,7 +130,7 @@ contract StakeTest is Test, TestSetup {
 
     function test_Revert_On_UnstakeAmountNotApproved() public {
         // Call the function with an amount greater than the staked amount
-        vm.expectRevert("revert: Amount not approved for unstaking");
+        vm.expectRevert("Amount not approved for unstaking");
         lara.requestUndelegate(6000000 ether);
     }
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import "./MockIDPOS.sol";
+import {MockIDPOS} from "./MockIDPOS.sol";
 
 contract MockDpos is MockIDPOS {
     struct Undelegation {
@@ -124,7 +124,7 @@ contract MockDpos is MockIDPOS {
         emit ValidatorRegistered(validator);
     }
 
-    function undelegate(address validator, uint256 amount) external override returns (uint256 id) {
+    function undelegateV2(address validator, uint256 amount) external override returns (uint256 id) {
         require(validators[validator].account != address(0), "Validator doesn't exist");
         uint256 totalStake = validators[validator].info.total_stake;
         if (totalStake < amount) {
@@ -141,12 +141,13 @@ contract MockDpos is MockIDPOS {
             amount: amount,
             blockNumberClaimable: block.number + UNDELEGATION_DELAY_BLOCKS
         });
+        id = undelegationId;
         ++undelegationId;
         totalDelegations[msg.sender] -= amount;
         // simulate rewards
         payable(msg.sender).transfer(333 ether);
-        emit Undelegated(undelegationId, msg.sender, validator, amount);
-        return undelegationId;
+        emit Undelegated(id, msg.sender, validator, amount);
+        return id;
     }
 
     event DelegationRewards(uint256 totalStakes, uint256 totalRewards);
@@ -219,5 +220,6 @@ contract MockDpos is MockIDPOS {
         MockIDPOS.UndelegationData memory undData =
             MockIDPOS.UndelegationData(und.amount, uint64(block.number), validator, true);
         undelegation_v2 = MockIDPOS.UndelegationV2Data(undData, uint64(und.id));
+        return undelegation_v2;
     }
 }

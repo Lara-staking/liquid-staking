@@ -102,7 +102,7 @@ interface MockIDPOS {
     function getValidator(address validator) external view returns (ValidatorBasicInfo memory validator_info);
 
     // Undelegates <amount> of tokens from specified validator - creates undelegate request
-    function undelegate(address validator, uint256 amount) external returns (uint256 id);
+    function undelegateV2(address validator, uint256 amount) external returns (uint256 id);
 
     function getValidators(uint32 batch) external view returns (ValidatorData[] memory validators, bool end);
 

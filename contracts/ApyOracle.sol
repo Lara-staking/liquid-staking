@@ -2,9 +2,9 @@
 // Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "./interfaces/IApyOracle.sol";
-import "./interfaces/IDPOS.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {IApyOracle} from "./interfaces/IApyOracle.sol";
+import {DposInterface} from "./interfaces/IDPOS.sol";
 
 /**
  * @title ApyOracle

@@ -4,7 +4,7 @@ pragma solidity 0.8.20;
 
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {IstTara} from "./interfaces/IstTara.sol";
 import {ILara} from "./interfaces/ILara.sol";
 import {DposInterface} from "./interfaces/IDPOS.sol";
@@ -489,6 +489,7 @@ contract Lara is Initializable, OwnableUpgradeable, ILara {
                     }
                     emit TaraSent(msg.sender, totalRewards);
                 }
+                return undelegation_ids;
             } catch Error(string memory reason) {
                 revert(reason);
             }

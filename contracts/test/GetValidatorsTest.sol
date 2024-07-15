@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import "forge-std/Test.sol";
-import "forge-std/console.sol";
-import "../interfaces/IApyOracle.sol";
-import "../Lara.sol";
-import "../ApyOracle.sol";
-import "../mocks/MockDpos.sol";
-import "../stTara.sol";
-import "./SetUpTestLotsOfValidators.sol";
+import {Test} from "forge-std/Test.sol";
+import {console} from "forge-std/console.sol";
+import {IApyOracle} from "../interfaces/IApyOracle.sol";
+import {Lara} from "../Lara.sol";
+import {ApyOracle} from "../ApyOracle.sol";
+import {MockDpos} from "../mocks/MockDpos.sol";
+import {stTara} from "../stakedTara.sol";
+import {ManyValidatorsTestSetup} from "./SetUpTestLotsOfValidators.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
 contract GetValidatorsTest is Test, ManyValidatorsTestSetup {
@@ -34,10 +34,7 @@ contract GetValidatorsTest is Test, ManyValidatorsTestSetup {
         emit LaraAddress(laraAddress);
         vm.prank(address(laraAddress));
         // call the function
-        IApyOracle.TentativeDelegation[]
-            memory tentativeDelegations = mockApyOracle.getNodesForDelegation(
-                amount
-            );
+        IApyOracle.TentativeDelegation[] memory tentativeDelegations = mockApyOracle.getNodesForDelegation(amount);
 
         // check the length of the array
         assertEq(tentativeDelegations.length, 1, "Wrong length of array");
@@ -49,10 +46,7 @@ contract GetValidatorsTest is Test, ManyValidatorsTestSetup {
     function testFuzz_GetLotsOfNodesForDelegation(uint256 amount) public {
         // call the function
         vm.prank(address(lara));
-        IApyOracle.TentativeDelegation[]
-            memory tentativeDelegations = mockApyOracle.getNodesForDelegation(
-                amount
-            );
+        IApyOracle.TentativeDelegation[] memory tentativeDelegations = mockApyOracle.getNodesForDelegation(amount);
 
         // check the length of the array
         uint256 validatorsLength = 0;
@@ -63,10 +57,6 @@ contract GetValidatorsTest is Test, ManyValidatorsTestSetup {
         } else {
             validatorsLength = amount / 80000000 ether + 1;
         }
-        assertEq(
-            tentativeDelegations.length,
-            validatorsLength,
-            "Wrong length of array"
-        );
+        assertEq(tentativeDelegations.length, validatorsLength, "Wrong length of array");
     }
 }

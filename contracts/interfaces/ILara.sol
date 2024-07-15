@@ -2,9 +2,8 @@
 // Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
 
-import "./IApyOracle.sol";
-
-import "../libs/Utils.sol";
+import {IApyOracle} from "./IApyOracle.sol";
+import {Utils} from "../libs/Utils.sol";
 
 /**
  * @title ILara
