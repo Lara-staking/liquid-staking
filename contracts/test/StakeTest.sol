@@ -7,7 +7,7 @@ import {IApyOracle} from "../interfaces/IApyOracle.sol";
 import {Lara} from "../Lara.sol";
 import {ApyOracle} from "../ApyOracle.sol";
 import {MockDpos} from "../mocks/MockDpos.sol";
-import {stTara} from "../stakedTara.sol";
+import {StakedTara} from "../StakedTara.sol";
 import {TestSetup} from "./SetUpTest.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 import {Utils} from "../libs/Utils.sol";

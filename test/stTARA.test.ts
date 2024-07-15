@@ -5,10 +5,10 @@ import { ErrorsNames } from "./util/ErrorsNames";
 import { deploystTara } from "./util/ContractsUtils";
 import { ContractNames } from "../util/ContractNames";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
-import { StTARA } from "../typechain";
+import { StakedTara } from "../typechain";
 
 describe(ContractNames.stTara, () => {
-  let stTara: StTARA;
+  let stTara: StakedTara;
   let initialMinDepositAmount: bigint;
   let minter: SignerWithAddress;
   let burner: SignerWithAddress;

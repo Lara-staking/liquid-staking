@@ -10,14 +10,14 @@ import {IApyOracle} from "../interfaces/IApyOracle.sol";
 import {LaraHarness} from "./utils/LaraHarness.sol";
 import {ApyOracle} from "../ApyOracle.sol";
 import {MockDpos} from "../mocks/MockDpos.sol";
-import {stTara} from "../stakedTara.sol";
+import {StakedTara} from "../StakedTara.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
 abstract contract TestSetup is Test {
     LaraHarness lara;
     ApyOracle mockApyOracle;
     MockDpos mockDpos;
-    stTara stTaraToken;
+    StakedTara stTaraToken;
 
     address treasuryAddress = address(9999);
 
@@ -70,8 +70,8 @@ abstract contract TestSetup is Test {
     }
 
     function setupLara() public {
-        address stTaraProxy = Upgrades.deployUUPSProxy("stTara.sol", abi.encodeCall(stTara.initialize, ()));
-        stTaraToken = stTara(stTaraProxy);
+        address stTaraProxy = Upgrades.deployUUPSProxy("StakedTara.sol", abi.encodeCall(StakedTara.initialize, ()));
+        stTaraToken = StakedTara(stTaraProxy);
         address laraProxy = Upgrades.deployUUPSProxy(
             "LaraHarness.sol",
             abi.encodeCall(
@@ -86,8 +86,8 @@ abstract contract TestSetup is Test {
     }
 
     function setupLaraWithCommission(uint256 commission) public {
-        address stTaraProxy = Upgrades.deployUUPSProxy("stTara.sol", abi.encodeCall(stTara.initialize, ()));
-        stTaraToken = stTara(stTaraProxy);
+        address stTaraProxy = Upgrades.deployUUPSProxy("StakedTara.sol", abi.encodeCall(StakedTara.initialize, ()));
+        stTaraToken = StakedTara(stTaraProxy);
         address laraProxy = Upgrades.deployUUPSProxy(
             "LaraHarness.sol",
             abi.encodeCall(

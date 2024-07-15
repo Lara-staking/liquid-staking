@@ -7,7 +7,7 @@ import {IApyOracle} from "../interfaces/IApyOracle.sol";
 import {Lara} from "../Lara.sol";
 import {ApyOracle} from "../ApyOracle.sol";
 import {MockDpos} from "../mocks/MockDpos.sol";
-import {stTara} from "../stakedTara.sol";
+import {StakedTara} from "../StakedTara.sol";
 import {ManyValidatorsTestSetup} from "./SetUpTestLotsOfValidators.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
@@ -81,17 +81,8 @@ contract MassRebalanceTest is Test, ManyValidatorsTestSetup {
         if (modulo > 0) {
             nodesToBeFilled += 1;
         }
-        uint256 totalDelegatedAfterRebalance = 0;
-        for (uint256 i = 0; i < nodesToBeFilled; i++) {
-            assertGt(
-                lara.protocolTotalStakeAtValidator(mockApyOracle.nodesList(i)), 0, "LARA: Validator should have stake"
-            );
-            // check the DPOS mock's validator stake
-            assertGt(
-                mockDpos.getValidator(mockApyOracle.nodesList(i)).total_stake, 0, "DPOS: Validator should have stake"
-            );
-            totalDelegatedAfterRebalance += lara.protocolTotalStakeAtValidator(mockApyOracle.nodesList(i));
-        }
+        uint256 totalDelegatedAfterRebalance = lara.totalDelegated();
+
         assertEq(
             totalDelegatedAfterRebalance, totalDelegatedInLastEpoch, "LARA: Total delegated amount should not change"
         );

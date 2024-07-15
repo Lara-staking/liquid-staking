@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 import { ContractNames } from "../util/ContractNames";
-import { ApyOracle, Lara, MockDpos, StTARA } from "../typechain";
+import { ApyOracle, Lara, MockDpos, StakedTara } from "../typechain";
 import {
   deployApyOracle,
   deployLara,
@@ -16,7 +16,7 @@ import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 describe(ContractNames.lara, function () {
   let mockDpos: MockDpos;
   let apyOracle: ApyOracle;
-  let stTara: StTARA;
+  let stTara: StakedTara;
   let lara: Lara;
   let dataFeed: SignerWithAddress;
   let v1: SignerWithAddress;

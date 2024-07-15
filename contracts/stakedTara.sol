@@ -7,7 +7,7 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {IstTara} from "./interfaces/IstTara.sol";
 import {Utils} from "./libs/Utils.sol";
 
-contract stTara is ERC20Upgradeable, OwnableUpgradeable, IstTara {
+contract StakedTara is ERC20Upgradeable, OwnableUpgradeable, IstTara {
     // Thrown when the user does not have sufficient allowance set for Tara to burn
     error InsufficientUserAllowanceForBurn(uint256 amount, uint256 senderBalance, uint256 protocolBalance);
 
