@@ -186,7 +186,7 @@ describe(ContractNames.lara, function () {
         );
         await expect(stakeTx3).to.changeEtherBalance(
           staker,
-          amountToStake * toBigInt(-1) - totalGasUsed
+          amountToStake * toBigInt(-1) - BigInt(totalGasUsed)
         );
       }
     });
@@ -219,7 +219,7 @@ describe(ContractNames.lara, function () {
         await expect(stakeTx4).to.changeEtherBalance(
           staker,
           (amountToStake - toBigInt(surplusAmount)) * toBigInt(-1) -
-            totalGasUsed
+            BigInt(totalGasUsed)
         );
       }
     });

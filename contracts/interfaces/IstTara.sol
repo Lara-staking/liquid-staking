@@ -2,8 +2,8 @@
 // Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../libs/Utils.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Utils} from "../libs/Utils.sol";
 
 /**
  * @title IstTara

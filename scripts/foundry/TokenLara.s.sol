@@ -3,7 +3,7 @@ pragma solidity 0.8.20;
 
 import "forge-std/Script.sol";
 import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
-import "../../contracts/LaraToken.sol";
+import {LaraToken} from "../../contracts/LaraToken.sol";
 
 contract DeployLaraToken is Script {
     function run() external {

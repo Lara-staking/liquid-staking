@@ -3,9 +3,9 @@ pragma solidity 0.8.20;
 
 import "forge-std/Script.sol";
 import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
-import "../../contracts/stTara.sol";
-import "../../contracts/Lara.sol";
-import "../../contracts/ApyOracle.sol";
+import {stTara} from "../../contracts/stakedTara.sol";
+import {Lara} from "../../contracts/Lara.sol";
+import {ApyOracle} from "../../contracts/ApyOracle.sol";
 
 contract DeployLara is Script {
     function run() external {
@@ -15,27 +15,15 @@ contract DeployLara is Script {
         address treasuryAddress = vm.envAddress("TREASURY_ADDRESS");
         vm.startBroadcast(deployerPrivateKey);
 
-        address stTaraProxy = Upgrades.deployUUPSProxy(
-            "stTara.sol",
-            abi.encodeCall(stTara.initialize, ())
-        );
+        address stTaraProxy = Upgrades.deployUUPSProxy("stTara.sol", abi.encodeCall(stTara.initialize, ()));
         stTara stTaraInstance = stTara(stTaraProxy);
         address oracleProxy = Upgrades.deployUUPSProxy(
-            "ApyOracle.sol",
-            abi.encodeCall(ApyOracle.initialize, (deployerAddress, dposAddress))
+            "ApyOracle.sol", abi.encodeCall(ApyOracle.initialize, (deployerAddress, dposAddress))
         );
         ApyOracle apyOracle = ApyOracle(oracleProxy);
         address laraProxy = Upgrades.deployUUPSProxy(
             "Lara.sol",
-            abi.encodeCall(
-                Lara.initialize,
-                (
-                    address(stTaraInstance),
-                    dposAddress,
-                    address(apyOracle),
-                    treasuryAddress
-                )
-            )
+            abi.encodeCall(Lara.initialize, (address(stTaraInstance), dposAddress, address(apyOracle), treasuryAddress))
         );
         Lara lara = Lara(payable(laraProxy));
         stTaraInstance.setLaraAddress(address(lara));

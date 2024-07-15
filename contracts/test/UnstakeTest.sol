@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import "forge-std/Test.sol";
-import "forge-std/console.sol";
-import "../interfaces/IApyOracle.sol";
-import "../Lara.sol";
-import "../ApyOracle.sol";
-import "../mocks/MockDpos.sol";
-import "../stTara.sol";
-import "./SetUpTest.sol";
+import {Test} from "forge-std/Test.sol";
+import {console} from "forge-std/console.sol";
+import {IApyOracle} from "../interfaces/IApyOracle.sol";
+import {Lara} from "../Lara.sol";
+import {ApyOracle} from "../ApyOracle.sol";
+import {MockDpos} from "../mocks/MockDpos.sol";
+import {stTara} from "../stakedTara.sol";
+import {TestSetup} from "./SetUpTest.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 import {Utils} from "../libs/Utils.sol";
 
@@ -30,11 +30,7 @@ contract UnstakeTest is Test, TestSetup {
             vm.prank(staker);
             lara.stake{value: amount / 10}(amount / 10);
 
-            assertEq(
-                stTaraToken.balanceOf(staker),
-                amount / 10,
-                "Wrong stTARA balance after stake"
-            );
+            assertEq(stTaraToken.balanceOf(staker), amount / 10, "Wrong stTARA balance after stake");
         }
     }
 
@@ -44,15 +40,9 @@ contract UnstakeTest is Test, TestSetup {
             vm.startPrank(staker);
             stTaraToken.approve(address(lara), stTaraToken.balanceOf(staker));
 
-            Utils.Undelegation[] memory undelegations = lara.requestUndelegate(
-                stTaraToken.balanceOf(staker)
-            );
-            assertTrue(undelegations.length >= 1, "No undelegations");
-            assertEq(
-                stTaraToken.balanceOf(staker),
-                0,
-                "Wrong stTARA balance after requestUndelegate"
-            );
+            uint64[] memory undelegationIds = lara.requestUndelegate(stTaraToken.balanceOf(staker));
+            assertTrue(undelegationIds.length >= 1, "No undelegations");
+            assertEq(stTaraToken.balanceOf(staker), 0, "Wrong stTARA balance after requestUndelegate");
             vm.stopPrank();
         }
     }

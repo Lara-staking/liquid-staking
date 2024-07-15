@@ -2,19 +2,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import "./MockIDPOS.sol";
+import {MockIDPOS} from "./MockIDPOS.sol";
 
 contract MockDpos is MockIDPOS {
     struct Undelegation {
+        uint256 id;
         address delegator;
         uint256 amount;
         uint256 blockNumberClaimable;
     }
 
+    uint256 public undelegationId = 1;
     mapping(address => MockIDPOS.ValidatorData) public validators;
     mapping(address => uint256) public totalDelegations;
     MockIDPOS.ValidatorData[] validatorDatas;
-    mapping(address => mapping(address => Undelegation)) public undelegations;
+    mapping(address => mapping(uint256 => Undelegation)) public undelegations;
 
     uint256 public constant UNDELEGATION_DELAY_BLOCKS = 5000;
 
@@ -122,7 +124,7 @@ contract MockDpos is MockIDPOS {
         emit ValidatorRegistered(validator);
     }
 
-    function undelegate(address validator, uint256 amount) external override {
+    function undelegateV2(address validator, uint256 amount) external override returns (uint256 id) {
         require(validators[validator].account != address(0), "Validator doesn't exist");
         uint256 totalStake = validators[validator].info.total_stake;
         if (totalStake < amount) {
@@ -133,15 +135,19 @@ contract MockDpos is MockIDPOS {
         } else {
             validators[validator].info.total_stake -= amount;
         }
-        undelegations[msg.sender][validator] = Undelegation({
+        undelegations[validator][undelegationId] = Undelegation({
+            id: undelegationId,
             delegator: msg.sender,
             amount: amount,
             blockNumberClaimable: block.number + UNDELEGATION_DELAY_BLOCKS
         });
+        id = undelegationId;
+        ++undelegationId;
         totalDelegations[msg.sender] -= amount;
         // simulate rewards
         payable(msg.sender).transfer(333 ether);
-        emit Undelegated(msg.sender, validator, amount);
+        emit Undelegated(id, msg.sender, validator, amount);
+        return id;
     }
 
     event DelegationRewards(uint256 totalStakes, uint256 totalRewards);
@@ -167,20 +173,20 @@ contract MockDpos is MockIDPOS {
     }
 
     // Confirms undelegate request
-    function confirmUndelegate(address validator) external {
-        Undelegation memory undelegation = undelegations[msg.sender][validator];
+    function confirmUndelegateV2(address validator, uint256 id) external override {
+        Undelegation memory undelegation = undelegations[validator][id];
         require(undelegation.delegator == msg.sender, "Only delegator can confirm undelegate");
         require(undelegation.blockNumberClaimable <= block.number, "Undelegation not yet claimable");
-        delete undelegations[msg.sender][validator];
+        delete undelegations[validator][id];
         payable(msg.sender).transfer(undelegation.amount);
-        emit UndelegateConfirmed(msg.sender, validator, undelegation.amount);
+        emit UndelegateConfirmed(id, msg.sender, validator, undelegation.amount);
     }
 
     // Cancel undelegate request
-    function cancelUndelegate(address validator) external {
-        Undelegation memory undelegation = undelegations[msg.sender][validator];
+    function cancelUndelegateV2(address validator, uint256 id) external override {
+        Undelegation memory undelegation = undelegations[validator][id];
         require(undelegation.delegator == msg.sender, "Only delegator can cancel undelegate");
-        delete undelegations[msg.sender][validator];
+        delete undelegations[validator][id];
         if (validators[validator].account == address(0)) {
             // we need to readd the validator
             MockIDPOS.ValidatorBasicInfo memory info = MockIDPOS.ValidatorBasicInfo(
@@ -198,6 +204,22 @@ contract MockDpos is MockIDPOS {
             validators[validator].info.total_stake += undelegation.amount;
         }
         totalDelegations[msg.sender] += undelegation.amount;
-        emit UndelegateCanceled(msg.sender, validator, undelegation.amount);
+        emit UndelegateCanceled(id, msg.sender, validator, undelegation.amount);
+    }
+
+    function getUndelegationV2(address delegator, address validator, uint64 undelegation_id)
+        external
+        view
+        returns (MockIDPOS.UndelegationV2Data memory undelegation_v2)
+    {
+        Undelegation memory und = undelegations[validator][undelegation_id];
+        if (und.id == 0) {
+            revert("Undelegation not found");
+        }
+
+        MockIDPOS.UndelegationData memory undData =
+            MockIDPOS.UndelegationData(und.amount, uint64(block.number), validator, true);
+        undelegation_v2 = MockIDPOS.UndelegationV2Data(undData, uint64(und.id));
+        return undelegation_v2;
     }
 }

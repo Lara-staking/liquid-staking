@@ -33,7 +33,7 @@ contract LaraToken is ERC20, Ownable {
         _;
     }
 
-    constructor(address _treasury) public ERC20("Lara", "LARA") Ownable(msg.sender) {
+    constructor(address _treasury) ERC20("Lara", "LARA") Ownable(msg.sender) {
         _mint(msg.sender, 10000000000 * 1e18);
         treasuryAddress = _treasury;
         minSwapAmount = 1000 ether;

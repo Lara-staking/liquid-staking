@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "../../Lara.sol";
+import {Lara} from "../../Lara.sol";
 
 contract LaraHarness is Lara {
     function initializeIt(address _sttaraToken, address _dposContract, address _apyOracle, address _treasuryAddress)
