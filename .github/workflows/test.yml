@@ -37,13 +37,13 @@ jobs:
       - name: install Node
         uses: actions/setup-node@v1
         with:
-          node-version: '18.x' 
+          node-version: "18.x"
       - name: Install yarn
         run: npm install -g yarn
       - name: install dependencies
         run: yarn install
       - name: Run Foundry tests
-        run: forge test -vvv --ffi
+        run: forge test -vvv --ffi --force
       - name: Install and Build 🔧 🚚
         run: yarn
       - name: Run Hardhat tests
