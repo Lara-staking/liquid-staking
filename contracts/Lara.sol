@@ -2,9 +2,9 @@
 // Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
 
-import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {OwnableUpgradeable} from "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
-import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {IstTara} from "./interfaces/IstTara.sol";
 import {ILara} from "./interfaces/ILara.sol";
 import {DposInterface} from "./interfaces/IDPOS.sol";
@@ -30,7 +30,7 @@ import {Utils} from "./libs/Utils.sol";
  * @title Lara Contract
  * @dev This contract is used for staking and delegating tokens in the protocol.
  */
-contract Lara is Initializable, OwnableUpgradeable, ILara {
+contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara {
     // Reference timestamp for computing epoch number
     uint256 public protocolStartTimestamp;
 
@@ -96,6 +96,7 @@ contract Lara is Initializable, OwnableUpgradeable, ILara {
         public
         initializer
     {
+        __UUPSUpgradeable_init();
         __Ownable_init(msg.sender);
         stTaraToken = IstTara(_sttaraToken);
         dposContract = DposInterface(_dposContract);
@@ -105,6 +106,8 @@ contract Lara is Initializable, OwnableUpgradeable, ILara {
         maxValidatorStakeCapacity = 80000000 ether;
         minStakeAmount = 1000 ether;
     }
+
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
     /**
      * @dev Fallback function to receive Ether.

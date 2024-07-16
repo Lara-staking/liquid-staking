@@ -44,17 +44,12 @@ contract UpgradeTest is Test {
 
         address treasury = lara.treasuryAddress();
 
-        Upgrades.upgradeProxy(
-            address(lara),
-            "LaraV2.sol",
-            abi.encodeCall(
-                LaraV2.initialize_V2, (address(stTaraToken), address(mockDpos), address(mockApyOracle), treasuryAddress)
-            )
-        );
+        Upgrades.upgradeProxy(address(lara), "LaraV2.sol", abi.encodeCall(LaraV2.setRandomSlot, (21)));
 
         LaraV2 laraV2 = LaraV2(payable(address(lara)));
 
         assertEq(laraV2.treasuryAddress(), treasury, "Treasury address should be the same");
+        assertEq(laraV2.getRandomSlot(), 21, "Random slot should be 21");
     }
 
     function setupValidators() public {

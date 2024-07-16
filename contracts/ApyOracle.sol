@@ -2,7 +2,9 @@
 // Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
 
-import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {OwnableUpgradeable} from "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+
 import {IApyOracle} from "./interfaces/IApyOracle.sol";
 import {DposInterface} from "./interfaces/IDPOS.sol";
 
@@ -10,7 +12,7 @@ import {DposInterface} from "./interfaces/IDPOS.sol";
  * @title ApyOracle
  * @dev This contract implements the IApyOracle interface and provides methods for managing nodes and delegations.
  */
-contract ApyOracle is IApyOracle, Initializable {
+contract ApyOracle is IApyOracle, OwnableUpgradeable, UUPSUpgradeable {
     uint256 public maxValidatorStakeCapacity;
 
     uint256 public nodeCount;
@@ -36,10 +38,14 @@ contract ApyOracle is IApyOracle, Initializable {
      * @param dpos The address of the DPOS contract.
      */
     function initialize(address dataFeed, address dpos) public initializer {
+        __Ownable_init(msg.sender);
+        __UUPSUpgradeable_init();
         DATA_FEED = dataFeed;
         DPOS = DposInterface(dpos);
         maxValidatorStakeCapacity = 80000000 ether;
     }
+
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
     /**
      * @dev Modifier to make a function callable only by the data feed contract.

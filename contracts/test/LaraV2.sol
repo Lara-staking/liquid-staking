@@ -5,10 +5,13 @@ import {Lara} from "../Lara.sol";
 
 /// @custom:oz-upgrades-from Lara
 contract LaraV2 is Lara {
-    function initialize_V2(address _sttaraToken, address _dposContract, address _apyOracle, address _treasuryAddress)
-        public
-        initializer
-    {
-        super.initialize(_sttaraToken, _dposContract, _apyOracle, _treasuryAddress);
+    uint256 public randomAddedSlot;
+
+    function setRandomSlot(uint256 _randomAddedSlot) public {
+        randomAddedSlot = _randomAddedSlot;
+    }
+
+    function getRandomSlot() public view returns (uint256) {
+        return randomAddedSlot;
     }
 }
