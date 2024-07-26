@@ -34,12 +34,13 @@ contract LaraToken is ERC20, Ownable {
     }
 
     constructor(address _treasury) ERC20("Lara", "LARA") Ownable(msg.sender) {
-        _mint(msg.sender, 10000000000 * 1e18);
+        _mint(msg.sender, 1000000000 ether);
+        require(_treasury != address(0), "Presale: treasury address is the zero address");
         treasuryAddress = _treasury;
         minSwapAmount = 1000 ether;
         presaleBlockDuration = 151200;
         swapUpperLimit = 1000000 ether;
-        presaleRate = 1724;
+        presaleRate = 4;
         swapPeriod = 900;
         presaleRunning = false;
     }
@@ -49,6 +50,8 @@ contract LaraToken is ERC20, Ownable {
     fallback() external payable {}
 
     function startPresale() external onlyOnce {
+        require(treasuryAddress != address(0), "Presale: treasury address is the zero address");
+        require(balanceOf(address(this)) == totalSupply() / 10, "Presale: incorrect initial presale balance");
         presaleStartBlock = block.number;
         presaleRunning = true;
         presaleStartCount++;
@@ -59,6 +62,7 @@ contract LaraToken is ERC20, Ownable {
         require(presaleRunning, "Presale: presale not running");
         require(block.number >= presaleStartBlock + presaleBlockDuration, "Presale: presale not ended");
         require(presaleEndBlock == 0, "Presale: already ended");
+        require(treasuryAddress != address(0), "Presale: treasury address is the zero address");
         presaleRunning = false;
         presaleEndCount++;
         presaleEndBlock = block.number;
@@ -76,14 +80,16 @@ contract LaraToken is ERC20, Ownable {
         require(presaleStartBlock > 0, "Presale: presale not started");
         require(msg.value >= minSwapAmount, "Presale: amount too low");
         require(balanceOf(address(this)) >= msg.value, "Presale: insufficient balance");
-        require(msg.value <= swapUpperLimit, "Presale: you can swap max 1000000 LARA");
+        require(msg.value <= swapUpperLimit, "Presale: you can swap max 1000000 TARA");
         require(
             lastSwapBlock[msg.sender] == 0 || (block.number >= lastSwapBlock[msg.sender] + swapPeriod),
             "Presale: you can swap once every 900 blocks"
         );
-        lastSwapBlock[msg.sender] = block.number;
-        uint256 laraAmount = (msg.value * presaleRate) / 100;
+        uint256 laraAmount = msg.value * presaleRate;
         _transfer(address(this), msg.sender, laraAmount);
+        if (balanceOf(msg.sender) >= presaleRate * swapUpperLimit) {
+            lastSwapBlock[msg.sender] = block.number;
+        }
         emit Swapped(msg.sender, laraAmount);
     }
 }

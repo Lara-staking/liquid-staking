@@ -4,6 +4,8 @@ pragma solidity 0.8.20;
 
 import {OwnableUpgradeable} from "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {ReentrancyGuardUpgradeable} from
+    "openzeppelin-contracts-upgradeable/contracts/utils/ReentrancyGuardUpgradeable.sol";
 
 import {IstTara} from "./interfaces/IstTara.sol";
 import {ILara} from "./interfaces/ILara.sol";
@@ -30,7 +32,7 @@ import {Utils} from "./libs/Utils.sol";
  * @title Lara Contract
  * @dev This contract is used for staking and delegating tokens in the protocol.
  */
-contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara {
+contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgradeable {
     // Reference timestamp for computing epoch number
     uint256 public protocolStartTimestamp;
 
@@ -96,6 +98,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara {
         public
         initializer
     {
+        __ReentrancyGuard_init();
         __UUPSUpgradeable_init();
         __Ownable_init(msg.sender);
         stTaraToken = IstTara(_sttaraToken);
@@ -178,7 +181,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara {
      * @notice The amount that cannot be delegated is returned to the user.
      * @param amount the amount to stake
      */
-    function stake(uint256 amount) public payable returns (uint256) {
+    function stake(uint256 amount) public payable nonReentrant returns (uint256) {
         if (amount < minStakeAmount) {
             revert StakeAmountTooLow(amount, minStakeAmount);
         }
@@ -222,7 +225,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara {
      * @param amount the amount to delegate
      * @return remainingAmount the remaining amount that could not be delegated
      */
-    function _delegateToValidators(uint256 amount) internal returns (uint256 remainingAmount) {
+    function _delegateToValidators(uint256 amount) internal nonReentrant returns (uint256 remainingAmount) {
         require(address(this).balance >= amount, "Not enough balance");
         uint256 delegatedAmount = 0;
         IApyOracle.TentativeDelegation[] memory nodesList = _getValidatorsForAmount(amount);
@@ -255,7 +258,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara {
      * A protocol snapshot can be done once every epochDuration blocks.
      * The method will claim all rewards from the DPOS contract and distribute them to the delegators.
      */
-    function snapshot() external {
+    function snapshot() external nonReentrant {
         if (lastSnapshot != 0 && block.number < lastSnapshot + epochDuration) {
             revert EpochDurationNotMet(lastSnapshot, block.number, epochDuration);
         }
@@ -321,7 +324,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara {
      * In this V0 there is no on-chain trigger or management function for this, will be triggered from outside.
      * The method will call the oracle to get the rebalance list and then redelegate the stake.
      */
-    function rebalance() public {
+    function rebalance() public nonReentrant {
         if (block.number < lastRebalance + epochDuration) {
             revert EpochDurationNotMet(lastRebalance, block.number, epochDuration);
         }
@@ -349,7 +352,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara {
      * @param to the validator to which to move stake
      * @param amount the amount to move
      */
-    function _reDelegate(address from, address to, uint256 amount, uint256 rating) internal {
+    function _reDelegate(address from, address to, uint256 amount, uint256 rating) internal nonReentrant {
         require(protocolTotalStakeAtValidator[from] >= amount, "LARA: Amount exceeds the total stake at the validator");
         require(amount <= maxValidatorStakeCapacity, "LARA: Amount exceeds max stake of validators in protocol");
         require(
@@ -383,7 +386,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara {
      * @param id the id of the undelegation
      * @notice msg.sender is the delegator
      */
-    function confirmUndelegate(uint64 id) public {
+    function confirmUndelegate(uint64 id) public nonReentrant {
         if (undelegations[msg.sender][id].undelegation_id == 0) {
             revert UndelegationNotFound(msg.sender, id);
         }
@@ -412,7 +415,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara {
      * The undelegated value will be returned to the origin validator.
      * @param id the id of the undelegation
      */
-    function cancelUndelegate(uint64 id) public {
+    function cancelUndelegate(uint64 id) public nonReentrant {
         if (undelegations[msg.sender][id].undelegation_id == 0) {
             revert UndelegationNotFound(msg.sender, id);
         }
@@ -439,7 +442,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara {
      * @param amount the amount of tokens to undelegate
      * @return undelegation_ids The ids of the undelegations done
      */
-    function requestUndelegate(uint256 amount) public returns (uint64[] memory undelegation_ids) {
+    function requestUndelegate(uint256 amount) public nonReentrant returns (uint64[] memory undelegation_ids) {
         require(stTaraToken.allowance(msg.sender, address(this)) >= amount, "Amount not approved for unstaking");
         // register the undelegation request
         try stTaraToken.transferFrom(msg.sender, address(this), amount) {
@@ -449,7 +452,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara {
                 uint256 remainingAmount = amount;
                 uint256 undelegatedTotal = 0;
                 address[] memory validatorsWithDelegation = _findValidatorsWithDelegation(amount);
-                uint64[] memory undelegation_ids = new uint64[](validatorsWithDelegation.length);
+                undelegation_ids = new uint64[](validatorsWithDelegation.length);
                 uint256 totalRewards = 0;
                 for (uint16 i = 0; i < validatorsWithDelegation.length; i++) {
                     uint256 toUndelegate = 0;
