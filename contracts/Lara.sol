@@ -225,7 +225,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
      * @param amount the amount to delegate
      * @return remainingAmount the remaining amount that could not be delegated
      */
-    function _delegateToValidators(uint256 amount) internal nonReentrant returns (uint256 remainingAmount) {
+    function _delegateToValidators(uint256 amount) internal returns (uint256 remainingAmount) {
         require(address(this).balance >= amount, "Not enough balance");
         uint256 delegatedAmount = 0;
         IApyOracle.TentativeDelegation[] memory nodesList = _getValidatorsForAmount(amount);
@@ -352,7 +352,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
      * @param to the validator to which to move stake
      * @param amount the amount to move
      */
-    function _reDelegate(address from, address to, uint256 amount, uint256 rating) internal nonReentrant {
+    function _reDelegate(address from, address to, uint256 amount, uint256 rating) internal {
         require(protocolTotalStakeAtValidator[from] >= amount, "LARA: Amount exceeds the total stake at the validator");
         require(amount <= maxValidatorStakeCapacity, "LARA: Amount exceeds max stake of validators in protocol");
         require(
