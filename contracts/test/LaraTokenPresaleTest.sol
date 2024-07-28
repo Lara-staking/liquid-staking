@@ -27,7 +27,6 @@ contract LaraTokenPresaleTest is Test {
         assertEq(laraToken.swapPeriod(), 900);
         assertEq(laraToken.treasuryAddress(), treasuryAddress);
         assertEq(laraToken.balanceOf(address(this)), laraToken.totalSupply());
-        assertEq(laraToken.owner(), address(this));
         assertEq(laraToken.presaleEndBlock(), 0);
 
         assertEq(laraToken.presaleStartBlock(), 0, "presaleStartBlock != 0");

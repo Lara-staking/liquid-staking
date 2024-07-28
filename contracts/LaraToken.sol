@@ -3,18 +3,17 @@
 pragma solidity 0.8.20;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "./ReentrancyGuard.sol";
 
-contract LaraToken is ERC20, Ownable, ReentrancyGuard {
-    uint256 public immutable minSwapAmount;
+contract LaraToken is ERC20, ReentrancyGuard {
+    uint256 public minSwapAmount;
     uint256 public presaleStartBlock;
     uint256 public presaleEndBlock;
-    uint256 public immutable presaleBlockDuration;
+    uint256 public presaleBlockDuration;
     uint256 public swapUpperLimit;
-    uint256 public immutable presaleRate;
-    uint16 public immutable swapPeriod;
-    address public immutable treasuryAddress;
+    uint256 public presaleRate;
+    uint16 public swapPeriod;
+    address public treasuryAddress;
     bool public presaleRunning;
 
     uint256 private presaleStartCount;
@@ -34,7 +33,7 @@ contract LaraToken is ERC20, Ownable, ReentrancyGuard {
         _;
     }
 
-    constructor(address _treasury) ERC20("Lara", "LARA") Ownable(msg.sender) ReentrancyGuard() {
+    constructor(address _treasury) ERC20("Lara", "LARA") ReentrancyGuard() {
         _mint(msg.sender, 1000000000 ether);
         require(_treasury != address(0), "Presale: treasury address is the zero address");
         treasuryAddress = _treasury;

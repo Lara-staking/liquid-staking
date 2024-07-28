@@ -7,7 +7,7 @@ import {LaraToken} from "../../contracts/LaraToken.sol";
 
 contract DeployLaraToken is Script {
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        uint256 deployerPrivateKey = vm.envUint("DEPLOYER_KEY");
         address deployerAddress = vm.envAddress("DEPLOYER_ADDR");
         address treasuryAddress = vm.envAddress("TREASURY_ADDRESS");
         vm.startBroadcast(deployerPrivateKey);
@@ -15,8 +15,8 @@ contract DeployLaraToken is Script {
         LaraToken lara = new LaraToken(treasuryAddress);
 
         // checking if ownership and contract addresses are set properly
-        if (lara.owner() != deployerAddress) {
-            revert("Lara owner is not deployer");
+        if (lara.treasuryAddress() != treasuryAddress) {
+            revert("Lara treasury address is not set properly");
         }
         // check if deployet got the minted supply
         if (lara.balanceOf(deployerAddress) != 1000000000 ether) {

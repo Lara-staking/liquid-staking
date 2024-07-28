@@ -20,7 +20,6 @@ contract LaraTokenTest is Test {
         assertEq(laraToken.decimals(), 18);
         assertEq(laraToken.totalSupply(), 1000000000 ether);
         assertEq(laraToken.balanceOf(address(this)), laraToken.totalSupply());
-        assertEq(laraToken.owner(), address(this));
     }
 
     function testStartPresale() public {
