@@ -18,7 +18,7 @@ contract LaraTokenTest is Test {
         assertEq(laraToken.name(), "Lara");
         assertEq(laraToken.symbol(), "LARA");
         assertEq(laraToken.decimals(), 18);
-        assertEq(laraToken.totalSupply(), 10000000000 * 1e18);
+        assertEq(laraToken.totalSupply(), 1000000000 ether);
         assertEq(laraToken.balanceOf(address(this)), laraToken.totalSupply());
         assertEq(laraToken.owner(), address(this));
     }
@@ -47,7 +47,7 @@ contract LaraTokenTest is Test {
             vm.prank(presaleAddr);
             laraToken.swap{value: presaleAddr.balance}();
 
-            assertEq(laraToken.balanceOf(presaleAddr), (laraToken.minSwapAmount() * 1724) / 100);
+            assertEq(laraToken.balanceOf(presaleAddr), (laraToken.minSwapAmount() * 4));
         }
     }
 
@@ -68,13 +68,13 @@ contract LaraTokenTest is Test {
             } else {
                 assertEq(laraToken.presaleRunning(), true);
 
-                if (!((amount * 1724) / 100 > laraToken.balanceOf(address(laraToken)))) {
+                if (!((amount * 4) > laraToken.balanceOf(address(laraToken)))) {
                     uint256 presaleBalance = presaleAddr.balance;
                     vm.prank(presaleAddr);
                     laraToken.swap{value: amount}();
 
                     assertEq(presaleBalance - presaleAddr.balance, amount, "presaleAddr TARA balance != amount");
-                    assertEq(laraToken.balanceOf(presaleAddr), (amount * 1724) / 100, "amounts do not match");
+                    assertEq(laraToken.balanceOf(presaleAddr), (amount * 4), "amounts do not match");
                 }
             }
         }
@@ -112,7 +112,7 @@ contract LaraTokenTest is Test {
 
             assertEq(
                 laraToken.totalSupply(),
-                10000000000 * 1e18 - erc20BalanceOfLaraTokenBefore,
+                1000000000 ether - erc20BalanceOfLaraTokenBefore,
                 "LaraToken total supply did not decrease"
             );
         }

@@ -121,6 +121,28 @@ contract LaraTokenPresaleTest is Test {
         assertEq(address(laraToken).balance, 1100000 ether, "LaraToken balance != 1100000 ether");
     }
 
+    function test_presaleRunning_allTokensClaimed_swapsFail() public {
+        vm.roll(block.number + 1);
+        uint16 numOfAddresses = 125;
+        for (uint16 i = 100; i < numOfAddresses; i++) {
+            address presaleAddr = vm.addr(i + 1);
+            assertEq(laraToken.balanceOf(presaleAddr), 0, "presaleAddr balance != 0");
+            vm.deal(presaleAddr, laraToken.swapUpperLimit() + 1 ether);
+            vm.startPrank(presaleAddr);
+            laraToken.swap{value: laraToken.swapUpperLimit()}();
+            assertEq(
+                laraToken.balanceOf(presaleAddr),
+                (laraToken.swapUpperLimit() * presaleRate),
+                "presaleAddr balance != (laraToken.swapUpperLimit() * presaleRate)"
+            );
+            vm.stopPrank();
+        }
+
+        assertEq(laraToken.balanceOf(address(laraToken)), 0, "LaraToken balance != 0");
+        vm.roll(block.number + laraToken.presaleBlockDuration());
+        laraToken.endPresale();
+    }
+
     function testFuzz_PresaleRandomAmounts(uint256 amount) public {
         vm.assume(amount <= laraToken.swapUpperLimit());
         address presaleAddr = address(vm.addr(777));

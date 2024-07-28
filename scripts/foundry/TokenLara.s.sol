@@ -7,7 +7,7 @@ import {LaraToken} from "../../contracts/LaraToken.sol";
 
 contract DeployLaraToken is Script {
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("DEPLOYER_KEY");
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address deployerAddress = vm.envAddress("DEPLOYER_ADDR");
         address treasuryAddress = vm.envAddress("TREASURY_ADDRESS");
         vm.startBroadcast(deployerPrivateKey);
@@ -19,8 +19,8 @@ contract DeployLaraToken is Script {
             revert("Lara owner is not deployer");
         }
         // check if deployet got the minted supply
-        if (lara.balanceOf(deployerAddress) != 10000000000 * 1e18) {
-            revert("Lara balance is not 10000000000");
+        if (lara.balanceOf(deployerAddress) != 1000000000 ether) {
+            revert("Lara balance is not 1000000000 ether");
         }
 
         // send back 10% of the supply to laraToken for Presale
@@ -32,7 +32,7 @@ contract DeployLaraToken is Script {
         }
 
         //start the presale
-        lara.startPresale();
+        // lara.startPresale();
 
         vm.stopBroadcast();
     }

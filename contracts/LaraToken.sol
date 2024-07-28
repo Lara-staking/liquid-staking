@@ -4,8 +4,9 @@ pragma solidity 0.8.20;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ReentrancyGuard} from "./ReentrancyGuard.sol";
 
-contract LaraToken is ERC20, Ownable {
+contract LaraToken is ERC20, Ownable, ReentrancyGuard {
     uint256 public minSwapAmount;
     uint256 public presaleStartBlock;
     uint256 public presaleEndBlock;
@@ -33,7 +34,7 @@ contract LaraToken is ERC20, Ownable {
         _;
     }
 
-    constructor(address _treasury) ERC20("Lara", "LARA") Ownable(msg.sender) {
+    constructor(address _treasury) ERC20("Lara", "LARA") Ownable(msg.sender) ReentrancyGuard() {
         _mint(msg.sender, 1000000000 ether);
         require(_treasury != address(0), "Presale: treasury address is the zero address");
         treasuryAddress = _treasury;
@@ -49,7 +50,7 @@ contract LaraToken is ERC20, Ownable {
 
     fallback() external payable {}
 
-    function startPresale() external onlyOnce {
+    function startPresale() external onlyOnce nonReentrant {
         require(treasuryAddress != address(0), "Presale: treasury address is the zero address");
         require(balanceOf(address(this)) == totalSupply() / 10, "Presale: incorrect initial presale balance");
         presaleStartBlock = block.number;
@@ -57,7 +58,7 @@ contract LaraToken is ERC20, Ownable {
         presaleStartCount++;
     }
 
-    function endPresale() external onlyOnceEnd {
+    function endPresale() external onlyOnceEnd nonReentrant {
         require(presaleStartBlock > 0, "Presale: presale not started");
         require(presaleRunning, "Presale: presale not running");
         require(block.number >= presaleStartBlock + presaleBlockDuration, "Presale: presale not ended");
@@ -75,11 +76,11 @@ contract LaraToken is ERC20, Ownable {
         }
     }
 
-    function swap() external payable {
+    function swap() external payable nonReentrant {
         require(presaleRunning, "Presale: presale not running");
         require(presaleStartBlock > 0, "Presale: presale not started");
         require(msg.value >= minSwapAmount, "Presale: amount too low");
-        require(balanceOf(address(this)) >= msg.value, "Presale: insufficient balance");
+        require(balanceOf(address(this)) >= msg.value * presaleRate, "Presale: insufficient balance");
         require(msg.value <= swapUpperLimit, "Presale: you can swap max 1000000 TARA");
         require(
             lastSwapBlock[msg.sender] == 0 || (block.number >= lastSwapBlock[msg.sender] + swapPeriod),
