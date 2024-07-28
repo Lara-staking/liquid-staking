@@ -7,14 +7,14 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "./ReentrancyGuard.sol";
 
 contract LaraToken is ERC20, Ownable, ReentrancyGuard {
-    uint256 public minSwapAmount;
+    uint256 public immutable minSwapAmount;
     uint256 public presaleStartBlock;
     uint256 public presaleEndBlock;
-    uint256 public presaleBlockDuration;
+    uint256 public immutable presaleBlockDuration;
     uint256 public swapUpperLimit;
-    uint256 public presaleRate;
-    uint16 public swapPeriod;
-    address public treasuryAddress;
+    uint256 public immutable presaleRate;
+    uint16 public immutable swapPeriod;
+    address public immutable treasuryAddress;
     bool public presaleRunning;
 
     uint256 private presaleStartCount;
