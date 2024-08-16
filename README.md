@@ -11,3 +11,29 @@ Solidity API is available in the following [Docs](docs/index.md).
 ## License
 
 Lara is licensed under the [MIT License](LICENSE).
+
+## Commands
+
+To pull the latest submodules:
+
+```bash
+forge install
+```
+
+To compile the contracts:
+
+```bash
+yarn compile
+```
+
+or
+
+```bash
+forge compile
+```
+
+To run the tests:
+
+```bash
+yarn test:all
+```
