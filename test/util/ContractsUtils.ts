@@ -2,7 +2,7 @@ import { ethers, upgrades } from "hardhat";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import { ContractNames } from "../../util/ContractNames";
 import { ApyOracle } from "../../typechain/contracts";
-import { StakedTara } from "../../typechain";
+import { StakedNativeAsset } from "../../typechain";
 
 export async function deployApyOracle(
   dataFeedAddress: string,
@@ -19,13 +19,13 @@ export async function deployApyOracle(
 
 export async function deploystTara(
   owner: SignerWithAddress
-): Promise<StakedTara> {
+): Promise<StakedNativeAsset> {
   const StTara = await ethers.getContractFactory(ContractNames.stTara);
   const stTara = await upgrades.deployProxy(StTara, [], {
     initialOwner: owner.address,
   });
 
-  return (await stTara.waitForDeployment()) as any as StakedTara;
+  return (await stTara.waitForDeployment()) as any as StakedNativeAsset;
 }
 
 export async function setupApyOracle(
