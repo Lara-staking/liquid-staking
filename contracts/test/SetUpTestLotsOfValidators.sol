@@ -10,14 +10,14 @@ import {IApyOracle} from "../interfaces/IApyOracle.sol";
 import {LaraHarness} from "./utils/LaraHarness.sol";
 import {ApyOracle} from "../ApyOracle.sol";
 import {MockDpos} from "../mocks/MockDpos.sol";
-import {StakedTara} from "../StakedTara.sol";
+import {StakedNativeAsset} from "../StakedNativeAsset.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
 abstract contract ManyValidatorsTestSetup is Test {
     LaraHarness lara;
     ApyOracle mockApyOracle;
     MockDpos mockDpos;
-    StakedTara stTaraToken;
+    StakedNativeAsset stTaraToken;
 
     address treasuryAddress = address(9999);
     uint16 numValidators = 400;
@@ -70,8 +70,9 @@ abstract contract ManyValidatorsTestSetup is Test {
     }
 
     function setupLara() public {
-        address stTaraProxy = Upgrades.deployUUPSProxy("StakedTara.sol", abi.encodeCall(StakedTara.initialize, ()));
-        stTaraToken = StakedTara(stTaraProxy);
+        address stTaraProxy =
+            Upgrades.deployUUPSProxy("StakedNativeAsset.sol", abi.encodeCall(StakedNativeAsset.initialize, ()));
+        stTaraToken = StakedNativeAsset(stTaraProxy);
         address laraProxy = Upgrades.deployUUPSProxy(
             "LaraHarness.sol",
             abi.encodeCall(
