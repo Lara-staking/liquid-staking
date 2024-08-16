@@ -17,16 +17,25 @@ contract DeployLara is Script {
 
         address stTaraProxy =
             Upgrades.deployUUPSProxy("StakedNativeAsset.sol", abi.encodeCall(StakedNativeAsset.initialize, ()));
+        console.log("stTaraProxy address:", stTaraProxy);
         StakedNativeAsset stTaraInstance = StakedNativeAsset(stTaraProxy);
+        address stTaraImplementation = Upgrades.getImplementationAddress(stTaraProxy);
+        console.log("stTaraImplementation address:", stTaraImplementation);
         address oracleProxy = Upgrades.deployUUPSProxy(
             "ApyOracle.sol", abi.encodeCall(ApyOracle.initialize, (deployerAddress, dposAddress))
         );
+        console.log("oracleProxy address:", oracleProxy);
         ApyOracle apyOracle = ApyOracle(oracleProxy);
+        address oracleImplementation = Upgrades.getImplementationAddress(oracleProxy);
+        console.log("oracleImplementation address:", oracleImplementation);
         address laraProxy = Upgrades.deployUUPSProxy(
             "Lara.sol",
             abi.encodeCall(Lara.initialize, (address(stTaraInstance), dposAddress, address(apyOracle), treasuryAddress))
         );
+        console.log("laraProxy address:", laraProxy);
         Lara lara = Lara(payable(laraProxy));
+        address laraImplementation = Upgrades.getImplementationAddress(laraProxy);
+        console.log("laraImplementation address:", laraImplementation);
         stTaraInstance.setLaraAddress(address(lara));
         apyOracle.setLara(address(lara));
 
