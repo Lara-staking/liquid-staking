@@ -51,8 +51,8 @@ yarn test:all
 
 ### PRnet details
 
-RPC: `https://rpc-pr-2609.prnet.taraxa.io`
-Explorer: `https://explorer-pr-2609.prnet.taraxa.io`
-ChainId: `200`
-Name: `Taraxa PRnet-2609`
-Currency: `TARA`
+- RPC: `https://rpc-pr-2609.prnet.taraxa.io`
+- Explorer: `https://explorer-pr-2609.prnet.taraxa.io`
+- ChainId: `200`
+- Name: `Taraxa PRnet-2609`
+- Currency: `TARA`
