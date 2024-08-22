@@ -53,3 +53,8 @@ error EpochDurationNotMet(uint256 lastEpochStart, uint256 currentBlockNumber, ui
  * @notice It is returned if the user doesn't have enough balance of stTARA.
  */
 error NotEnoughStTARA(address user, uint256 balance, uint256 amount);
+
+/**
+ * @notice It is returned if the undelegations don't match the amount.
+ */
+error UndelegationsNotMatching(uint256 undelegations, uint256 amount);

@@ -22,7 +22,8 @@ import {
     RedelegationFailed,
     ConfirmUndelegationFailed,
     CancelUndelegationFailed,
-    UndelegationNotFound
+    UndelegationNotFound,
+    UndelegationsNotMatching
 } from "./libs/SharedErrors.sol";
 
 import {Utils} from "./libs/Utils.sol";
@@ -46,9 +47,6 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
 
     // Minimum amount allowed for staking
     uint256 public minStakeAmount;
-
-    // State variable for storing the last epoch's total delegated amount
-    uint256 public totalDelegated;
 
     uint256 public commission;
 
@@ -197,8 +195,9 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         if (!isRegistered) {
             delegators.push(msg.sender);
         }
-        uint256 remainingAmount = _delegateToValidators(address(this).balance);
 
+        uint256 remainingAmount = _delegateToValidators(address(this).balance);
+        _syncDelegations();
         if (protocolStartTimestamp == 0) {
             protocolStartTimestamp = block.timestamp;
         }
@@ -245,10 +244,8 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
             if (!isValidatorRegistered(nodesList[i].validator)) {
                 validators.push(nodesList[i].validator);
             }
-            protocolTotalStakeAtValidator[nodesList[i].validator] += nodesList[i].amount;
             protocolValidatorRatingAtDelegation[nodesList[i].validator] = nodesList[i].rating;
         }
-        totalDelegated += delegatedAmount;
         return amount - delegatedAmount;
     }
 
@@ -267,11 +264,10 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         } catch Error(string memory reason) {
             revert(reason);
         }
-        totalDelegated = totalEpochDelegation;
         if (protocolStartTimestamp == 0) {
             protocolStartTimestamp = block.timestamp;
         }
-        if (totalDelegated == 0) {
+        if (totalEpochDelegation == 0) {
             return;
         }
         uint256 balanceBefore = address(this).balance;
@@ -314,7 +310,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         emit CommissionWithdrawn(treasuryAddress, epochCommission);
 
         lastSnapshot = block.number;
-        emit SnapshotTaken(totalDelegated, distributableRewards, lastSnapshot + epochDuration);
+        emit SnapshotTaken(totalEpochDelegation, distributableRewards, lastSnapshot + epochDuration);
     }
 
     /**
@@ -358,6 +354,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
             protocolTotalStakeAtValidator[to] + amount <= maxValidatorStakeCapacity,
             "LARA: Redelegation to new validator exceeds max stake"
         );
+        _syncDelegations();
         uint256 balanceBefore = address(this).balance;
         (bool success, bytes memory data) =
             address(dposContract).call(abi.encodeWithSignature("reDelegate(address,address,uint256)", from, to, amount));
@@ -433,7 +430,6 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
             revert(reason);
         }
     }
-
     /**
      * Undelegates the amount from one or more validators.
      * The user needs to provide the amount of stTARA tokens he wants to undelegate. The protocol will burn them.
@@ -441,6 +437,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
      * @param amount the amount of tokens to undelegate
      * @return undelegation_ids The ids of the undelegations done
      */
+
     function requestUndelegate(uint256 amount) public nonReentrant returns (uint64[] memory undelegation_ids) {
         require(stTaraToken.allowance(msg.sender, address(this)) >= amount, "Amount not approved for unstaking");
         // register the undelegation request
@@ -450,15 +447,16 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
                 // get the stTARA tokens and burn them
                 uint256 remainingAmount = amount;
                 uint256 undelegatedTotal = 0;
+                _syncDelegations();
                 address[] memory validatorsWithDelegation = _findValidatorsWithDelegation(amount);
                 undelegation_ids = new uint64[](validatorsWithDelegation.length);
                 uint256 totalRewards = 0;
                 for (uint16 i = 0; i < validatorsWithDelegation.length; i++) {
                     uint256 toUndelegate = 0;
-                    require(
-                        protocolTotalStakeAtValidator[validatorsWithDelegation[i]] <= maxValidatorStakeCapacity,
-                        "Validator is not at max capacity"
-                    );
+                    if (protocolTotalStakeAtValidator[validatorsWithDelegation[i]] == 0) {
+                        continue;
+                    }
+
                     if (protocolTotalStakeAtValidator[validatorsWithDelegation[i]] < remainingAmount) {
                         toUndelegate = protocolTotalStakeAtValidator[validatorsWithDelegation[i]];
                     } else {
@@ -475,17 +473,15 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
                     remainingAmount -= toUndelegate;
                     uint256 balanceAfter = address(this).balance;
                     totalRewards += balanceAfter - balanceBefore;
-                    protocolTotalStakeAtValidator[validatorsWithDelegation[i]] -= toUndelegate;
-                    if (protocolTotalStakeAtValidator[validatorsWithDelegation[i]] == 0) {
-                        protocolValidatorRatingAtDelegation[validatorsWithDelegation[i]] = 0;
-                    }
                     undelegations[msg.sender][undelegationId] =
                         dposContract.getUndelegationV2(address(this), validatorsWithDelegation[i], undelegationId);
                     undelegation_ids[i] = undelegationId;
                     emit Undelegated(undelegationId, msg.sender, validatorsWithDelegation[i], toUndelegate);
                     if (undelegatedTotal == amount) break;
                 }
-                require(undelegatedTotal == amount, "Cannot undelegate full amount");
+                if (undelegatedTotal != amount) {
+                    revert UndelegationsNotMatching(undelegatedTotal, amount);
+                }
                 undelegated[msg.sender] += undelegatedTotal;
                 if (totalRewards > 0) {
                     (bool success,) = msg.sender.call{value: totalRewards}("");
@@ -494,6 +490,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
                     }
                     emit TaraSent(msg.sender, totalRewards);
                 }
+                _syncDelegations();
                 return undelegation_ids;
             } catch Error(string memory reason) {
                 revert(reason);
@@ -520,19 +517,25 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
      * @return an array of validators to delegate amount of TARA to
      */
     function _findValidatorsWithDelegation(uint256 amount) internal view returns (address[] memory) {
-        uint8 count = 0;
-        uint256 stakeRequired = amount;
-        for (uint256 i = 0; i < validators.length; i++) {
-            count++;
-            if (stakeRequired <= 0 || stakeRequired <= protocolTotalStakeAtValidator[validators[i]]) {
+        uint8 i = 0;
+        uint256 stakeRemaining = 0;
+        DposInterface.DelegationData[] memory delegations = _getDelegationsFromDpos();
+        for (; i < delegations.length; i++) {
+            require(
+                delegations[i].delegation.stake == protocolTotalStakeAtValidator[delegations[i].account],
+                "Delegation is not matching DPOS"
+            );
+            if (delegations[i].delegation.stake == 0) {
+                continue;
+            }
+            stakeRemaining += delegations[i].delegation.stake;
+            if (stakeRemaining >= amount) {
                 break;
-            } else {
-                stakeRequired -= protocolTotalStakeAtValidator[validators[i]];
             }
         }
-        address[] memory result = new address[](count);
-        for (uint256 i = 0; i < count; i++) {
-            result[i] = validators[i];
+        address[] memory result = new address[](i + 1);
+        for (uint8 j = 0; j < i + 1; j++) {
+            result[j] = delegations[j].account;
         }
         return result;
     }
@@ -542,14 +545,36 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
      * Collects the current delegation data from the protocol and builds an array of TentativeDelegation structs
      */
     function _buildCurrentDelegationArray() internal view returns (IApyOracle.TentativeDelegation[] memory) {
-        IApyOracle.TentativeDelegation[] memory result = new IApyOracle.TentativeDelegation[](validators.length);
-        for (uint256 i = 0; i < validators.length; i++) {
+        DposInterface.DelegationData[] memory delegations = _getDelegationsFromDpos();
+        IApyOracle.TentativeDelegation[] memory result = new IApyOracle.TentativeDelegation[](delegations.length);
+        for (uint256 i = 0; i < delegations.length; i++) {
             result[i] = IApyOracle.TentativeDelegation(
-                validators[i],
-                protocolTotalStakeAtValidator[validators[i]],
+                delegations[i].account,
+                delegations[i].delegation.stake,
                 protocolValidatorRatingAtDelegation[validators[i]]
             );
         }
         return result;
+    }
+
+    function _getDelegationsFromDpos() internal view returns (DposInterface.DelegationData[] memory) {
+        uint32 batch = 0;
+        try dposContract.getDelegations(address(this), batch) returns (
+            DposInterface.DelegationData[] memory delegations, bool end
+        ) {
+            return delegations;
+        } catch Error(string memory reason) {
+            revert(reason);
+        }
+    }
+
+    function _syncDelegations() internal {
+        DposInterface.DelegationData[] memory delegations = _getDelegationsFromDpos();
+        for (uint256 i = 0; i < delegations.length; i++) {
+            protocolTotalStakeAtValidator[delegations[i].account] = delegations[i].delegation.stake;
+            if (delegations[i].delegation.stake == 0) {
+                protocolValidatorRatingAtDelegation[delegations[i].account] = 0;
+            }
+        }
     }
 }

@@ -84,8 +84,8 @@ interface DposInterface {
         // Undelegation id
         uint64 undelegation_id;
     }
-
     // Delegates tokens to specified validator
+
     function delegate(address validator) external payable;
 
     // Undelegates <amount> of tokens from specified validator - creates undelegate request
