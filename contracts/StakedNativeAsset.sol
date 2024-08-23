@@ -10,10 +10,6 @@ contract StakedNativeAsset is ERC20Upgradeable, OwnableUpgradeable, IstTara {
     // Thrown when the user does not have sufficient allowance set for Tara to burn
     error InsufficientUserAllowanceForBurn(uint256 amount, uint256 senderBalance, uint256 protocolBalance);
 
-    // Events
-    event Minted(address indexed user, uint256 amount);
-    event Burned(address indexed user, uint256 amount);
-
     // Address of Lara protocol
     address public lara;
 
@@ -38,8 +34,6 @@ contract StakedNativeAsset is ERC20Upgradeable, OwnableUpgradeable, IstTara {
 
     function mint(address recipient, uint256 amount) external onlyLara {
         super._mint(recipient, amount);
-
-        emit Minted(recipient, amount);
     }
 
     function burn(address user, uint256 amount) external onlyLara {
@@ -51,6 +45,5 @@ contract StakedNativeAsset is ERC20Upgradeable, OwnableUpgradeable, IstTara {
         }
         // Burn stTARA tokens
         super._burn(user, amount);
-        emit Burned(user, amount);
     }
 }
