@@ -1,3 +1,4 @@
 {
-  "filter_paths": "(scripts/|test/|lib/|contracts/test/|contracts/mocks/)"
+  "filter_paths": "(scripts/|test/|lib/|contracts/test/|contracts/mocks/)",
+  "fail-on": "low"
 }
