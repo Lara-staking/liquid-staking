@@ -183,8 +183,11 @@ contract StakeTest is Test, TestSetup {
     }
 
     function invariant_stakeAndCancelUndelegate() public {
-        assertTrue(lara.totalDelegated() == stTaraToken.totalSupply(), "Total delegated not equal to total supply");
+        uint256 totalSupplyBefore = stTaraToken.totalSupply();
         stakeAndCancelUnstake(100000 ether);
-        assertTrue(lara.totalDelegated() == stTaraToken.totalSupply(), "Total delegated not equal to total supply");
+
+        assertTrue(
+            (totalSupplyBefore + 100000 ether) == stTaraToken.totalSupply(), "Total delegated not equal to total supply"
+        );
     }
 }

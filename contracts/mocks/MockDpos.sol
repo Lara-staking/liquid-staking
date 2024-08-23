@@ -15,8 +15,12 @@ contract MockDpos is MockIDPOS {
     uint256 public undelegationId = 1;
     mapping(address => MockIDPOS.ValidatorData) public validators;
     mapping(address => uint256) public totalDelegations;
+    mapping(address => MockIDPOS.DelegationData[]) public delegations;
     MockIDPOS.ValidatorData[] validatorDatas;
     mapping(address => mapping(uint256 => Undelegation)) public undelegations;
+
+    // Maximum staking capacity for a validator
+    uint256 public maxValidatorStakeCapacity;
 
     uint256 public constant UNDELEGATION_DELAY_BLOCKS = 5000;
 
@@ -28,6 +32,7 @@ contract MockDpos is MockIDPOS {
             MockIDPOS.ValidatorData memory validatorData = MockIDPOS.ValidatorData(_internalValidators[i], info);
             validators[_internalValidators[i]] = validatorData;
             validatorDatas.push(validatorData);
+            maxValidatorStakeCapacity = 80000000 ether;
         }
         require(
             validators[_internalValidators[_internalValidators.length - 1]].account != address(0),
@@ -37,6 +42,14 @@ contract MockDpos is MockIDPOS {
 
     function isValidatorRegistered(address validator) external view returns (bool) {
         return validators[validator].account != address(0);
+    }
+
+    function getDelegations(address delegator, uint32 batch)
+        external
+        view
+        returns (MockIDPOS.DelegationData[] memory _delegations, bool end)
+    {
+        return (delegations[delegator], false);
     }
 
     function getTotalDelegation(address delegator) external view returns (uint256 total_delegation) {
@@ -93,11 +106,32 @@ contract MockDpos is MockIDPOS {
         MockIDPOS.ValidatorData storage validatorData = validators[validator];
         require(validatorData.account != address(0), "Validator doesn't exist");
         require(msg.value > 0, "Delegation value not provided");
-
+        require(
+            maxValidatorStakeCapacity >= validators[validator].info.total_stake + msg.value,
+            "Validator stake capacity reached"
+        );
+        require(msg.value <= maxValidatorStakeCapacity, "Delegation value too high");
         totalDelegations[msg.sender] += msg.value;
         validatorData.info.total_stake += msg.value;
+
+        int256 index = _alreadyDelegatedToValidator(validator, msg.sender);
+        if (index == -1) {
+            delegations[msg.sender].push(MockIDPOS.DelegationData(validator, MockIDPOS.DelegatorInfo(msg.value, 0)));
+        } else {
+            delegations[msg.sender][uint256(index)].delegation.stake += msg.value;
+        }
         require(validators[validator].info.total_stake >= msg.value, "Validator stake not reigstered");
         emit Delegated(msg.sender, validatorData.account, msg.value);
+    }
+
+    function _alreadyDelegatedToValidator(address validator, address delegator) internal view returns (int256) {
+        MockIDPOS.DelegationData[] memory delegations_ = delegations[delegator];
+        for (int256 i = 0; i < int256(delegations_.length); i++) {
+            if (delegations_[uint256(i)].account == validator) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     function registerValidator(
@@ -111,7 +145,7 @@ contract MockDpos is MockIDPOS {
         require(proof.length != 0, "Invalid proof");
         require(vrf_key.length != 0, "VRF Public key not porvided");
         require(validators[validator].account == address(0), "DPOS: Validator already registered");
-        require(msg.value >= 1000000000000000000000, "Base delegation value not provided");
+        require(msg.value >= 1000 ether, "Base delegation value not provided");
 
         MockIDPOS.ValidatorBasicInfo memory info = MockIDPOS.ValidatorBasicInfo(
             msg.value, 0, commission, uint64(block.number), 0, msg.sender, description, endpoint
@@ -124,9 +158,12 @@ contract MockDpos is MockIDPOS {
         emit ValidatorRegistered(validator);
     }
 
+    event TotalStake(uint256 totalStake);
+
     function undelegateV2(address validator, uint256 amount) external override returns (uint256 id) {
         require(validators[validator].account != address(0), "Validator doesn't exist");
         uint256 totalStake = validators[validator].info.total_stake;
+        emit TotalStake(totalStake);
         if (totalStake < amount) {
             revert("Validator has less stake than requested");
         }
@@ -135,6 +172,9 @@ contract MockDpos is MockIDPOS {
         } else {
             validators[validator].info.total_stake -= amount;
         }
+        int256 index = _alreadyDelegatedToValidator(validator, msg.sender);
+        delegations[msg.sender][uint256(index)].delegation.stake -= amount;
+
         undelegations[validator][undelegationId] = Undelegation({
             id: undelegationId,
             delegator: msg.sender,

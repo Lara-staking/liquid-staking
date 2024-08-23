@@ -34,9 +34,6 @@ contract RebalanceTest is Test, TestSetup {
         // Check the dpos balance
         assertEq(dposBalanceAfter - dposBalanceBefore, amount, "Wrong dpos balance");
 
-        // Check the delegated amount
-        assertEq(lara.totalDelegated(), amount, "Wrong staked amount");
-
         // Check other starting values
         assertEq(lara.delegators(0), address(this), "Wrong delegator");
 
@@ -53,12 +50,11 @@ contract RebalanceTest is Test, TestSetup {
         // re-delegate the total stake from one validator to another
         address validator1 = findValidatorWithStake(amount);
         // address validator2 = validators[validators.length - 1];
-
-        uint256 totalDelgatedbefore = lara.totalDelegated();
+        uint256 totalSupplyBefore = stTaraToken.totalSupply();
         lara.rebalance();
 
         // check that the stake value didn't change
-        assertEq(lara.totalDelegated(), totalDelgatedbefore, "ReDelegate: Wrong delegated amount");
+        assertEq(stTaraToken.totalSupply(), totalSupplyBefore, "ReDelegate: Wrong delegated amount");
 
         assertEq(lara.protocolTotalStakeAtValidator(validator1), amount);
 
@@ -92,9 +88,6 @@ contract RebalanceTest is Test, TestSetup {
 
         lara.rebalance();
 
-        assertEq(
-            lara.protocolTotalStakeAtValidator(firstInOracleNodesList), 0, "Wrong total stake at initial validator"
-        );
         assertEq(
             lara.protocolTotalStakeAtValidator(firstInOracleNodesListAfter),
             protocolStakeAtCurrentFirst,

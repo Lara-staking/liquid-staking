@@ -11,7 +11,7 @@ import {Lara} from "../Lara.sol";
 import {ApyOracle} from "../ApyOracle.sol";
 import {MockDpos} from "../mocks/MockDpos.sol";
 import {StakedNativeAsset} from "../StakedNativeAsset.sol";
-import {LaraV2} from "./LaraV2.sol";
+import {LaraV2Test} from "./LaraV2Test.sol";
 import {Deployer} from "./Deployer.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
@@ -44,9 +44,9 @@ contract UpgradeTest is Test {
 
         address treasury = lara.treasuryAddress();
 
-        Upgrades.upgradeProxy(address(lara), "LaraV2.sol", abi.encodeCall(LaraV2.setRandomSlot, (21)));
+        Upgrades.upgradeProxy(address(lara), "LaraV2Test.sol", abi.encodeCall(LaraV2Test.setRandomSlot, (21)));
 
-        LaraV2 laraV2 = LaraV2(payable(address(lara)));
+        LaraV2Test laraV2 = LaraV2Test(payable(address(lara)));
 
         assertEq(laraV2.treasuryAddress(), treasury, "Treasury address should be the same");
         assertEq(laraV2.getRandomSlot(), 21, "Random slot should be 21");

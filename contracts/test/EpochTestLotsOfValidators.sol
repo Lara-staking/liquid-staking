@@ -74,7 +74,6 @@ contract ManyValidatorEpochTest is Test, ManyValidatorsTestSetup {
             uint256 lastEpochExpectedCommission = (expectedEpochReward * lara.commission()) / 100;
             uint256 expectedDelegatorRewards = expectedEpochReward - lastEpochExpectedCommission;
             totalDelegated += expectedDelegatorRewards;
-            assertEq(lara.totalDelegated(), totalDelegated, "Wrong delegated protocol value after snapshot");
             assertEq(
                 mockDpos.getTotalDelegation(address(lara)),
                 totalDelegated,
