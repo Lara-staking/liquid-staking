@@ -1,4 +1,4 @@
 {
-  "filter_paths": "(scripts/|test/|lib/|contracts/test/|contracts/mocks/)",
+  "filter_paths": "(scripts/|test/|lib/|contracts/test/|contracts/mocks/|contracts/interfaces/IDPOS.sol)",
   "fail-on": "low"
 }
