@@ -5,7 +5,6 @@ pragma solidity 0.8.20;
 import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {IstTara} from "./interfaces/IstTara.sol";
-import {Utils} from "./libs/Utils.sol";
 
 contract StakedNativeAsset is ERC20Upgradeable, OwnableUpgradeable, IstTara {
     // Thrown when the user does not have sufficient allowance set for Tara to burn

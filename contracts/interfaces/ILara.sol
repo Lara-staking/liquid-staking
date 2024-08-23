@@ -2,9 +2,6 @@
 // Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
 
-import {IApyOracle} from "./IApyOracle.sol";
-import {Utils} from "../libs/Utils.sol";
-
 /**
  * @title ILara
  * @dev This interface defines the methods for the Lara contract
@@ -12,58 +9,80 @@ import {Utils} from "../libs/Utils.sol";
 interface ILara {
     /**
      * @dev Event emitted when a user stakes
+     * @param user the user who staked
+     * @param amount the amount of the stake
      */
     event Staked(address indexed user, uint256 indexed amount);
 
     /**
-     * @dev Event emitted when a user delegates
-     */
-    event Delegated(address indexed user, uint256 indexed amount);
-
-    /**
-     * @dev Event emitted when an epoch starts
+     * @dev Event emitted when a snapshot was taken
+     * @param totalDelegation the total delegation
+     * @param totalRewards the total rewards
+     * @param nextSnapshotBlock the block number of the next snapshot
      */
     event SnapshotTaken(
         uint256 indexed totalDelegation, uint256 indexed totalRewards, uint256 indexed nextSnapshotBlock
     );
 
     /**
-     * @dev Event emitted when all rewards are claimed
+     * @dev Event emitted when all protocol level rewards are claimed from the DPOS Contract
+     * @param amount the amount of the rewards
      */
     event AllRewardsClaimed(uint256 indexed amount);
 
     /**
      * @dev Event emitted when redelegation rewards are claimed
+     * @param amount the amount of the rewards
+     * @param validator the validator to which the rewards are claimed
      */
     event RedelegationRewardsClaimed(uint256 indexed amount, address indexed validator);
 
     /**
-     * @dev Event emitted when a user undelegates
+     * Event emitted when an undelegation request is registered
+     * @param id the id of the undelegation
+     * @param user the user who requested the undelegation
+     * @param validator the validator to which the user undelegated
+     * @param amount the amount of the undelegation
      */
-    event Undelegated(uint256 indexed id, address indexed user, address indexed validator, uint256 amount);
+    event Undelegated(uint64 indexed id, address indexed user, address indexed validator, uint256 amount);
+
+    /**
+     * @dev Event emitted when a user confirms an undelegation
+     * @param id the id of the undelegation
+     * @param user the user who confirmed the undelegation
+     */
+    event UndelegationConfirmed(uint64 indexed id, address indexed user);
+
+    /**
+     * @dev Event emitted when a user cancels an undelegation
+     * @param id the id of the undelegation
+     * @param user the user who cancelled the undelegation
+     */
+    event UndelegationCancelled(uint64 indexed id, address indexed user);
 
     /**
      * @dev Event emitted when Tara is sent
+     * @param user the address who sent the Tara
+     * @param amount the amount of the Tara sent
      */
     event TaraSent(address indexed user, uint256 indexed amount);
 
     /**
-     * @dev Event emitted when a stake is removed
-     */
-    event StakeRemoved(address indexed user, uint256 indexed amount);
-
-    /**
-     * @dev Event emitted when commission is withdrawn
+     * @dev Event emitted when commission is withdrawn for an epoch to the treasury
+     * @param user the treasury address
+     * @param amount the amount of the commission withdrawn
      */
     event CommissionWithdrawn(address indexed user, uint256 indexed amount);
 
     /**
      * @dev Event emitted when commission is changed
+     * @param newCommission the new commission
      */
     event CommissionChanged(uint256 indexed newCommission);
 
     /**
      * @dev Event emitted when treasury is changed
+     * @param newTreasury the new treasury address
      */
     event TreasuryChanged(address indexed newTreasury);
 
@@ -117,12 +136,6 @@ interface ILara {
      * The method will call the oracle to get the rebalance list and then redelegate the stake.
      */
     function rebalance() external;
-
-    // /**
-    //  * @dev Function for a user to remove a certain amount of stake
-    //  * @param amount The amount of stake to remove
-    //  */
-    // function unstake(uint256 amount) external;
 
     /**
      * @dev Function for a user to request undelegation of a certain amount
