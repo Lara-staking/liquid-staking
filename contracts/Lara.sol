@@ -79,6 +79,10 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
     // Mapping of individual undelegations by user
     mapping(address => mapping(uint64 => DposInterface.UndelegationV2Data)) public undelegations;
 
+    // Mapping of LARA staking commission discounts for staker addresses. Init values are 0 for all addresses, increasing linearly as per the
+    // staking tokenomics. 1 unit means 1% increase to the epoch minted stTARA tokens.
+    mapping(address => uint32) public commissionDiscounts;
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
@@ -129,16 +133,21 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
     }
 
     /**
-     * @notice Setter for epochDuration
-     * @param _epochDuration new epoch duration (in seconds)
+     * @inheritdoc ILara
+     */
+    function setCommissionDiscounts(address staker, uint32 discount) public onlyOwner {
+        commissionDiscounts[staker] = discount;
+    }
+
+    /**
+     * @inheritdoc ILara
      */
     function setEpochDuration(uint256 _epochDuration) public onlyOwner {
         epochDuration = _epochDuration;
     }
 
     /**
-     * @notice Setter for commission
-     * @param _commission new commission
+     * @inheritdoc ILara
      */
     function setCommission(uint256 _commission) public onlyOwner {
         commission = _commission;
@@ -146,8 +155,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
     }
 
     /**
-     * @notice Setter for treasuryAddress
-     * @param _treasuryAddress new treasuryAddress
+     * @inheritdoc ILara
      */
     function setTreasuryAddress(address _treasuryAddress) public onlyOwner {
         treasuryAddress = _treasuryAddress;
@@ -155,28 +163,21 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
     }
 
     /**
-     * @notice onlyOwner Setter for maxValidatorStakeCapacity
-     * @param _maxValidatorStakeCapacity new maxValidatorStakeCapacity
+     * @inheritdoc ILara
      */
     function setMaxValidatorStakeCapacity(uint256 _maxValidatorStakeCapacity) external onlyOwner {
         maxValidatorStakeCapacity = _maxValidatorStakeCapacity;
     }
 
     /**
-     * @notice onlyOwner Setter for minStakeAmount
-     * @param _minStakeAmount the new minStakeAmount
+     * @inheritdoc ILara
      */
     function setMinStakeAmount(uint256 _minStakeAmount) external onlyOwner {
         minStakeAmount = _minStakeAmount;
     }
 
     /**
-     * @notice Stake function
-     * In the stake function, the user sends the amount of TARA tokens he wants to stake.
-     * This method takes the payment and mints the stTARA tokens to the user.
-     * @notice The tokens are DELEGATED INSTANTLY.
-     * @notice The amount that cannot be delegated is returned to the user.
-     * @param amount the amount to stake
+     * @inheritdoc ILara
      */
     function stake(uint256 amount) public payable nonReentrant returns (uint256) {
         if (amount < minStakeAmount) {
@@ -217,6 +218,13 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
     }
 
     /**
+     * @inheritdoc ILara
+     */
+    function compound(uint256 amount) public nonReentrant onlyOwner {
+        _delegateToValidators(amount);
+    }
+
+    /**
      * @notice Delegate function
      * In the delegate function, the caller can start the staking of any remaining balance in Lara towards the native DPOS contract.
      * @notice Anyone can call, it will always delegate the given amount from Lara's balance
@@ -250,19 +258,19 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
     }
 
     /**
-     * @notice method to create a protocol snapshot.
-     * A protocol snapshot can be done once every epochDuration blocks.
-     * The method will claim all rewards from the DPOS contract and distribute them to the delegators.
+     * @inheritdoc ILara
      */
     function snapshot() external nonReentrant {
         if (lastSnapshot != 0 && block.number < lastSnapshot + epochDuration) {
             revert EpochDurationNotMet(lastSnapshot, block.number, epochDuration);
         }
         uint256 totalEpochDelegation = 0;
-        try dposContract.getTotalDelegation(address(this)) returns (uint256 totalDelegation) {
-            totalEpochDelegation = totalDelegation;
-        } catch Error(string memory reason) {
-            revert(reason);
+        (bool success_, bytes memory data) =
+            address(dposContract).call(abi.encodeWithSignature("getTotalDelegation(address)", address(this)));
+        if (success_) {
+            totalEpochDelegation = abi.decode(data, (uint256));
+        } else {
+            revert(string(data));
         }
         if (protocolStartTimestamp == 0) {
             protocolStartTimestamp = block.timestamp;
@@ -292,7 +300,8 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
                 continue;
             }
             uint256 slice = Utils.calculateSlice(delegatorBalance, stTARASupply);
-            uint256 delegatorReward = (slice * distributableRewards) / 100 / 1e18;
+            uint256 delegatorReward =
+                (slice * distributableRewards * (100 + commissionDiscounts[delegator])) / 10000 / 1e18;
             if (delegatorReward == 0) {
                 continue;
             }
@@ -314,15 +323,13 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
     }
 
     /**
-     * @notice Rebalance method to rebalance the protocol.
-     * The method is intended to be called by anyone, at least every epochDuration blocks.
-     * In this V0 there is no on-chain trigger or management function for this, will be triggered from outside.
-     * The method will call the oracle to get the rebalance list and then redelegate the stake.
+     * @inheritdoc ILara
      */
     function rebalance() public nonReentrant {
         if (block.number < lastRebalance + epochDuration) {
             revert EpochDurationNotMet(lastRebalance, block.number, epochDuration);
         }
+        _syncDelegations();
         IApyOracle.TentativeDelegation[] memory delegationList = _buildCurrentDelegationArray();
         // Get the rebalance list from the oracle
         try apyOracle.getRebalanceList(delegationList) returns (IApyOracle.TentativeReDelegation[] memory rebalanceList)
@@ -354,7 +361,6 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
             protocolTotalStakeAtValidator[to] + amount <= maxValidatorStakeCapacity,
             "LARA: Redelegation to new validator exceeds max stake"
         );
-        _syncDelegations();
         uint256 balanceBefore = address(this).balance;
         (bool success, bytes memory data) =
             address(dposContract).call(abi.encodeWithSignature("reDelegate(address,address,uint256)", from, to, amount));
@@ -377,10 +383,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
     }
 
     /**
-     * Confirm undelegate method to confirm the undelegation of a user from a certain validator.
-     * Will fail if called before the undelegation period is over.
-     * @param id the id of the undelegation
-     * @notice msg.sender is the delegator
+     * @inheritdoc ILara
      */
     function confirmUndelegate(uint64 id) public nonReentrant {
         if (undelegations[msg.sender][id].undelegation_id == 0) {
@@ -407,9 +410,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
     }
 
     /**
-     * Cancel undelegate method to cancel the undelegation of a user from a certain validator.
-     * The undelegated value will be returned to the origin validator.
-     * @param id the id of the undelegation
+     * @inheritdoc ILara
      */
     function cancelUndelegate(uint64 id) public nonReentrant {
         if (undelegations[msg.sender][id].undelegation_id == 0) {
@@ -430,14 +431,10 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
             revert(reason);
         }
     }
-    /**
-     * Undelegates the amount from one or more validators.
-     * The user needs to provide the amount of stTARA tokens he wants to undelegate. The protocol will burn them.
-     * @notice reverts on missing approval for the amount.
-     * @param amount the amount of tokens to undelegate
-     * @return undelegation_ids The ids of the undelegations done
-     */
 
+    /**
+     * @inheritdoc ILara
+     */
     function requestUndelegate(uint256 amount) public nonReentrant returns (uint64[] memory undelegation_ids) {
         require(stTaraToken.allowance(msg.sender, address(this)) >= amount, "Amount not approved for unstaking");
         // register the undelegation request
@@ -500,6 +497,11 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         }
     }
 
+    /**
+     * Fetches the validators for the given amount
+     * @param amount the amount to fetch the validators for
+     * @return the validators for the given amount
+     */
     function _getValidatorsForAmount(uint256 amount) internal returns (IApyOracle.TentativeDelegation[] memory) {
         try apyOracle.getNodesForDelegation(amount) returns (IApyOracle.TentativeDelegation[] memory nodesList) {
             if (nodesList.length == 0) {
@@ -557,6 +559,10 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         return result;
     }
 
+    /**
+     * @notice method to get the delegations from the DPOS contract
+     * @return the delegations from the DPOS contract
+     */
     function _getDelegationsFromDpos() internal view returns (DposInterface.DelegationData[] memory) {
         uint32 batch = 0;
         try dposContract.getDelegations(address(this), batch) returns (
@@ -568,6 +574,9 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         }
     }
 
+    /**
+     * @notice method to sync the delegations from the DPOS contract
+     */
     function _syncDelegations() internal {
         DposInterface.DelegationData[] memory delegations = _getDelegationsFromDpos();
         for (uint256 i = 0; i < delegations.length; i++) {
