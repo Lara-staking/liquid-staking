@@ -4,9 +4,10 @@ pragma solidity 0.8.20;
 
 import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import {IstTara} from "./interfaces/IstTara.sol";
 
-contract StakedNativeAsset is ERC20Upgradeable, OwnableUpgradeable, IstTara {
+contract StakedNativeAsset is ERC20Upgradeable, OwnableUpgradeable, PausableUpgradeable, IstTara {
     // Thrown when the user does not have sufficient allowance set for Tara to burn
     error InsufficientUserAllowanceForBurn(uint256 amount, uint256 senderBalance, uint256 protocolBalance);
 
@@ -21,6 +22,7 @@ contract StakedNativeAsset is ERC20Upgradeable, OwnableUpgradeable, IstTara {
     function initialize() public initializer {
         __ERC20_init("Staked TARA", "stTARA");
         __Ownable_init(msg.sender);
+        __Pausable_init();
     }
 
     modifier onlyLara() {
