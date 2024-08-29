@@ -18,7 +18,6 @@ abstract contract ManyValidatorsTestSetup is Test {
     ApyOracle mockApyOracle;
     MockDpos mockDpos;
     StakedNativeAsset stTaraToken;
-
     address treasuryAddress = address(9999);
     uint16 numValidators = 400;
 
@@ -70,9 +69,7 @@ abstract contract ManyValidatorsTestSetup is Test {
     }
 
     function setupLara() public {
-        address stTaraProxy =
-            Upgrades.deployUUPSProxy("StakedNativeAsset.sol", abi.encodeCall(StakedNativeAsset.initialize, ()));
-        stTaraToken = StakedNativeAsset(stTaraProxy);
+        stTaraToken = new StakedNativeAsset();
         address laraProxy = Upgrades.deployUUPSProxy(
             "LaraHarness.sol",
             abi.encodeCall(

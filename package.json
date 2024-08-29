@@ -23,7 +23,8 @@
     "stake-lara-devnet": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/Delegate.s.sol:Delegate --rpc-url https://rpc.devnet.taraxa.io --broadcast --legacy -vvvv --ffi",
     "dpos-devnet": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/Dpos.s.sol:DposTest --rpc-url https://rpc.devnet.taraxa.io --broadcast --legacy -vvvv --ffi",
     "update-top100-validators": "npx hardhat run --network testnet ./scripts/validators.ts",
-    "delegate": "npx hardhat run --network testnet ./scripts/delegate.ts"
+    "delegate": "npx hardhat run --network testnet ./scripts/delegate.ts",
+    "multicall-deploy": "forge script /Users/vargaelod/lara/liquid-staking/scripts/foundry/DeployMulticall.s.sol:DeployMulticall --rpc-url https://rpc-pr-2609.prnet.taraxa.io --broadcast --legacy -vvvv --ffi"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "2.0.2",

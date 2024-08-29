@@ -10,8 +10,10 @@ import {IstTara} from "./interfaces/IstTara.sol";
 import {ILara} from "./interfaces/ILara.sol";
 import {DposInterface} from "./interfaces/IDPOS.sol";
 import {IApyOracle} from "./interfaces/IApyOracle.sol";
+import {ISnapshot} from "./interfaces/ISnapshot.sol";
 
 import {
+    NoDelegation,
     NotEnoughStTARA,
     EpochDurationNotMet,
     RewardClaimFailed,
@@ -23,7 +25,12 @@ import {
     ConfirmUndelegationFailed,
     CancelUndelegationFailed,
     UndelegationNotFound,
-    UndelegationsNotMatching
+    UndelegationsNotMatching,
+    TransferFailed,
+    SnapshotNotFound,
+    SnapshotAlreadyClaimed,
+    ZeroAddress,
+    EmptySnapshot
 } from "./libs/SharedErrors.sol";
 
 import {Utils} from "./libs/Utils.sol";
@@ -82,6 +89,10 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
     // Mapping of LARA staking commission discounts for staker addresses. Init values are 0 for all addresses, increasing linearly as per the
     // staking tokenomics. 1 unit means 1% increase to the epoch minted stTARA tokens.
     mapping(address => uint32) public commissionDiscounts;
+
+    mapping(uint256 => uint256) public rewardsPerSnapshot;
+
+    mapping(address => mapping(uint256 => bool)) public stakerSnapshotClaimed;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -260,7 +271,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
     /**
      * @inheritdoc ILara
      */
-    function snapshot() external nonReentrant {
+    function snapshot() external nonReentrant returns (uint256) {
         if (lastSnapshot != 0 && block.number < lastSnapshot + epochDuration) {
             revert EpochDurationNotMet(lastSnapshot, block.number, epochDuration);
         }
@@ -276,7 +287,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
             protocolStartTimestamp = block.timestamp;
         }
         if (totalEpochDelegation == 0) {
-            return;
+            revert NoDelegation();
         }
         uint256 balanceBefore = address(this).balance;
         try dposContract.claimAllRewards() {
@@ -286,40 +297,52 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         }
         uint256 balanceAfter = address(this).balance;
         uint256 rewards = balanceAfter - balanceBefore;
+
         emit AllRewardsClaimed(rewards);
-        uint256 epochCommission = (rewards * commission) / 100;
+
+        uint256 epochCommission = (rewards / 100) * commission;
         uint256 distributableRewards = rewards - epochCommission;
 
-        // iterate through delegators and calculate + allocate their rewards
-        uint256 totalSplitRewards = 0;
-        uint256 stTARASupply = stTaraToken.totalSupply();
-        for (uint256 i = 0; i < delegators.length; i++) {
-            address delegator = delegators[i];
-            uint256 delegatorBalance = stTaraToken.balanceOf(delegator);
-            if (delegatorBalance == 0) {
-                continue;
-            }
-            uint256 slice = Utils.calculateSlice(delegatorBalance, stTARASupply);
-            uint256 delegatorReward =
-                (slice * distributableRewards * (100 + commissionDiscounts[delegator])) / 10000 / 1e18;
-            if (delegatorReward == 0) {
-                continue;
-            }
-            totalSplitRewards += delegatorReward;
+        // make stTARA and wstTARA snapshots
+        uint256 stTaraSnapshotId = stTaraToken.snapshot();
 
-            //mint the reward to the delegator
-            try stTaraToken.mint(delegator, delegatorReward) {}
-            catch Error(string memory reason) {
-                revert(reason);
-            }
-        }
-        require(totalSplitRewards <= distributableRewards, "Total split rewards exceed total rewards");
+        rewardsPerSnapshot[stTaraSnapshotId] = distributableRewards;
+
         (bool success,) = treasuryAddress.call{value: epochCommission}("");
-        if (!success) revert("LARA: Failed to send commission to treasury");
+        if (!success) revert TransferFailed(address(this), treasuryAddress, epochCommission);
         emit CommissionWithdrawn(treasuryAddress, epochCommission);
 
         lastSnapshot = block.number;
-        emit SnapshotTaken(totalEpochDelegation, distributableRewards, lastSnapshot + epochDuration);
+        emit SnapshotTaken(stTaraSnapshotId, totalEpochDelegation, distributableRewards, lastSnapshot + epochDuration);
+        return (stTaraSnapshotId);
+    }
+
+    function distrbuteRewardsForSnapshot(address staker, uint256 snapshotId) external {
+        if (staker == address(0)) revert ZeroAddress();
+        if (snapshotId == 0) revert SnapshotNotFound(snapshotId);
+        if (rewardsPerSnapshot[snapshotId] == 0) revert EmptySnapshot(snapshotId);
+        if (stakerSnapshotClaimed[staker][snapshotId]) revert SnapshotAlreadyClaimed(snapshotId, staker);
+
+        uint256 stTARASupply = stTaraToken.totalSupplyAt(snapshotId);
+        uint256 distributableRewards = rewardsPerSnapshot[snapshotId];
+        uint256 delegatorBalance = stTaraToken.cumulativeBalanceOfAt(staker, snapshotId);
+
+        if (delegatorBalance == 0 || distributableRewards == 0) {
+            return;
+        }
+        uint256 slice = Utils.calculateSlice(delegatorBalance, stTARASupply);
+        uint256 generalPart = slice * distributableRewards / 1e18;
+        uint256 commissionPart = (generalPart / 100) * commissionDiscounts[staker];
+        uint256 delegatorReward = generalPart + commissionPart;
+        if (delegatorReward == 0) {
+            return;
+        }
+        try stTaraToken.mint(staker, delegatorReward) {
+            stakerSnapshotClaimed[staker][snapshotId] = true;
+            return;
+        } catch Error(string memory reason) {
+            revert(reason);
+        }
     }
 
     /**

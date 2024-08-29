@@ -70,9 +70,7 @@ abstract contract TestSetup is Test {
     }
 
     function setupLara() public {
-        address stTaraProxy =
-            Upgrades.deployUUPSProxy("StakedNativeAsset.sol", abi.encodeCall(StakedNativeAsset.initialize, ()));
-        stTaraToken = StakedNativeAsset(stTaraProxy);
+        stTaraToken = new StakedNativeAsset();
         address laraProxy = Upgrades.deployUUPSProxy(
             "LaraHarness.sol",
             abi.encodeCall(
@@ -87,9 +85,7 @@ abstract contract TestSetup is Test {
     }
 
     function setupLaraWithCommission(uint256 commission) public {
-        address stTaraProxy =
-            Upgrades.deployUUPSProxy("StakedNativeAsset.sol", abi.encodeCall(StakedNativeAsset.initialize, ()));
-        stTaraToken = StakedNativeAsset(stTaraProxy);
+        stTaraToken = new StakedNativeAsset();
         address laraProxy = Upgrades.deployUUPSProxy(
             "LaraHarness.sol",
             abi.encodeCall(

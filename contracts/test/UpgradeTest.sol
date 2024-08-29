@@ -93,9 +93,7 @@ contract UpgradeTest is Test {
     }
 
     function setupLara() public {
-        address stTaraProxy =
-            Upgrades.deployUUPSProxy("StakedNativeAsset.sol", abi.encodeCall(StakedNativeAsset.initialize, ()));
-        stTaraToken = StakedNativeAsset(stTaraProxy);
+        stTaraToken = new StakedNativeAsset();
         address laraProxy = Upgrades.deployUUPSProxy(
             "Lara.sol",
             abi.encodeCall(

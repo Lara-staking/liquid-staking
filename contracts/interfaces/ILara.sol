@@ -21,7 +21,10 @@ interface ILara {
      * @param nextSnapshotBlock the block number of the next snapshot
      */
     event SnapshotTaken(
-        uint256 indexed totalDelegation, uint256 indexed totalRewards, uint256 indexed nextSnapshotBlock
+        uint256 indexed snapshotId,
+        uint256 indexed totalDelegation,
+        uint256 indexed totalRewards,
+        uint256 nextSnapshotBlock
     );
 
     /**
@@ -183,6 +186,8 @@ interface ILara {
      * @notice method to create a protocol snapshot.
      * A protocol snapshot can be done once every epochDuration blocks.
      * The method will claim all rewards from the DPOS contract and distribute them to the delegators.
+     * @return the snapshot id of the made stTARA snapshot and the snapshot id of the made wstTARA snapshot
+     * These IDS must be equal at all times.
      */
-    function snapshot() external;
+    function snapshot() external returns (uint256);
 }
