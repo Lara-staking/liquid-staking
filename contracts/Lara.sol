@@ -346,10 +346,10 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         address validator = undelegations[msg.sender][id].undelegation_data.validator;
         uint256 balanceBefore = address(this).balance;
 
-        try dposContract.confirmUndelegateV2(validator, id) {
-            // do nothing
-        } catch Error(string memory reason) {
-            revert ConfirmUndelegationFailed(msg.sender, validator, id, reason);
+        (bool success,) =
+            address(dposContract).call(abi.encodeWithSignature("confirmUndelegateV2(address,uint256)", validator, id));
+        if (!success) {
+            revert ConfirmUndelegationFailed(msg.sender, validator, id, "DPOS contract call failed");
         }
 
         uint256 balanceAfter = address(this).balance;
@@ -374,10 +374,10 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         uint256 amount = undelegations[msg.sender][id].undelegation_data.stake;
         address validator = undelegations[msg.sender][id].undelegation_data.validator;
 
-        try dposContract.cancelUndelegateV2(validator, id) {
-            // do nothing
-        } catch Error(string memory reason) {
-            revert CancelUndelegationFailed(msg.sender, validator, id, reason);
+        (bool success,) =
+            address(dposContract).call(abi.encodeWithSignature("cancelUndelegateV2(address,uint256)", validator, id));
+        if (!success) {
+            revert CancelUndelegationFailed(msg.sender, validator, id, "DPOS contract call failed");
         }
 
         try stTaraToken.mint(msg.sender, amount) {

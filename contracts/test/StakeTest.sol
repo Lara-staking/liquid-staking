@@ -54,7 +54,7 @@ contract StakeTest is Test, TestSetup {
         assertEq(lara.undelegated(address(this)), amount, "Wrong undelegated amount in lara");
 
         uint256 initialUndelegated = lara.undelegated(address(this));
-        vm.roll(mockDpos.UNDELEGATION_DELAY_BLOCKS() + block.number);
+        vm.roll(mockDpos.UNDELEGATION_DELAY_BLOCKS() + block.number + 1);
         for (uint256 i = 0; i < undelegationIds.length; i++) {
             lara.confirmUndelegate(undelegationIds[i]);
             initialUndelegated = lara.undelegated(address(this));
@@ -93,7 +93,7 @@ contract StakeTest is Test, TestSetup {
         assertEq(lara.undelegated(address(this)), amount, "Wrong undelegated amount in lara");
 
         uint256 initialUndelegated = lara.undelegated(address(this));
-        vm.roll(mockDpos.UNDELEGATION_DELAY_BLOCKS() + block.number);
+        vm.roll(mockDpos.UNDELEGATION_DELAY_BLOCKS() + block.number + 1);
         for (uint256 i = 0; i < undelegationIds.length; i++) {
             lara.cancelUndelegate(undelegationIds[i]);
             initialUndelegated = lara.undelegated(address(this));

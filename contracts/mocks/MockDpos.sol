@@ -216,7 +216,7 @@ contract MockDpos is MockIDPOS {
     function confirmUndelegateV2(address validator, uint256 id) external override {
         Undelegation memory undelegation = undelegations[validator][id];
         require(undelegation.delegator == msg.sender, "Only delegator can confirm undelegate");
-        require(undelegation.blockNumberClaimable <= block.number, "Undelegation not yet claimable");
+        require(undelegation.blockNumberClaimable < block.number, "Undelegation not yet claimable");
         delete undelegations[validator][id];
         payable(msg.sender).transfer(undelegation.amount);
         emit UndelegateConfirmed(id, msg.sender, validator, undelegation.amount);
