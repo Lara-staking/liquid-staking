@@ -22,7 +22,7 @@ describe(ContractNames.stTara, () => {
     burner = signers[1];
     recipient = signers[2];
     finalTarget = signers[3];
-    stTara = await deploystTara(minter);
+    stTara = await deploystTara();
     // simulate Lara addres as minter
     await stTara.connect(minter).setLaraAddress(minter.address);
     expect(await stTara.lara()).to.equal(minter.address);
@@ -46,8 +46,8 @@ describe(ContractNames.stTara, () => {
     const amount = ethers.parseEther("1000");
     const mintTx = stTara.connect(minter).mint(minter.address, amount);
     await expect(mintTx)
-      .to.emit(stTara, "Minted")
-      .withArgs(minter.address, amount);
+      .to.emit(stTara, "Transfer")
+      .withArgs(ethers.ZeroAddress, minter.address, amount);
     await expect(mintTx).to.changeTokenBalance(stTara, minter.address, amount);
     await expect(mintTx).not.to.changeEtherBalance;
   });
@@ -56,13 +56,13 @@ describe(ContractNames.stTara, () => {
     const amount = ethers.parseEther("1000");
     const mintTx = stTara.connect(minter).mint(burner.address, amount);
     await expect(mintTx)
-      .to.emit(stTara, "Minted")
-      .withArgs(burner.address, amount);
+      .to.emit(stTara, "Transfer")
+      .withArgs(ethers.ZeroAddress, burner.address, amount);
     stTara.connect(minter).transfer(burner.address, amount);
     const burnTx = stTara.connect(minter).burn(burner.address, amount);
     await expect(burnTx)
-      .to.emit(stTara, "Burned")
-      .withArgs(burner.address, amount);
+      .to.emit(stTara, "Transfer")
+      .withArgs(burner.address, ethers.ZeroAddress, amount);
     await expect(burnTx).to.changeTokenBalance(
       stTara,
       burner,
