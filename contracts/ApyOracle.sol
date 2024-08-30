@@ -13,18 +13,25 @@ import {DposInterface} from "./interfaces/IDPOS.sol";
  * @dev This contract implements the IApyOracle interface and provides methods for managing nodes and delegations.
  */
 contract ApyOracle is IApyOracle, OwnableUpgradeable, UUPSUpgradeable {
+    /// @dev Maximum stake capacity for a validator
     uint256 public maxValidatorStakeCapacity;
 
+    /// @dev Number of nodes
     uint256 public nodeCount;
 
+    /// @dev Data feed address
     address public DATA_FEED;
 
+    /// @dev Lara contract address
     address public lara;
 
+    /// @dev DPOS contract address
     DposInterface public DPOS;
 
+    /// @dev List of nodes
     address[] public nodesList;
 
+    /// @dev Mapping of node data
     mapping(address => IApyOracle.NodeData) public nodes;
 
     /// @custom:oz-upgrades-unsafe-allow constructor

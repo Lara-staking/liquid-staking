@@ -95,6 +95,9 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
     /// @dev Mapping of the staker snapshot claimed status
     mapping(address => mapping(uint256 => bool)) public stakerSnapshotClaimed;
 
+    /// @dev Gap for future upgrades. In case of new storage variables, they should be added before this gap and the array length should be reduced
+    uint256[49] __gap;
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
@@ -343,11 +346,13 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
 
         address validator = undelegations[msg.sender][id].undelegation_data.validator;
         uint256 balanceBefore = address(this).balance;
-        (bool success, bytes memory data) =
-            address(dposContract).call(abi.encodeWithSignature("confirmUndelegateV2(address,uint256)", validator, id));
-        if (!success) {
-            revert ConfirmUndelegationFailed(msg.sender, validator, id, abi.decode(data, (string)));
+
+        try dposContract.confirmUndelegateV2(validator, id) {
+            // do nothing
+        } catch Error(string memory reason) {
+            revert ConfirmUndelegationFailed(msg.sender, validator, id, reason);
         }
+
         uint256 balanceAfter = address(this).balance;
         if (balanceAfter - balanceBefore == 0) {
             return;
@@ -369,11 +374,13 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         }
         uint256 amount = undelegations[msg.sender][id].undelegation_data.stake;
         address validator = undelegations[msg.sender][id].undelegation_data.validator;
-        (bool success, bytes memory data) =
-            address(dposContract).call(abi.encodeWithSignature("cancelUndelegateV2(address,uint256)", validator, id));
-        if (!success) {
-            revert CancelUndelegationFailed(msg.sender, validator, id, abi.decode(data, (string)));
+
+        try dposContract.cancelUndelegateV2(validator, id) {
+            // do nothing
+        } catch Error(string memory reason) {
+            revert CancelUndelegationFailed(msg.sender, validator, id, reason);
         }
+
         try stTaraToken.mint(msg.sender, amount) {
             protocolTotalStakeAtValidator[validator] += amount;
             undelegated[msg.sender] -= amount;
@@ -464,11 +471,13 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
             "LARA: Redelegation to new validator exceeds max stake"
         );
         uint256 balanceBefore = address(this).balance;
-        (bool success, bytes memory data) =
-            address(dposContract).call(abi.encodeWithSignature("reDelegate(address,address,uint256)", from, to, amount));
-        if (!success) {
-            revert RedelegationFailed(from, to, amount, abi.decode(data, (string)));
+
+        try dposContract.reDelegate(from, to, amount) {
+            // do nothing
+        } catch Error(string memory reason) {
+            revert RedelegationFailed(from, to, amount, reason);
         }
+
         uint256 balanceAfter = address(this).balance;
         // send this amount to the treasury as it is minimal
         (bool s,) = treasuryAddress.call{value: balanceAfter - balanceBefore}("");
@@ -500,14 +509,12 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         }
         for (uint256 i = 0; i < nodesList.length; i++) {
             if (delegatedAmount == amount) break;
-            (bool success, bytes memory data) = address(dposContract).call{value: nodesList[i].amount}(
-                abi.encodeWithSignature("delegate(address)", nodesList[i].validator)
-            );
-            if (!success) {
-                revert DelegationFailed(
-                    nodesList[i].validator, msg.sender, nodesList[i].amount, abi.decode(data, (string))
-                );
+            try dposContract.delegate{value: nodesList[i].amount}(nodesList[i].validator) {
+                // do nothing
+            } catch Error(string memory reason) {
+                revert DelegationFailed(nodesList[i].validator, msg.sender, nodesList[i].amount, reason);
             }
+
             delegatedAmount += nodesList[i].amount;
             protocolValidatorRatingAtDelegation[nodesList[i].validator] = nodesList[i].rating;
         }
