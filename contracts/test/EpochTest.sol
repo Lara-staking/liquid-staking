@@ -74,7 +74,7 @@ contract SimpleEpochTest is Test, TestSetup {
             }
             lara.compound(address(lara).balance);
 
-            assertEq(lara.lastSnapshot(), block.number, "Wrong snapshot block");
+            assertEq(lara.lastSnapshotBlock(), block.number, "Wrong snapshot block");
 
             uint256 rewardsPerSnapshot = lara.rewardsPerSnapshot(snapshotId);
 
@@ -101,7 +101,7 @@ contract SimpleEpochTest is Test, TestSetup {
             }
             lastEpochTotalRewards = rewardsPerSnapshot;
 
-            vm.roll(epochDuration + lara.lastSnapshot());
+            vm.roll(epochDuration + lara.lastSnapshotBlock());
         }
     }
 
@@ -136,7 +136,7 @@ contract SimpleEpochTest is Test, TestSetup {
 
             uint256 rewardsPerSnapshot = lara.rewardsPerSnapshot(snapshotId);
 
-            assertEq(lara.lastSnapshot(), block.number, "Wrong snapshot block");
+            assertEq(lara.lastSnapshotBlock(), block.number, "Wrong snapshot block");
 
             uint256 expectedEpochReward = 100 ether + (totalDelegated / 100);
             emit ExpectedReward(expectedEpochReward);
@@ -180,7 +180,7 @@ contract SimpleEpochTest is Test, TestSetup {
             lastEpochTotalRewards = expectedDelegatorRewards;
             lastEpochCommission = lastEpochExpectedCommission;
 
-            vm.roll(epochDuration + lara.lastSnapshot());
+            vm.roll(epochDuration + lara.lastSnapshotBlock());
         }
     }
 

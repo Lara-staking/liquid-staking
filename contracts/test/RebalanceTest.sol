@@ -37,7 +37,7 @@ contract RebalanceTest is Test, TestSetup {
         // start the epoch
         lara.snapshot();
 
-        vm.roll(lara.lastSnapshot() + lara.epochDuration());
+        vm.roll(lara.lastSnapshotBlock() + lara.epochDuration());
     }
 
     // ReDelegate from

@@ -93,6 +93,17 @@ interface ILara {
     event TreasuryChanged(address indexed newTreasury);
 
     /**
+     * @dev Event emitted when rewards are claimed for a snapshot
+     * @param snapshotId the id of the snapshot
+     * @param staker the staker address
+     * @param reward the reward amount
+     * @param balance the balance of the staker
+     */
+    event RewardsClaimedForSnapshot(
+        uint256 indexed snapshotId, address indexed staker, uint256 indexed reward, uint256 balance
+    );
+
+    /**
      * @dev Function to compound the rewards into the staking contract
      * @param amount the amount to compound
      */

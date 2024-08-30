@@ -41,7 +41,9 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
     /// @dev Reference timestamp for computing systme health
     uint256 public protocolStartTimestamp;
     /// @dev Last snapshot timestamp
-    uint256 public lastSnapshot;
+    uint256 public lastSnapshotBlock;
+    /// @dev Last snapshot ID
+    uint256 public lastSnapshotId;
     /// @dev Last rebalance timestamp
     uint256 public lastRebalance;
 
@@ -232,9 +234,9 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
     /**
      * @inheritdoc ILara
      */
-    function snapshot() external nonReentrant returns (uint256) {
-        if (lastSnapshot != 0 && block.number < lastSnapshot + epochDuration) {
-            revert EpochDurationNotMet(lastSnapshot, block.number, epochDuration);
+    function snapshot() external nonReentrant returns (uint256 id) {
+        if (lastSnapshotBlock != 0 && block.number < lastSnapshotBlock + epochDuration) {
+            revert EpochDurationNotMet(lastSnapshotBlock, block.number, epochDuration);
         }
 
         // Get total delegation
@@ -273,12 +275,15 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
 
         rewardsPerSnapshot[stTaraSnapshotId] = distributableRewards;
 
+        lastSnapshotBlock = block.number;
+        lastSnapshotId = stTaraSnapshotId;
+
         (bool success,) = treasuryAddress.call{value: epochCommission}("");
         if (!success) revert TransferFailed(address(this), treasuryAddress, epochCommission);
         emit CommissionWithdrawn(treasuryAddress, epochCommission);
-
-        lastSnapshot = block.number;
-        emit SnapshotTaken(stTaraSnapshotId, totalEpochDelegation, distributableRewards, lastSnapshot + epochDuration);
+        emit SnapshotTaken(
+            stTaraSnapshotId, totalEpochDelegation, distributableRewards, lastSnapshotBlock + epochDuration
+        );
         return (stTaraSnapshotId);
     }
 
@@ -305,6 +310,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         // Mint stTARA tokens to staker
         try stTaraToken.mint(staker, delegatorReward) {
             stakerSnapshotClaimed[staker][snapshotId] = true;
+            emit RewardsClaimedForSnapshot(snapshotId, staker, delegatorReward, delegatorBalance);
             return;
         } catch Error(string memory reason) {
             revert(reason);

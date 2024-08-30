@@ -80,7 +80,7 @@ contract ManyValidatorEpochTest is Test, ManyValidatorsTestSetup {
 
             uint256 rewardsPerSnapshot = lara.rewardsPerSnapshot(snapshotId);
 
-            assertEq(lara.lastSnapshot(), block.number, "Wrong snapshot block");
+            assertEq(lara.lastSnapshotBlock(), block.number, "Wrong snapshot block");
 
             uint256 expectedEpochReward = 100 ether + (totalDelegated / 100);
             emit ExpectedReward(expectedEpochReward);
@@ -120,7 +120,7 @@ contract ManyValidatorEpochTest is Test, ManyValidatorsTestSetup {
             lastEpochTotalRewards = expectedDelegatorRewards;
             lastEpochCommission = lastEpochExpectedCommission;
 
-            vm.roll(epochDuration + lara.lastSnapshot());
+            vm.roll(epochDuration + lara.lastSnapshotBlock());
         }
     }
 
