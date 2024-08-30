@@ -41,12 +41,12 @@ yarn test:all
 ## Lara Protocol is available on a Taraxa PRnet at the following addresses
 
 ```bash
-  stTaraProxy address: 0xe01095F5f61211b2daF395E947C3dA78D7a431Ab
-  stTaraImplementation address: 0x181E53969652b3F1D2c82AF546B9AE11B3516a98
-  oracleProxy address: 0x4bFCdc5a4166405D9503437523832Bbd2DC759Ef
-  oracleImplementation address: 0xC938B8a781b6cFfEcb6A9170e4221C4D146c01d6
-  laraProxy address: 0x52a7C8Db4a32016e4b8b6b4b44590C52079f32A9
-  laraImplementation address: 0x7409A03005AFe903C9e847c93421DEF0458b851b
+  stTaraProxy address: 0xB576261E50858Caaf4C072Fd20f9fd690109C69a
+  stTaraImplementation address: 0xb5a7371e444f58f93B718b6b56c0720C6A6F26DB
+  oracleProxy address: 0x58D1Ac0a2b6003F6986191F024Ed7bC5d7d4c0da
+  oracleImplementation address: 0x0720Efbf82B1EE940978435373322D0aDD0412d1
+  laraProxy address: 0x017bcd6c818baeee80809E21786fcAA595d75eB2
+  laraImplementation address: 0xCA43A118336e915D807aa99B7A41b533881FE611
 ```
 
 ### PRnet details

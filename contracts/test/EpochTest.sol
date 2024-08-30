@@ -11,6 +11,7 @@ import {StakedNativeAsset} from "../StakedNativeAsset.sol";
 import {TestSetup} from "./SetUpTest.sol";
 import {Utils} from "../libs/Utils.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 contract EpochTest is Test, TestSetup {
     uint256 epochDuration = 0;
@@ -32,9 +33,14 @@ contract EpochTest is Test, TestSetup {
     }
 
     event ExpectedReward(uint256 expectedReward);
+    event ExcessReward(uint256 excessReward);
+    event Discount(uint32 discount);
 
-    function stake() public {
+    function stake(bool withCommissionsDiscounts) public {
         for (uint32 i = 0; i < stakers.length; i++) {
+            if (withCommissionsDiscounts) {
+                lara.setCommissionDiscounts(stakers[i], i % 10);
+            }
             vm.prank(stakers[i]);
             lara.stake{value: 50000 ether}(50000 ether);
             assertEq(stTaraToken.balanceOf(stakers[i]), 50000 ether, "Wrong stTARA value for staker");
@@ -45,7 +51,7 @@ contract EpochTest is Test, TestSetup {
     }
 
     function run(uint8 epochNumbers) public {
-        stake(); // 50 users stake 50000 ether each
+        stake(false); // 50 users stake 50000 ether each
         uint256 lastTreasuryBalance = 0;
         uint256 lastEpochTotalRewards = 0;
         uint256 lastEpochCommission = 0;
@@ -100,11 +106,102 @@ contract EpochTest is Test, TestSetup {
         }
     }
 
-    function testSingleEpoch() public {
+    function runWithDiscounts(uint8 epochNumbers) public {
+        stake(true); // 50 users stake 50000 ether each
+        uint256 lastTreasuryBalance = 0;
+        uint256 lastEpochTotalRewards = 0;
+        uint256 lastEpochCommission = 0;
+        uint256 totalDelegated = 50000 ether * stakers.length;
+
+        lara.setCommission(2);
+
+        for (uint8 j = 0; j <= epochNumbers; j++) {
+            for (uint32 i = 0; i < stakers.length; i++) {
+                balancesBefore[i] = stTaraToken.balanceOf(stakers[i]);
+            }
+            uint256 totalSupplyBefore = stTaraToken.totalSupply();
+            uint256 treasuryBalanceBefore = address(lara.treasuryAddress()).balance;
+            assertEq(
+                treasuryBalanceBefore,
+                lastTreasuryBalance + lastEpochCommission,
+                "Wrong total treasury balance before snapshot"
+            );
+            lastTreasuryBalance = treasuryBalanceBefore;
+            lara.snapshot();
+            lara.delegateToValidators(address(lara).balance);
+
+            assertEq(lara.lastSnapshot(), block.number, "Wrong snapshot block");
+
+            uint256 expectedEpochReward = 100 ether + (totalDelegated / 100);
+            emit ExpectedReward(expectedEpochReward);
+            uint256 lastEpochExpectedCommission = (expectedEpochReward * lara.commission()) / 100;
+            uint256 expectedDelegatorRewards = expectedEpochReward - lastEpochExpectedCommission;
+            totalDelegated += expectedDelegatorRewards;
+
+            uint256 totalActualRewards = 0;
+            uint256 totalExpectedRewardsWithDiscounts = 0;
+            for (uint32 i = 0; i < stakers.length; i++) {
+                uint256 slice = Utils.calculateSlice(balancesBefore[i], totalSupplyBefore);
+                uint256 currentBalance = stTaraToken.balanceOf(stakers[i]);
+                uint32 discount = lara.commissionDiscounts(stakers[i]);
+                uint256 expectedReward = (expectedDelegatorRewards * slice * (100 + discount)) / 10000 / 1e18;
+                uint256 actualReward = currentBalance - balancesBefore[i];
+
+                totalActualRewards += actualReward;
+                totalExpectedRewardsWithDiscounts += expectedReward;
+
+                emit StakerRewardDetails(i, slice, discount, expectedReward, actualReward);
+
+                assertEq(
+                    currentBalance,
+                    expectedReward + balancesBefore[i],
+                    string(abi.encodePacked("Wrong stTara value for user ", Strings.toString(i), " after epoch end"))
+                );
+            }
+
+            emit RewardSummary(expectedDelegatorRewards, totalExpectedRewardsWithDiscounts, totalActualRewards);
+
+            // Check if total rewards distributed match expected rewards (allowing for small rounding differences)
+            assertApproxEqAbs(
+                totalActualRewards,
+                totalExpectedRewardsWithDiscounts,
+                stakers.length, // Allow for 1 wei rounding error per staker
+                "Total actual rewards don't match total expected rewards with discounts"
+            );
+
+            lastEpochTotalRewards = expectedDelegatorRewards;
+            lastEpochCommission = lastEpochExpectedCommission;
+
+            vm.roll(epochDuration + lara.lastSnapshot());
+        }
+    }
+
+    event StakerRewardDetails(
+        uint32 stakerIndex, uint256 slice, uint32 discount, uint256 expectedReward, uint256 actualReward
+    );
+    event RewardSummary(
+        uint256 expectedDelegatorRewards, uint256 totalExpectedRewardsWithDiscounts, uint256 totalActualRewards
+    );
+
+    function test_simpleCommissionMaths() public pure {
+        uint256 commission = 6;
+        uint256 epochRewards = 4431 ether;
+        uint256 epochCommission = (epochRewards * commission) / 100;
+        uint256 distributableRewards = epochRewards - epochCommission;
+        assertEq(epochRewards, distributableRewards + epochCommission, "Wrong distributable rewards");
+        uint256 slice = Utils.calculateSlice(100 ether, 100 ether);
+        assertEq(slice, 1 ether, "Wrong slice value");
+    }
+
+    function test_SingleEpoch() public {
         run(0);
     }
 
-    function testRunMultipleEpochs() public {
+    function test_RunMultipleEpochs() public {
         run(5);
+    }
+
+    function test_CommissionDiscounts() public {
+        runWithDiscounts(0);
     }
 }

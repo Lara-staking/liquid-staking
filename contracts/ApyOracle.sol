@@ -226,6 +226,7 @@ contract ApyOracle is IApyOracle, OwnableUpgradeable, UUPSUpgradeable {
         for (uint256 i = 0; i < data.length; i++) {
             nodeAddresses[i] = data[i].account;
             nodes[nodeAddresses[i]] = data[i];
+            emit NodeDataUpdated(nodeAddresses[i], data[i].apy, data[i].rating);
         }
         nodesList = nodeAddresses;
         nodeCount = nodesList.length;
