@@ -10,7 +10,6 @@ import {IstTara} from "./interfaces/IstTara.sol";
 import {ILara} from "./interfaces/ILara.sol";
 import {DposInterface} from "./interfaces/IDPOS.sol";
 import {IApyOracle} from "./interfaces/IApyOracle.sol";
-import {ISnapshot} from "./interfaces/ISnapshot.sol";
 
 import {
     NoDelegation,
