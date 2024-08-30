@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts (last updated v4.9.0) (token/ERC20/extensions/ERC20Snapshot.sol)
+// Modified to add yield bearing contracts and contract deposits by Lara Protocol
 
 pragma solidity 0.8.20;
 
@@ -41,6 +42,7 @@ import {ISnapshot} from "./interfaces/ISnapshot.sol";
 abstract contract ERC20Snapshot is ERC20, ISnapshot {
     // Inspired by Jordi Baylina's MiniMeToken to record historical balances:
     // https://github.com/Giveth/minime/blob/ea04d950eea153a04c51fa510b068b9dded390cb/contracts/MiniMeToken.sol
+    // Modified to add yield bearing contracts and contract deposits by Lara Protocol
 
     using Arrays for uint256[];
 
@@ -56,6 +58,8 @@ abstract contract ERC20Snapshot is ERC20, ISnapshot {
     Snapshots private _totalSupplySnapshots;
 
     mapping(address => uint256) private _contractDeposits;
+
+    mapping(address => bool) private _yieldBearingContracts;
 
     // Snapshot ids increase monotonically, with the first value being 1. An id of 0 is invalid.
     uint256 private _currentSnapshotId;
@@ -96,18 +100,46 @@ abstract contract ERC20Snapshot is ERC20, ISnapshot {
     }
 
     /**
+     * @dev Set a yield bearing contract
+     * @param contractAddress the contract address
+     * Yield-bearing concept is used to track the contract deposits of addresses sending(depositing) tokens to yield bearing contracts
+     * This is used to properly forward yields of the extending rebasing token to the depositors in case of contracts that are not aware of the rebasing token(non yield bearing contracts)
+     * Contracts that are aware of the rebasing token are added to the yield bearing contracts mapping and are reciving the yields from the extending rebasing token
+     */
+    function _setYieldBearingContract(address contractAddress) internal virtual {
+        _yieldBearingContracts[contractAddress] = true;
+    }
+
+    /**
+     * @dev Check if a contract is a yield bearing contract
+     * @param contractAddress the contract address
+     * @return bool true if the contract is a yield bearing contract, false otherwise
+     */
+    function isYieldBearingContract(address contractAddress) public view returns (bool) {
+        return _yieldBearingContracts[contractAddress];
+    }
+
+    /**
      * @dev Get the current snapshotId
      */
     function _getCurrentSnapshotId() internal view virtual returns (uint256) {
         return _currentSnapshotId;
     }
 
+    /**
+     * @dev Get the contract deposit of an address
+     * @param account the address
+     * @return uint256 the contract deposit of the address
+     */
     function contractDepositOf(address account) public view virtual returns (uint256) {
         return _contractDeposits[account];
     }
 
     /**
      * @dev Retrieves the balance of `account` at the time `snapshotId` was created.
+     * @param account the address
+     * @param snapshotId the snapshot id
+     * @return uint256 the balance of the address at the time of the snapshot
      */
     function balanceOfAt(address account, uint256 snapshotId) public view virtual returns (uint256) {
         (bool snapshotted, uint256 value) = _valueAt(snapshotId, _accountBalanceSnapshots[account]);
@@ -117,6 +149,8 @@ abstract contract ERC20Snapshot is ERC20, ISnapshot {
 
     /**
      * @dev Retrieves the total supply at the time `snapshotId` was created.
+     * @param snapshotId the snapshot id
+     * @return uint256 the total supply at the time of the snapshot
      */
     function totalSupplyAt(uint256 snapshotId) public view virtual returns (uint256) {
         (bool snapshotted, uint256 value) = _valueAt(snapshotId, _totalSupplySnapshots);
@@ -124,14 +158,26 @@ abstract contract ERC20Snapshot is ERC20, ISnapshot {
         return snapshotted ? value : totalSupply();
     }
 
+    /**
+     * @dev Retrieves the contract deposit of `account` at the time `snapshotId` was created.
+     * @param account the address
+     * @param snapshotId the snapshot id
+     * @return uint256 the contract deposit of the address at the time of the snapshot
+     */
     function contractDepositOfAt(address account, uint256 snapshotId) public view virtual returns (uint256) {
         (bool snapshotted, uint256 value) = _contractValueAt(snapshotId, _accountBalanceSnapshots[account]);
 
         return snapshotted ? value : contractDepositOf(account);
     }
 
-    // Update balance and/or total supply snapshots before the values are modified. This is implemented
-    // in the _beforeTokenTransfer hook, which is executed for _mint, _burn, and _transfer operations.
+    /**
+     * @dev Update balance and/or total supply snapshots before the values are modified. This is implemented
+     * in the _beforeTokenTransfer hook, which is executed for _mint, _burn, and _transfer operations.
+     * @param from the address
+     * @param to the address
+     * @param amount the amount
+     * @notice This method is modified to include the contract deposits in the snapshots
+     */
     function _update(address from, address to, uint256 amount) internal virtual override {
         super._update(from, to, amount);
 
@@ -150,8 +196,10 @@ abstract contract ERC20Snapshot is ERC20, ISnapshot {
         }
 
         if (to.code.length > 0) {
-            _contractDeposits[from] += amount;
-            if (from.code.length > 0) {
+            if (!isYieldBearingContract(to)) {
+                _contractDeposits[from] += amount;
+            }
+            if (from.code.length > 0 && !isYieldBearingContract(to)) {
                 _contractDeposits[from] -= amount;
             }
             _updateContractSnapshot(from);
@@ -159,6 +207,13 @@ abstract contract ERC20Snapshot is ERC20, ISnapshot {
         }
     }
 
+    /**
+     * @dev Retrieves the value at the time `snapshotId` was created.
+     * @param snapshotId the snapshot id
+     * @param snapshots the snapshots
+     * @return bool true if the value was found, false otherwise
+     * @return uint256 the value at the time of the snapshot
+     */
     function _valueAt(uint256 snapshotId, Snapshots storage snapshots) private view returns (bool, uint256) {
         require(snapshotId > 0, "ERC20Snapshot: id is 0");
         require(snapshotId <= _getCurrentSnapshotId(), "ERC20Snapshot: nonexistent id");
@@ -186,6 +241,13 @@ abstract contract ERC20Snapshot is ERC20, ISnapshot {
         }
     }
 
+    /**
+     * @dev Retrieves the contract deposit of `account` at the time `snapshotId` was created.
+     * @param snapshotId the snapshot id
+     * @param snapshots the snapshots
+     * @return bool true if the value was found, false otherwise
+     * @return uint256 the value at the time of the snapshot
+     */
     function _contractValueAt(uint256 snapshotId, Snapshots storage snapshots) private view returns (bool, uint256) {
         require(snapshotId > 0, "ERC20Snapshot: id is 0");
         require(snapshotId <= _getCurrentSnapshotId(), "ERC20Snapshot: nonexistent id");
@@ -213,14 +275,27 @@ abstract contract ERC20Snapshot is ERC20, ISnapshot {
         }
     }
 
+    /**
+     * @dev Update the balance snapshot of an account
+     * @param account the address
+     */
     function _updateAccountSnapshot(address account) private {
         _updateSnapshot(_accountBalanceSnapshots[account], balanceOf(account), 0);
     }
 
+    /**
+     * @dev Update the total supply snapshot
+     */
     function _updateTotalSupplySnapshot() private {
         _updateSnapshot(_totalSupplySnapshots, totalSupply(), 0);
     }
 
+    /**
+     * @dev Update the snapshot
+     * @param snapshots the snapshots
+     * @param currentValue the current value
+     * @param currentContractDeposit the current contract deposit
+     */
     function _updateSnapshot(Snapshots storage snapshots, uint256 currentValue, uint256 currentContractDeposit)
         private
     {
@@ -232,10 +307,19 @@ abstract contract ERC20Snapshot is ERC20, ISnapshot {
         }
     }
 
+    /**
+     * @dev Update the contract snapshot
+     * @param contractAddress the contract address
+     */
     function _updateContractSnapshot(address contractAddress) private {
         _updateSnapshot(_accountBalanceSnapshots[contractAddress], 0, contractDepositOf(contractAddress));
     }
 
+    /**
+     * @dev Retrieve the last snapshot id
+     * @param ids the snapshot ids
+     * @return uint256 the last snapshot id
+     */
     function _lastSnapshotId(uint256[] storage ids) private view returns (uint256) {
         if (ids.length == 0) {
             return 0;

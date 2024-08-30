@@ -15,8 +15,6 @@ contract StakedNativeAsset is ERC20Snapshot, Ownable, Pausable, IstTara {
     // Address of Lara protocol
     address public lara;
 
-    mapping(address => bool) public yieldBearingContracts;
-
     constructor() ERC20("Staked TARA", "stTARA") Ownable(msg.sender) Pausable() {}
 
     /**
@@ -32,7 +30,7 @@ contract StakedNativeAsset is ERC20Snapshot, Ownable, Pausable, IstTara {
      */
     function cumulativeBalanceOf(address user) external view returns (uint256) {
         if (user.code.length > 0) {
-            if (yieldBearingContracts[user]) {
+            if (isYieldBearingContract(user)) {
                 return balanceOf(user);
             }
             return 0;
@@ -46,7 +44,7 @@ contract StakedNativeAsset is ERC20Snapshot, Ownable, Pausable, IstTara {
     function cumulativeBalanceOfAt(address user, uint256 snapshotId) external view returns (uint256) {
         /// @notice if smart contract, return balanceOfAt() , else, to EOA return balanceOfAt() + wstTARA.balanceOfAt()
         if (user.code.length > 0) {
-            if (yieldBearingContracts[user]) {
+            if (isYieldBearingContract(user)) {
                 return balanceOfAt(user, snapshotId);
             }
             return 0;
@@ -58,18 +56,6 @@ contract StakedNativeAsset is ERC20Snapshot, Ownable, Pausable, IstTara {
         return balanceOfAt(user, snapshotId) + contractDepositOfAt(user, snapshotId);
     }
 
-    /// user --> stTARA --> wstTARA --> Uni v3 pool
-    /// balanceOfAt(user, snapshotId) = 0                 => full stTARA + wstTARA supply = 2.5M
-    /// wstTARA.balanceOfAt(user, snapshotId) = 2.5M
-
-    /// user2 --> stTARA --> wstTARA --> Uni v3 pool
-    /// balanceOfAt(user2, snapshotId) = 0                 => full stTARA + wstTARA supply = 7.5M
-    /// wstTARA.balanceOfAt(user2, snapshotId) = 5M
-
-    /// Uni v3 pool
-    /// balanceOfAt(pool, snapshotId) = 0                 => full stTARA + wstTARA supply = 7.5M
-    /// wstTARA.balanceOfAt(pool, snapshotId) = 7.5M
-
     /**
      * @inheritdoc ERC20Snapshot
      */
@@ -80,8 +66,8 @@ contract StakedNativeAsset is ERC20Snapshot, Ownable, Pausable, IstTara {
     /**
      * @inheritdoc IstTara
      */
-    function setYieldBearingContract(address contractAddress) external onlyOwner {
-        yieldBearingContracts[contractAddress] = true;
+    function setYieldBearingContract(address contractAddress) external override onlyOwner {
+        super._setYieldBearingContract(contractAddress);
     }
 
     /**

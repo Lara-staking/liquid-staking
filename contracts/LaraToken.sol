@@ -49,6 +49,9 @@ contract LaraToken is ERC20, ReentrancyGuard {
 
     fallback() external payable {}
 
+    /**
+     * @dev Start the presale
+     */
     function startPresale() external onlyOnce nonReentrant {
         require(treasuryAddress != address(0), "Presale: treasury address is the zero address");
         require(balanceOf(address(this)) == totalSupply() / 10, "Presale: incorrect initial presale balance");
@@ -57,6 +60,9 @@ contract LaraToken is ERC20, ReentrancyGuard {
         presaleStartCount++;
     }
 
+    /**
+     * @dev End the presale
+     */
     function endPresale() external onlyOnceEnd nonReentrant {
         require(presaleStartBlock > 0, "Presale: presale not started");
         require(presaleRunning, "Presale: presale not running");
@@ -75,6 +81,9 @@ contract LaraToken is ERC20, ReentrancyGuard {
         }
     }
 
+    /**
+     * @dev Swap function
+     */
     function swap() external payable nonReentrant {
         require(presaleRunning, "Presale: presale not running");
         require(presaleStartBlock > 0, "Presale: presale not started");

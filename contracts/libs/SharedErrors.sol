@@ -93,8 +93,3 @@ error SnapshotAlreadyClaimed(uint256 snapshotId, address staker);
  * @notice It is returned if the snapshot was not found.
  */
 error SnapshotNotFound(uint256 snapshotId);
-
-/**
- * @notice It is returned if the snapshot has no associated rewards.
- */
-error EmptySnapshot(uint256 snapshotId);

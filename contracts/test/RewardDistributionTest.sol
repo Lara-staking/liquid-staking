@@ -10,7 +10,14 @@ import {MockDpos} from "../mocks/MockDpos.sol";
 import {StakedNativeAsset} from "../StakedNativeAsset.sol";
 import {TestSetup} from "./SetUpTest.sol";
 import {Utils} from "../libs/Utils.sol";
-import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
+import {
+    StakeAmountTooLow,
+    StakeValueTooLow,
+    SnapshotAlreadyClaimed,
+    SnapshotNotFound,
+    NoDelegation,
+    ZeroAddress
+} from "../libs/SharedErrors.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 contract UniPool {
@@ -88,7 +95,44 @@ contract RewardDistributionTest is Test, TestSetup {
         }
     }
 
-    function test_OneStake_ThenDeposit_NoDoubleRewards() public {
+    function test_Reverts_On_DoubleClaim() public {
+        address singleStaker = vm.addr(6666666666);
+        uint256 initialBalance = 50000 ether;
+        vm.deal(singleStaker, initialBalance);
+        vm.prank(singleStaker);
+        lara.stake{value: initialBalance}(initialBalance);
+
+        uint256 snapshotId = lara.snapshot();
+
+        checkRewardsAreRight(singleStaker, snapshotId, stTaraToken.cumulativeBalanceOfAt(singleStaker, snapshotId));
+
+        vm.expectRevert(abi.encodeWithSelector(SnapshotAlreadyClaimed.selector, snapshotId, singleStaker));
+        lara.distrbuteRewardsForSnapshot(singleStaker, snapshotId);
+    }
+
+    function test_Reverts_On_DisributeRewards_Check_Violation() public {
+        address singleStaker = vm.addr(6666666666);
+
+        vm.expectRevert(abi.encodeWithSelector(NoDelegation.selector));
+        lara.snapshot();
+
+        uint256 initialBalance = 50000 ether;
+        vm.deal(singleStaker, initialBalance);
+        vm.prank(singleStaker);
+        lara.stake{value: initialBalance}(initialBalance);
+
+        uint256 snapshotId = lara.snapshot();
+
+        checkRewardsAreRight(singleStaker, snapshotId, stTaraToken.cumulativeBalanceOfAt(singleStaker, snapshotId));
+
+        vm.expectRevert(abi.encodeWithSelector(SnapshotNotFound.selector, snapshotId + 1));
+        lara.distrbuteRewardsForSnapshot(singleStaker, snapshotId + 1);
+
+        vm.expectRevert(abi.encodeWithSelector(ZeroAddress.selector));
+        lara.distrbuteRewardsForSnapshot(address(0), snapshotId);
+    }
+
+    function test_OneStake_ThenDeposit_In_NonYieldBearing_Contract_NoDoubleRewards() public {
         address singleStaker = vm.addr(6666666666);
         uint256 initialBalance = 50000 ether;
         vm.deal(singleStaker, initialBalance);
@@ -98,6 +142,45 @@ contract RewardDistributionTest is Test, TestSetup {
         // Then deposit wstTARA into Uni v3 pool
         vm.startPrank(singleStaker);
         UniPool uniPool = new UniPool(stTaraToken);
+        stTaraToken.approve(address(uniPool), initialBalance);
+        uniPool.deposit(initialBalance);
+        vm.stopPrank();
+
+        uint256 stTaraTotalSupplyBefore = stTaraToken.totalSupply();
+
+        uint256 snapshotId = lara.snapshot();
+
+        uint256 rewardsPerSnapshot = lara.rewardsPerSnapshot(snapshotId);
+
+        checkRewardsAreRight(singleStaker, snapshotId, stTaraToken.cumulativeBalanceOfAt(singleStaker, snapshotId));
+
+        checkRewardsAreRight(
+            address(stTaraToken), snapshotId, stTaraToken.cumulativeBalanceOfAt(address(stTaraToken), snapshotId)
+        );
+
+        checkRewardsAreRight(
+            address(uniPool), snapshotId, stTaraToken.cumulativeBalanceOfAt(address(uniPool), snapshotId)
+        );
+
+        uint256 stTaraTotalSupplyAfter = stTaraToken.totalSupply();
+
+        assertEq(
+            stTaraTotalSupplyBefore + rewardsPerSnapshot, stTaraTotalSupplyAfter, "Wrong total supply after snapshot"
+        );
+    }
+
+    function test_OneStake_ThenDeposit_In_YieldBearing_Contract_NoDoubleRewards() public {
+        address singleStaker = vm.addr(6666666666);
+        uint256 initialBalance = 50000 ether;
+        vm.deal(singleStaker, initialBalance);
+        vm.prank(singleStaker);
+        lara.stake{value: initialBalance}(initialBalance);
+
+        UniPool uniPool = new UniPool(stTaraToken);
+        // Set yield bearing contract
+        stTaraToken.setYieldBearingContract(address(uniPool));
+        // Then deposit wstTARA into Uni v3 pool
+        vm.startPrank(singleStaker);
         stTaraToken.approve(address(uniPool), initialBalance);
         uniPool.deposit(initialBalance);
         vm.stopPrank();

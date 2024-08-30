@@ -7,6 +7,27 @@ import {ISnapshot} from "./ISnapshot.sol";
 /**
  * @title IstTara
  * @dev Interface for the IstTara contract, extending IERC20
+ * This interface is used to handle the stTARA and wstTARA balances of users and contracts,
+ * handling more complex scenarios as yield-bearing contracts and non-yield bearing contracts.
+ * Example scenario:
+ *
+ * User 1:
+ * - stTARA balance: 2.5M
+ * - Total stTARA supply: 2.5M
+ *
+ * User 2:
+ * - stTARA balance: 5M
+ * - Total stTARA supply: 7.5M
+ *
+ * Both users deposit their stTARA into a non-yield-bearing contract.
+ *
+ * Uniswap V3 pool:
+ * - stTARA balance: 7.5M
+ * - Total stTARA supply: 7.5M
+ * - All yields should be forwarded from the V3 pool contract to the depsitors.
+ *
+ * In this scenario, cumulativeBalanceOfAt(address, snapshotId) would return 0 for all non-yield bearing contracts,
+ * while returning 2.5M and 7.5M for users 1 and 2 respectively.
  */
 
 interface IstTara is IERC20, ISnapshot {

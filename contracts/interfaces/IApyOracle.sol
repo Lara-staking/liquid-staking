@@ -50,45 +50,55 @@ interface IApyOracle {
 
     /**
      * @dev Function to get the node count
+     * @return the node count
      */
     function getNodeCount() external view returns (uint256);
 
     /**
      * @dev Function to get nodes for delegation
+     * @param amount the amount to delegate
+     * @return the nodes for delegation
      */
-    function getNodesForDelegation(
-        uint256 amount
-    ) external returns (TentativeDelegation[] memory);
+    function getNodesForDelegation(uint256 amount) external returns (TentativeDelegation[] memory);
 
     /**
      * @dev Function to get rebalance list
+     * @param currentValidators the current validators
+     * @return the rebalance list
      */
-    function getRebalanceList(
-        TentativeDelegation[] memory currentValidators
-    ) external returns (TentativeReDelegation[] memory);
+    function getRebalanceList(TentativeDelegation[] memory currentValidators)
+        external
+        returns (TentativeReDelegation[] memory);
 
     /**
      * @dev Function to update the node count
+     * @param count the count to update
      */
     function updateNodeCount(uint256 count) external;
 
     /**
      * @dev Function to batch update node data
+     * @param data the data to update
      */
     function batchUpdateNodeData(IApyOracle.NodeData[] memory data) external;
 
     /**
      * @dev Function to get node data
+     * @param node the node to get
+     * @return the node data
      */
     function getNodeData(address node) external view returns (NodeData memory);
 
     /**
      * @dev Function to update node data
+     * @param node the node to update
+     * @param data the data to update
      */
     function updateNodeData(address node, NodeData memory data) external;
 
     /**
      * @dev Function to get data feed address
+     * @return the data feed address
      */
     function getDataFeedAddress() external view returns (address);
 }

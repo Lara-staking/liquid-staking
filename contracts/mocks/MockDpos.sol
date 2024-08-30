@@ -44,7 +44,7 @@ contract MockDpos is MockIDPOS {
         return validators[validator].account != address(0);
     }
 
-    function getDelegations(address delegator, uint32 batch)
+    function getDelegations(address delegator, uint32)
         external
         view
         returns (MockIDPOS.DelegationData[] memory _delegations, bool end)
@@ -247,7 +247,7 @@ contract MockDpos is MockIDPOS {
         emit UndelegateCanceled(id, msg.sender, validator, undelegation.amount);
     }
 
-    function getUndelegationV2(address delegator, address validator, uint64 undelegation_id)
+    function getUndelegationV2(address, address validator, uint64 undelegation_id)
         external
         view
         returns (MockIDPOS.UndelegationV2Data memory undelegation_v2)

@@ -10,7 +10,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  */
 interface ISnapshot {
     /**
-     * @dev Function to take a snapshot of the contract balances
+     * @dev Function to take a snapshot of the tracked contract internal values(most notably balances and contract deposits)
      * @return the snapshot id
      */
     function snapshot() external returns (uint256);

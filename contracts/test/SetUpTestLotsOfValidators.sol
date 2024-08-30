@@ -83,14 +83,6 @@ abstract contract ManyValidatorsTestSetup is Test {
         assertEq(mockApyOracle.lara(), address(lara), "Lara address was not set successfully");
     }
 
-    function checkValidatorTotalStakesAreZero() public {
-        for (uint256 i = 0; i < validators.length; i++) {
-            assertEq(lara.protocolTotalStakeAtValidator(validators[i]), 0, "Validator total stake should be zero");
-            uint256 total_stake = mockDpos.getValidator(validators[i]).total_stake;
-            assertEq(total_stake, 0, "Validator total stake should be zero in mockDpos");
-        }
-    }
-
     function findValidatorWithStake(uint256 stake) public view returns (address) {
         for (uint256 i = 0; i < validators.length; i++) {
             if (lara.protocolTotalStakeAtValidator(validators[i]) == stake) {

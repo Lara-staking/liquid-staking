@@ -34,9 +34,6 @@ contract RebalanceTest is Test, TestSetup {
         // Check the dpos balance
         assertEq(dposBalanceAfter - dposBalanceBefore, amount, "Wrong dpos balance");
 
-        // Check other starting values
-        assertEq(lara.delegators(0), address(this), "Wrong delegator");
-
         // start the epoch
         lara.snapshot();
 
