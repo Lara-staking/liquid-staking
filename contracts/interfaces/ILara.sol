@@ -5,6 +5,9 @@ pragma solidity 0.8.20;
 /**
  * @title ILara
  * @dev This interface defines the methods for the Lara contract
+ * @notice Lara is a staking contract that allows users to stake their TARA tokens and earn rewards.
+ * @notice It is a general staking contract that can be used for any staking purpose.
+ * @notice Use this interface to loose coupling between Lara and other contracts.
  */
 interface ILara {
     /**
@@ -21,7 +24,10 @@ interface ILara {
      * @param nextSnapshotBlock the block number of the next snapshot
      */
     event SnapshotTaken(
-        uint256 indexed totalDelegation, uint256 indexed totalRewards, uint256 indexed nextSnapshotBlock
+        uint256 indexed snapshotId,
+        uint256 indexed totalDelegation,
+        uint256 indexed totalRewards,
+        uint256 nextSnapshotBlock
     );
 
     /**
@@ -85,6 +91,17 @@ interface ILara {
      * @param newTreasury the new treasury address
      */
     event TreasuryChanged(address indexed newTreasury);
+
+    /**
+     * @dev Event emitted when rewards are claimed for a snapshot
+     * @param snapshotId the id of the snapshot
+     * @param staker the staker address
+     * @param reward the reward amount
+     * @param balance the balance of the staker
+     */
+    event RewardsClaimedForSnapshot(
+        uint256 indexed snapshotId, address indexed staker, uint256 indexed reward, uint256 balance
+    );
 
     /**
      * @dev Function to compound the rewards into the staking contract
@@ -182,7 +199,8 @@ interface ILara {
     /**
      * @notice method to create a protocol snapshot.
      * A protocol snapshot can be done once every epochDuration blocks.
-     * The method will claim all rewards from the DPOS contract and distribute them to the delegators.
+     * The method will claim all rewards from the DPOS contract.
+     * @return the snapshot id of the made stTARA snapshot
      */
-    function snapshot() external;
+    function snapshot() external returns (uint256);
 }

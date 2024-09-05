@@ -58,3 +58,38 @@ error NotEnoughStTARA(address user, uint256 balance, uint256 amount);
  * @notice It is returned if the undelegations don't match the amount.
  */
 error UndelegationsNotMatching(uint256 undelegations, uint256 amount);
+
+/**
+ * @notice It is returned if the caller is not the stTARA contract.
+ */
+error NotStTARA();
+
+/**
+ * @notice It is returned if the caller is not the Lara contract.
+ */
+error NotLara();
+
+/**
+ * @notice It is returned if the address is zero.
+ */
+error ZeroAddress();
+
+/**
+ * @notice It is returned if there is no delegation.
+ */
+error NoDelegation();
+
+/**
+ * @notice It is returned if the transfer fails.
+ */
+error TransferFailed(address from, address to, uint256 amount);
+
+/**
+ * @notice It is returned if the snapshot was already claimed.
+ */
+error SnapshotAlreadyClaimed(uint256 snapshotId, address staker);
+
+/**
+ * @notice It is returned if the snapshot was not found.
+ */
+error SnapshotNotFound(uint256 snapshotId);

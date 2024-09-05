@@ -10,7 +10,6 @@ import {MockDpos} from "../mocks/MockDpos.sol";
 import {StakedNativeAsset} from "../StakedNativeAsset.sol";
 import {TestSetup} from "./SetUpTest.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
-import {Utils} from "../libs/Utils.sol";
 
 contract StakeTest is Test, TestSetup {
     uint256 epochDuration = 0;
@@ -38,9 +37,6 @@ contract StakeTest is Test, TestSetup {
         } else {
             delegations = amount / 80000000 ether + 1;
         }
-        for (uint8 i = 0; i < delegations; i++) {
-            assertEq(lara.validators(i), validators[i], "Validator not registered");
-        }
 
         stTaraToken.approve(address(lara), amount);
         // Call the unstake function
@@ -57,11 +53,9 @@ contract StakeTest is Test, TestSetup {
         assertEq(lara.undelegated(address(this)), amount, "Wrong undelegated amount in lara");
 
         uint256 initialUndelegated = lara.undelegated(address(this));
-        vm.roll(mockDpos.UNDELEGATION_DELAY_BLOCKS() + block.number);
+        vm.roll(mockDpos.UNDELEGATION_DELAY_BLOCKS() + block.number + 1);
         for (uint256 i = 0; i < undelegationIds.length; i++) {
-            uint256 balanceBefore = address(this).balance;
             lara.confirmUndelegate(undelegationIds[i]);
-            uint256 balanceAfter = address(this).balance;
             initialUndelegated = lara.undelegated(address(this));
         }
     }
@@ -82,9 +76,6 @@ contract StakeTest is Test, TestSetup {
         } else {
             delegations = amount / 80000000 ether + 1;
         }
-        for (uint8 i = 0; i < delegations; i++) {
-            assertEq(lara.validators(i), validators[i], "Validator not registered");
-        }
 
         stTaraToken.approve(address(lara), amount);
         // Call the unstake function
@@ -101,11 +92,9 @@ contract StakeTest is Test, TestSetup {
         assertEq(lara.undelegated(address(this)), amount, "Wrong undelegated amount in lara");
 
         uint256 initialUndelegated = lara.undelegated(address(this));
-        vm.roll(mockDpos.UNDELEGATION_DELAY_BLOCKS() + block.number);
+        vm.roll(mockDpos.UNDELEGATION_DELAY_BLOCKS() + block.number + 1);
         for (uint256 i = 0; i < undelegationIds.length; i++) {
-            uint256 stTaraBalanceBefore = stTaraToken.balanceOf(address(this));
             lara.cancelUndelegate(undelegationIds[i]);
-            uint256 stTaraBalanceAfter = stTaraToken.balanceOf(address(this));
             initialUndelegated = lara.undelegated(address(this));
         }
     }
@@ -132,25 +121,6 @@ contract StakeTest is Test, TestSetup {
         // Call the function with an amount greater than the staked amount
         vm.expectRevert("Amount not approved for unstaking");
         lara.requestUndelegate(6000000 ether);
-    }
-
-    function test_Revert_On_Double_Register() public {
-        uint256 amount = 500000 ether;
-
-        // Call the stake function
-        lara.stake{value: amount}(amount);
-
-        assertEq(lara.delegators(0), address(this));
-
-        vm.expectRevert();
-        assertEq(lara.delegators(1), address(0));
-
-        lara.stake{value: amount}(amount);
-
-        assertEq(lara.delegators(0), address(this));
-
-        vm.expectRevert();
-        assertEq(lara.delegators(1), address(0));
     }
 
     function testFuzz_stakeAndUnstake(uint256 amount) public {

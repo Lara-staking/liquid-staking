@@ -17,13 +17,9 @@ export async function deployApyOracle(
   return (await apyOracle.waitForDeployment()) as any as ApyOracle;
 }
 
-export async function deploystTara(
-  owner: SignerWithAddress
-): Promise<StakedNativeAsset> {
+export async function deploystTara(): Promise<StakedNativeAsset> {
   const StTara = await ethers.getContractFactory(ContractNames.stTara);
-  const stTara = await upgrades.deployProxy(StTara, [], {
-    initialOwner: owner.address,
-  });
+  const stTara = await StTara.deploy();
 
   return (await stTara.waitForDeployment()) as any as StakedNativeAsset;
 }

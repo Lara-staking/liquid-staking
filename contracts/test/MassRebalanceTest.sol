@@ -44,7 +44,7 @@ contract MassRebalanceTest is Test, ManyValidatorsTestSetup {
             assertEq(lara.undelegated(delegator), 0, "Wrong undelegated amount");
         }
 
-        vm.roll(lara.lastSnapshot() + lara.epochDuration());
+        vm.roll(lara.lastSnapshotBlock() + lara.epochDuration());
     }
 
     function testFuzz_testRedelegateStakeFromMultipleDelegatorsToMultipleValidators(uint256 total) public {

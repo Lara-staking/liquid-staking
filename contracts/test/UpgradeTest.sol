@@ -12,7 +12,6 @@ import {ApyOracle} from "../ApyOracle.sol";
 import {MockDpos} from "../mocks/MockDpos.sol";
 import {StakedNativeAsset} from "../StakedNativeAsset.sol";
 import {LaraV2Test} from "./LaraV2Test.sol";
-import {Deployer} from "./Deployer.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 
 contract UpgradeTest is Test {
@@ -27,15 +26,11 @@ contract UpgradeTest is Test {
 
     address[] validators = new address[](numValidators);
 
-    Deployer d;
-
     fallback() external payable {}
 
     receive() external payable {}
 
-    function setUp() public {
-        d = new Deployer();
-    }
+    function setUp() public {}
 
     function testUpgradeProxy() public {
         setupValidators();
@@ -93,9 +88,7 @@ contract UpgradeTest is Test {
     }
 
     function setupLara() public {
-        address stTaraProxy =
-            Upgrades.deployUUPSProxy("StakedNativeAsset.sol", abi.encodeCall(StakedNativeAsset.initialize, ()));
-        stTaraToken = StakedNativeAsset(stTaraProxy);
+        stTaraToken = new StakedNativeAsset();
         address laraProxy = Upgrades.deployUUPSProxy(
             "Lara.sol",
             abi.encodeCall(
@@ -116,14 +109,6 @@ contract UpgradeTest is Test {
         mockApyOracle.setLara(address(lara));
         assertEq(mockApyOracle.lara(), address(lara), "Lara address was not set successfully");
         lara.setCommission(commission);
-    }
-
-    function checkValidatorTotalStakesAreZero() public {
-        for (uint256 i = 0; i < validators.length; i++) {
-            assertEq(lara.protocolTotalStakeAtValidator(validators[i]), 0, "Validator total stake should be zero");
-            uint256 total_stake = mockDpos.getValidator(validators[i]).total_stake;
-            assertEq(total_stake, 0, "Validator total stake should be zero in mockDpos");
-        }
     }
 
     function findValidatorWithStake(uint256 stake) public view returns (address) {

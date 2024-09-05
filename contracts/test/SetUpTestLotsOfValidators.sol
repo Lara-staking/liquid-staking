@@ -18,7 +18,6 @@ abstract contract ManyValidatorsTestSetup is Test {
     ApyOracle mockApyOracle;
     MockDpos mockDpos;
     StakedNativeAsset stTaraToken;
-
     address treasuryAddress = address(9999);
     uint16 numValidators = 400;
 
@@ -70,9 +69,7 @@ abstract contract ManyValidatorsTestSetup is Test {
     }
 
     function setupLara() public {
-        address stTaraProxy =
-            Upgrades.deployUUPSProxy("StakedNativeAsset.sol", abi.encodeCall(StakedNativeAsset.initialize, ()));
-        stTaraToken = StakedNativeAsset(stTaraProxy);
+        stTaraToken = new StakedNativeAsset();
         address laraProxy = Upgrades.deployUUPSProxy(
             "LaraHarness.sol",
             abi.encodeCall(
@@ -84,14 +81,6 @@ abstract contract ManyValidatorsTestSetup is Test {
         stTaraToken.setLaraAddress(address(lara));
         mockApyOracle.setLara(address(lara));
         assertEq(mockApyOracle.lara(), address(lara), "Lara address was not set successfully");
-    }
-
-    function checkValidatorTotalStakesAreZero() public {
-        for (uint256 i = 0; i < validators.length; i++) {
-            assertEq(lara.protocolTotalStakeAtValidator(validators[i]), 0, "Validator total stake should be zero");
-            uint256 total_stake = mockDpos.getValidator(validators[i]).total_stake;
-            assertEq(total_stake, 0, "Validator total stake should be zero in mockDpos");
-        }
     }
 
     function findValidatorWithStake(uint256 stake) public view returns (address) {
@@ -129,5 +118,9 @@ abstract contract ManyValidatorsTestSetup is Test {
             }
         }
         mockApyOracle.batchUpdateNodeData(nodeData);
+    }
+
+    function calculateSlice(uint256 amount, uint256 supply) public pure returns (uint256) {
+        return (amount * 1e18) / supply;
     }
 }
