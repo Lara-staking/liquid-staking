@@ -136,4 +136,8 @@ abstract contract TestSetup is Test {
         }
         mockApyOracle.batchUpdateNodeData(nodeData);
     }
+
+    function calculateSlice(uint256 amount, uint256 supply) public pure returns (uint256) {
+        return (amount * 1e18) / supply;
+    }
 }

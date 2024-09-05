@@ -10,7 +10,6 @@ import {MockDpos} from "../mocks/MockDpos.sol";
 import {StakedNativeAsset} from "../StakedNativeAsset.sol";
 import {TestSetup} from "./SetUpTest.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
-import {Utils} from "../libs/Utils.sol";
 
 contract StakeTest is Test, TestSetup {
     uint256 epochDuration = 0;

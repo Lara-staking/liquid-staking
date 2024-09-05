@@ -9,7 +9,6 @@ import {ApyOracle} from "../ApyOracle.sol";
 import {MockDpos} from "../mocks/MockDpos.sol";
 import {StakedNativeAsset} from "../StakedNativeAsset.sol";
 import {TestSetup} from "./SetUpTest.sol";
-import {Utils} from "../libs/Utils.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
@@ -88,7 +87,7 @@ contract SimpleEpochTest is Test, TestSetup {
             );
             assertEq(address(lara).balance, 0, "Wrong total Lara balance after snapshot");
             for (uint32 i = 0; i < stakers.length; i++) {
-                uint256 slice = Utils.calculateSlice(balancesBefore[i], totalSupplyBefore);
+                uint256 slice = calculateSlice(balancesBefore[i], totalSupplyBefore);
                 uint256 delegatorReward = slice * rewardsPerSnapshot / 1e18;
                 uint256 commissionPart = (delegatorReward / 100) * lara.commissionDiscounts(stakers[i]);
 
@@ -147,7 +146,7 @@ contract SimpleEpochTest is Test, TestSetup {
             uint256 totalActualRewards = 0;
             uint256 totalExpectedRewardsWithDiscounts = 0;
             for (uint32 i = 0; i < stakers.length; i++) {
-                uint256 slice = Utils.calculateSlice(balancesBefore[i], totalSupplyBefore);
+                uint256 slice = calculateSlice(balancesBefore[i], totalSupplyBefore);
                 uint256 delegatorReward = slice * rewardsPerSnapshot / 1e18;
                 uint256 commissionDiscount = (delegatorReward / 100) * lara.commissionDiscounts(stakers[i]);
                 uint256 delegatorRewardWithCommission = delegatorReward + commissionDiscount;
@@ -197,7 +196,7 @@ contract SimpleEpochTest is Test, TestSetup {
         uint256 epochCommission = (epochRewards * commission) / 100;
         uint256 distributableRewards = epochRewards - epochCommission;
         assertEq(epochRewards, distributableRewards + epochCommission, "Wrong distributable rewards");
-        uint256 slice = Utils.calculateSlice(100 ether, 100 ether);
+        uint256 slice = calculateSlice(100 ether, 100 ether);
         assertEq(slice, 1 ether, "Wrong slice value");
     }
 

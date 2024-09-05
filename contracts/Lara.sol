@@ -31,8 +31,6 @@ import {
     ZeroAddress
 } from "./libs/SharedErrors.sol";
 
-import {Utils} from "./libs/Utils.sol";
-
 /**
  * @title Lara Contract
  * @dev This contract is used for staking and delegating tokens in the protocol.
@@ -300,7 +298,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         if (delegatorBalance == 0 || distributableRewards == 0) {
             return;
         }
-        uint256 slice = Utils.calculateSlice(delegatorBalance, stTARASupply);
+        uint256 slice = (delegatorBalance * 1e18) / stTARASupply;
         uint256 generalPart = slice * distributableRewards / 1e18;
         uint256 commissionPart = (generalPart / 100) * commissionDiscounts[staker];
         uint256 delegatorReward = generalPart + commissionPart;

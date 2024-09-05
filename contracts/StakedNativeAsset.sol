@@ -29,7 +29,7 @@ contract StakedNativeAsset is ERC20Snapshot, Ownable, Pausable, IstTara {
      * @inheritdoc IstTara
      */
     function cumulativeBalanceOf(address user) external view returns (uint256) {
-        if (user.code.length > 0) {
+        if (_isContract(user)) {
             if (isYieldBearingContract(user)) {
                 return balanceOf(user);
             }
@@ -43,7 +43,7 @@ contract StakedNativeAsset is ERC20Snapshot, Ownable, Pausable, IstTara {
      */
     function cumulativeBalanceOfAt(address user, uint256 snapshotId) external view returns (uint256) {
         /// @notice if smart contract, return balanceOfAt() , else, to EOA return balanceOfAt() + wstTARA.balanceOfAt()
-        if (user.code.length > 0) {
+        if (_isContract(user)) {
             if (isYieldBearingContract(user)) {
                 return balanceOfAt(user, snapshotId);
             }

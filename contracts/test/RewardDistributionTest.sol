@@ -9,7 +9,6 @@ import {ApyOracle} from "../ApyOracle.sol";
 import {MockDpos} from "../mocks/MockDpos.sol";
 import {StakedNativeAsset} from "../StakedNativeAsset.sol";
 import {TestSetup} from "./SetUpTest.sol";
-import {Utils} from "../libs/Utils.sol";
 import {
     StakeAmountTooLow,
     StakeValueTooLow,
@@ -291,7 +290,7 @@ contract RewardDistributionTest is Test, TestSetup {
 
             assertTrue(newBalance > stakedAmount, "Wrong balance of staker after reward distribution");
 
-            uint256 slice = Utils.calculateSlice(balanceOfStakerAtSnapshot, totalSupplyAtSnapshot);
+            uint256 slice = calculateSlice(balanceOfStakerAtSnapshot, totalSupplyAtSnapshot);
             emit SliceParts(balanceOfStakerAtSnapshot, totalSupplyAtSnapshot);
             uint256 delegatorReward = slice * rewardsPerSnapshot / 1e18;
             emit GeneralParts(slice, rewardsPerSnapshot);
@@ -356,7 +355,7 @@ contract RewardDistributionTest is Test, TestSetup {
 
             assertTrue(newBalance > stakedAmount, "Wrong balance of staker after reward distribution");
 
-            uint256 slice = Utils.calculateSlice(balanceOfStakerAtSnapshot, totalSupplyAtSnapshot);
+            uint256 slice = calculateSlice(balanceOfStakerAtSnapshot, totalSupplyAtSnapshot);
             emit SliceParts(balanceOfStakerAtSnapshot, totalSupplyAtSnapshot);
             uint256 delegatorReward = slice * rewardsPerSnapshot / 1e18;
             emit GeneralParts(slice, rewardsPerSnapshot);

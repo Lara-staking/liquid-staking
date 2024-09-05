@@ -170,6 +170,10 @@ abstract contract ERC20Snapshot is ERC20, ISnapshot {
         return snapshotted ? value : contractDepositOf(account);
     }
 
+    function _isContract(address account) internal view returns (bool) {
+        return account.code.length > 0;
+    }
+
     /**
      * @dev Update balance and/or total supply snapshots before the values are modified. This is implemented
      * in the _beforeTokenTransfer hook, which is executed for _mint, _burn, and _transfer operations.
@@ -195,11 +199,11 @@ abstract contract ERC20Snapshot is ERC20, ISnapshot {
             _updateAccountSnapshot(to);
         }
 
-        if (to.code.length > 0) {
+        if (_isContract(to)) {
             if (!isYieldBearingContract(to)) {
                 _contractDeposits[from] += amount;
             }
-            if (from.code.length > 0 && !isYieldBearingContract(to)) {
+            if (_isContract(from) && !isYieldBearingContract(from)) {
                 _contractDeposits[from] -= amount;
             }
             _updateContractSnapshot(from);

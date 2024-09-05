@@ -8,7 +8,6 @@ import {Lara} from "../Lara.sol";
 import {ApyOracle} from "../ApyOracle.sol";
 import {MockDpos} from "../mocks/MockDpos.sol";
 import {StakedNativeAsset} from "../StakedNativeAsset.sol";
-import {Utils} from "../libs/Utils.sol";
 import {ManyValidatorsTestSetup} from "./SetUpTestLotsOfValidators.sol";
 import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
 import {SimpleEpochTest} from "./EpochTest.sol";
@@ -91,7 +90,7 @@ contract ManyValidatorEpochTest is Test, ManyValidatorsTestSetup {
             uint256 totalActualRewards = 0;
             uint256 totalExpectedRewardsWithDiscounts = 0;
             for (uint32 i = 0; i < stakers.length; i++) {
-                uint256 slice = Utils.calculateSlice(balancesBefore[i], totalSupplyBefore);
+                uint256 slice = calculateSlice(balancesBefore[i], totalSupplyBefore);
                 uint256 delegatorReward = slice * rewardsPerSnapshot / 1e18;
                 uint256 commissionDiscount = (delegatorReward / 100) * lara.commissionDiscounts(stakers[i]);
                 uint256 delegatorRewardWithCommission = delegatorReward + commissionDiscount;
