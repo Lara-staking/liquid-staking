@@ -1,46 +1,58 @@
-# Advanced Sample Hardhat Project
+# Lara - Liquid Staking For Taraxa
 
-This project demonstrates an advanced Hardhat use case, integrating other tools commonly used alongside Hardhat in the ecosystem.
+## Introduction
 
-The project comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts. It also comes with a variety of other tools, preconfigured to work with the project code.
+Lara is a liquid staking solution for Taraxa. It allows users to stake their TARA tokens and receive a 1:1 representation of their staked tokens on the Taraxa blockchain. These tokens are called stTARA (staked TARA). stTARA can be used in the Taraxa ecosystem, for example, to provide liquidity on DEXes or to participate in other DeFi protocols. stTARA can be redeemed for TARA at any time.
 
-Try running some of the following tasks:
+## Solidity API
 
-```shell
-npx hardhat accounts
-npx hardhat compile
-npx hardhat clean
-npx hardhat test
-npx hardhat node
-npx hardhat help
-REPORT_GAS=true npx hardhat test
-npx hardhat coverage
-npx hardhat run scripts/deploy.ts
-TS_NODE_FILES=true npx ts-node scripts/deploy.ts
-npx eslint '**/*.{js,ts}'
-npx eslint '**/*.{js,ts}' --fix
-npx prettier '**/*.{json,sol,md}' --check
-npx prettier '**/*.{json,sol,md}' --write
-npx solhint 'contracts/**/*.sol'
-npx solhint 'contracts/**/*.sol' --fix
+Solidity API is available in the following [Docs](docs/index.md).
+
+## License
+
+Lara is licensed under the [MIT License](LICENSE).
+
+## Commands
+
+To pull the latest submodules:
+
+```bash
+forge install
 ```
 
-# Etherscan verification
+To compile the contracts:
 
-To try out Etherscan verification, you first need to deploy a contract to an Ethereum network that's supported by Etherscan, such as Ropsten.
-
-In this project, copy the .env.example file to a file named .env, and then edit it to fill in the details. Enter your Etherscan API key, your Ropsten node URL (eg from Alchemy), and the private key of the account which will send the deployment transaction. With a valid .env file in place, first deploy your contract:
-
-```shell
-hardhat run --network ropsten scripts/deploy.ts
+```bash
+yarn compile
 ```
 
-Then, copy the deployment address and paste it in to replace `DEPLOYED_CONTRACT_ADDRESS` in this command:
+or
 
-```shell
-npx hardhat verify --network ropsten DEPLOYED_CONTRACT_ADDRESS "Hello, Hardhat!"
+```bash
+forge compile
 ```
 
-# Performance optimizations
+To run the tests:
 
-For faster runs of your tests and scripts, consider skipping ts-node's type checking by setting the environment variable `TS_NODE_TRANSPILE_ONLY` to `1` in hardhat's environment. For more details see [the documentation](https://hardhat.org/guides/typescript.html#performance-optimizations).
+```bash
+yarn test:all
+```
+
+## Lara Protocol is available on a Taraxa PRnet at the following addresses
+
+```bash
+  stTaraProxy address: 0xB576261E50858Caaf4C072Fd20f9fd690109C69a
+  stTaraImplementation address: 0xb5a7371e444f58f93B718b6b56c0720C6A6F26DB
+  oracleProxy address: 0x58D1Ac0a2b6003F6986191F024Ed7bC5d7d4c0da
+  oracleImplementation address: 0x0720Efbf82B1EE940978435373322D0aDD0412d1
+  laraProxy address: 0x017bcd6c818baeee80809E21786fcAA595d75eB2
+  laraImplementation address: 0xCA43A118336e915D807aa99B7A41b533881FE611
+```
+
+### PRnet details
+
+- RPC: `https://rpc-pr-2609.prnet.taraxa.io`
+- Explorer: `https://explorer-pr-2609.prnet.taraxa.io`
+- ChainId: `200`
+- Name: `Taraxa PRnet-2609`
+- Currency: `TARA`
