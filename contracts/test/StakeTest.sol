@@ -54,10 +54,8 @@ contract StakeTest is Test, TestSetup {
 
         uint256 initialUndelegated = lara.undelegated(address(this));
         vm.roll(mockDpos.UNDELEGATION_DELAY_BLOCKS() + block.number + 1);
-        for (uint256 i = 0; i < undelegationIds.length; i++) {
-            lara.confirmUndelegate(undelegationIds[i]);
-            initialUndelegated = lara.undelegated(address(this));
-        }
+        lara.batchConfirmUndelegate(undelegationIds);
+        initialUndelegated = lara.undelegated(address(this));
     }
 
     function stakeAndCancelUnstake(uint256 amount) public {
@@ -93,10 +91,8 @@ contract StakeTest is Test, TestSetup {
 
         uint256 initialUndelegated = lara.undelegated(address(this));
         vm.roll(mockDpos.UNDELEGATION_DELAY_BLOCKS() + block.number + 1);
-        for (uint256 i = 0; i < undelegationIds.length; i++) {
-            lara.cancelUndelegate(undelegationIds[i]);
-            initialUndelegated = lara.undelegated(address(this));
-        }
+        lara.batchCancelUndelegate(undelegationIds);
+        initialUndelegated = lara.undelegated(address(this));
     }
 
     function test_StakeAndUnstake() public {
