@@ -190,11 +190,26 @@ interface ILara {
     function confirmUndelegate(uint64 id) external;
 
     /**
+     * Batch confirm undelegate method to confirm the undelegation of a user from a certain validator.
+     * Will fail if called before the undelegation period is over.
+     * @param ids the ids of the undelegations
+     * @notice msg.sender is the delegator
+     */
+    function batchConfirmUndelegate(uint64[] calldata ids) external;
+
+    /**
      * Cancel undelegate method to cancel the undelegation of a user from a certain validator.
      * The undelegated value will be returned to the origin validator.
      * @param id the id of the undelegation
      */
     function cancelUndelegate(uint64 id) external;
+
+    /**
+     * Batch cancel undelegate method to cancel the undelegation of a user from a certain validator.
+     * The undelegated value will be returned to the origin validator.
+     * @param ids the ids of the undelegations
+     */
+    function batchCancelUndelegate(uint64[] calldata ids) external;
 
     /**
      * @notice method to create a protocol snapshot.
