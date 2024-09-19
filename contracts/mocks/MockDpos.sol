@@ -12,7 +12,7 @@ contract MockDpos is MockIDPOS {
         uint256 blockNumberClaimable;
     }
 
-    uint256 public undelegationId = 1;
+    uint64 public undelegationId = 1;
     mapping(address => MockIDPOS.ValidatorData) public validators;
     mapping(address => uint256) public totalDelegations;
     mapping(address => MockIDPOS.DelegationData[]) public delegations;
@@ -160,7 +160,7 @@ contract MockDpos is MockIDPOS {
 
     event TotalStake(uint256 totalStake);
 
-    function undelegateV2(address validator, uint256 amount) external override returns (uint256 id) {
+    function undelegateV2(address validator, uint256 amount) external override returns (uint64 id) {
         require(validators[validator].account != address(0), "Validator doesn't exist");
         uint256 totalStake = validators[validator].info.total_stake;
         emit TotalStake(totalStake);
@@ -213,7 +213,7 @@ contract MockDpos is MockIDPOS {
     }
 
     // Confirms undelegate request
-    function confirmUndelegateV2(address validator, uint256 id) external override {
+    function confirmUndelegateV2(address validator, uint64 id) external override {
         Undelegation memory undelegation = undelegations[validator][id];
         require(undelegation.delegator == msg.sender, "Only delegator can confirm undelegate");
         require(undelegation.blockNumberClaimable < block.number, "Undelegation not yet claimable");
@@ -223,7 +223,7 @@ contract MockDpos is MockIDPOS {
     }
 
     // Cancel undelegate request
-    function cancelUndelegateV2(address validator, uint256 id) external override {
+    function cancelUndelegateV2(address validator, uint64 id) external override {
         Undelegation memory undelegation = undelegations[validator][id];
         require(undelegation.delegator == msg.sender, "Only delegator can cancel undelegate");
         delete undelegations[validator][id];
