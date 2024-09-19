@@ -72,7 +72,7 @@ contract ManyValidatorEpochTest is Test, ManyValidatorsTestSetup {
             uint256 snapshotId = lara.snapshot();
 
             for (uint32 i = 0; i < stakers.length; i++) {
-                lara.distrbuteRewardsForSnapshot(stakers[i], snapshotId);
+                lara.distributeRewardsForSnapshot(stakers[i], snapshotId);
             }
 
             lara.delegateToValidators(address(lara).balance);

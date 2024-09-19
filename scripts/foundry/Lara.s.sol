@@ -6,7 +6,6 @@ import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 import {StakedNativeAsset} from "../../contracts/StakedNativeAsset.sol";
 import {Lara} from "../../contracts/Lara.sol";
 import {ApyOracle} from "../../contracts/ApyOracle.sol";
-import {Multicall2} from "./DeployMulticall.s.sol";
 
 contract DeployLara is Script {
     function run() external {
@@ -15,9 +14,6 @@ contract DeployLara is Script {
         address dposAddress = vm.envAddress("DPOS_ADDRESS");
         address treasuryAddress = vm.envAddress("TREASURY_ADDRESS");
         vm.startBroadcast(deployerPrivateKey);
-
-        Multicall2 mc = new Multicall2();
-        console.log("Multicall2 address:", address(mc));
 
         StakedNativeAsset stTaraInstance = new StakedNativeAsset();
         console.log("stTara address:", address(stTaraInstance));

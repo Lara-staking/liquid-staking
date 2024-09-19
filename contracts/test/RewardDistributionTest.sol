@@ -82,7 +82,7 @@ contract RewardDistributionTest is Test, TestSetup {
 
         assertFalse(lara.stakerSnapshotClaimed(singleStaker, snapshotId), "Staker snapshot claimed should be false");
 
-        lara.distrbuteRewardsForSnapshot(singleStaker, snapshotId);
+        lara.distributeRewardsForSnapshot(singleStaker, snapshotId);
 
         if (initialBalance > 0) {
             assertTrue(lara.stakerSnapshotClaimed(singleStaker, snapshotId), "Staker snapshot claimed should be true");
@@ -106,7 +106,7 @@ contract RewardDistributionTest is Test, TestSetup {
         checkRewardsAreRight(singleStaker, snapshotId, stTaraToken.cumulativeBalanceOfAt(singleStaker, snapshotId));
 
         vm.expectRevert(abi.encodeWithSelector(SnapshotAlreadyClaimed.selector, snapshotId, singleStaker));
-        lara.distrbuteRewardsForSnapshot(singleStaker, snapshotId);
+        lara.distributeRewardsForSnapshot(singleStaker, snapshotId);
     }
 
     function test_Reverts_On_DisributeRewards_Check_Violation() public {
@@ -125,10 +125,10 @@ contract RewardDistributionTest is Test, TestSetup {
         checkRewardsAreRight(singleStaker, snapshotId, stTaraToken.cumulativeBalanceOfAt(singleStaker, snapshotId));
 
         vm.expectRevert(abi.encodeWithSelector(SnapshotNotFound.selector, snapshotId + 1));
-        lara.distrbuteRewardsForSnapshot(singleStaker, snapshotId + 1);
+        lara.distributeRewardsForSnapshot(singleStaker, snapshotId + 1);
 
         vm.expectRevert(abi.encodeWithSelector(ZeroAddress.selector));
-        lara.distrbuteRewardsForSnapshot(address(0), snapshotId);
+        lara.distributeRewardsForSnapshot(address(0), snapshotId);
     }
 
     function test_OneStake_ThenDeposit_In_NonYieldBearing_Contract_NoDoubleRewards() public {
@@ -227,7 +227,7 @@ contract RewardDistributionTest is Test, TestSetup {
 
         assertFalse(lara.stakerSnapshotClaimed(singleStaker, snapshotId), "Staker snapshot claimed should be false");
 
-        lara.distrbuteRewardsForSnapshot(singleStaker, snapshotId);
+        lara.distributeRewardsForSnapshot(singleStaker, snapshotId);
 
         assertTrue(lara.stakerSnapshotClaimed(singleStaker, snapshotId), "Staker snapshot claimed should be true");
 
@@ -256,7 +256,7 @@ contract RewardDistributionTest is Test, TestSetup {
 
         assertFalse(lara.stakerSnapshotClaimed(singleStaker, snapshotId), "Staker snapshot claimed should be false");
 
-        lara.distrbuteRewardsForSnapshot(singleStaker, snapshotId);
+        lara.distributeRewardsForSnapshot(singleStaker, snapshotId);
 
         assertTrue(lara.stakerSnapshotClaimed(singleStaker, snapshotId), "Staker snapshot claimed should be true");
 
@@ -279,7 +279,7 @@ contract RewardDistributionTest is Test, TestSetup {
             assertFalse(lara.stakerSnapshotClaimed(stakers[i], snapshotId), "Staker snapshot claimed should be false");
 
             // Distribute rewards
-            lara.distrbuteRewardsForSnapshot(stakers[i], snapshotId);
+            lara.distributeRewardsForSnapshot(stakers[i], snapshotId);
 
             assertTrue(lara.stakerSnapshotClaimed(stakers[i], snapshotId), "Staker snapshot claimed should be true");
 
@@ -344,7 +344,7 @@ contract RewardDistributionTest is Test, TestSetup {
             assertFalse(lara.stakerSnapshotClaimed(stakers[i], snapshotId), "Staker snapshot claimed should be false");
 
             // Distribute rewards
-            lara.distrbuteRewardsForSnapshot(stakers[i], snapshotId);
+            lara.distributeRewardsForSnapshot(stakers[i], snapshotId);
 
             assertTrue(lara.stakerSnapshotClaimed(stakers[i], snapshotId), "Staker snapshot claimed should be true");
 

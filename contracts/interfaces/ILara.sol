@@ -218,4 +218,11 @@ interface ILara {
      * @return the snapshot id of the made stTARA snapshot
      */
     function snapshot() external returns (uint256);
+
+    /**
+     * @dev Function to distribute rewards for a snapshot
+     * @param staker the staker address
+     * @param snapshotId the snapshot id
+     */
+    function distributeRewardsForSnapshot(address staker, uint256 snapshotId) external;
 }

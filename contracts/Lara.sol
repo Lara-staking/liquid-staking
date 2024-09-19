@@ -285,7 +285,10 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         return (stTaraSnapshotId);
     }
 
-    function distrbuteRewardsForSnapshot(address staker, uint256 snapshotId) external {
+    /**
+     * @inheritdoc ILara
+     */
+    function distributeRewardsForSnapshot(address staker, uint256 snapshotId) external {
         if (staker == address(0)) revert ZeroAddress();
         if (snapshotId == 0 || rewardsPerSnapshot[snapshotId] == 0) revert SnapshotNotFound(snapshotId);
         if (stakerSnapshotClaimed[staker][snapshotId]) revert SnapshotAlreadyClaimed(snapshotId, staker);
@@ -353,7 +356,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         uint256 balanceBefore = address(this).balance;
 
         (bool success,) =
-            address(dposContract).call(abi.encodeWithSignature("confirmUndelegateV2(address,uint256)", validator, id));
+            address(dposContract).call(abi.encodeWithSignature("confirmUndelegateV2(address,uint64)", validator, id));
         if (!success) {
             revert ConfirmUndelegationFailed(msg.sender, validator, id, "DPOS contract call failed");
         }
@@ -392,7 +395,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         delete undelegations[msg.sender][id];
 
         (bool success,) =
-            address(dposContract).call(abi.encodeWithSignature("cancelUndelegateV2(address,uint256)", validator, id));
+            address(dposContract).call(abi.encodeWithSignature("cancelUndelegateV2(address,uint64)", validator, id));
         if (!success) {
             revert CancelUndelegationFailed(msg.sender, validator, id, "DPOS contract call failed");
         }
