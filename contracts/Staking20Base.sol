@@ -17,9 +17,6 @@ abstract contract Staking20Base is ReentrancyGuardUpgradeable, IStaking20 {
                             State variables / Mappings
     //////////////////////////////////////////////////////////////*/
 
-    /// @dev The address of the native token wrapper contract.
-    address internal nativeTokenWrapper;
-
     ///@dev Address of ERC20 contract -- staked tokens belong to this contract.
     address public stakingToken;
 
@@ -110,7 +107,7 @@ abstract contract Staking20Base is ReentrancyGuardUpgradeable, IStaking20 {
         if (!_canSetStakeConditions()) {
             revert("Not authorized");
         }
-
+        require(nextConditionId > 0, "No staking conditions set");
         StakingCondition memory condition = stakingConditions[nextConditionId - 1];
         require(_timeUnit != condition.timeUnit, "Time-unit unchanged.");
 
@@ -160,10 +157,12 @@ abstract contract Staking20Base is ReentrancyGuardUpgradeable, IStaking20 {
     }
 
     function getTimeUnit() public view returns (uint80 _timeUnit) {
+        require(nextConditionId > 0, "No staking conditions set");
         _timeUnit = stakingConditions[nextConditionId - 1].timeUnit;
     }
 
     function getRewardRatio() public view returns (uint256 _numerator, uint256 _denominator) {
+        require(nextConditionId > 0, "No staking conditions set");
         _numerator = stakingConditions[nextConditionId - 1].rewardRatioNumerator;
         _denominator = stakingConditions[nextConditionId - 1].rewardRatioDenominator;
     }
@@ -177,12 +176,8 @@ abstract contract Staking20Base is ReentrancyGuardUpgradeable, IStaking20 {
         require(_amount != 0, "Staking 0 tokens");
 
         address _stakingToken;
-        if (stakingToken == CurrencyTransferLib.NATIVE_TOKEN) {
-            _stakingToken = nativeTokenWrapper;
-        } else {
-            require(msg.value == 0, "Value not 0");
-            _stakingToken = stakingToken;
-        }
+        require(msg.value == 0, "Value not 0");
+        _stakingToken = stakingToken;
 
         if (stakers[_stakeMsgSender()].amountStaked > 0) {
             _updateUnclaimedRewardsForStaker(_stakeMsgSender());
@@ -193,9 +188,7 @@ abstract contract Staking20Base is ReentrancyGuardUpgradeable, IStaking20 {
         }
 
         uint256 balanceBefore = IERC20(_stakingToken).balanceOf(address(this));
-        CurrencyTransferLib.transferCurrencyWithWrapper(
-            stakingToken, _stakeMsgSender(), address(this), _amount, nativeTokenWrapper
-        );
+        CurrencyTransferLib.transferCurrency(stakingToken, _stakeMsgSender(), address(this), _amount);
         uint256 actualAmount = IERC20(_stakingToken).balanceOf(address(this)) - balanceBefore;
 
         stakers[_stakeMsgSender()].amountStaked += actualAmount;
@@ -226,9 +219,7 @@ abstract contract Staking20Base is ReentrancyGuardUpgradeable, IStaking20 {
         stakers[_stakeMsgSender()].amountStaked -= _amount;
         stakingTokenBalance -= _amount;
 
-        CurrencyTransferLib.transferCurrencyWithWrapper(
-            stakingToken, address(this), _stakeMsgSender(), _amount, nativeTokenWrapper
-        );
+        CurrencyTransferLib.transferCurrency(stakingToken, address(this), _stakeMsgSender(), _amount);
 
         emit TokensWithdrawn(_stakeMsgSender(), _amount);
     }
