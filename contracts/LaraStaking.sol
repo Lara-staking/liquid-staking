@@ -153,10 +153,9 @@ contract LaraStaking is Initializable, OwnableUpgradeable, UUPSUpgradeable, Stak
     /// @dev Admin can withdraw excess reward tokens.
     function withdrawRewardTokens(uint256 _amount) external nonReentrant {
         require(owner() == _msgSender(), "Not authorized");
+        require(_amount <= rewardTokenBalance, "Insufficient reward token balance");
 
-        // to prevent locking of direct-transferred tokens
-        rewardTokenBalance = _amount > rewardTokenBalance ? 0 : rewardTokenBalance - _amount;
-
+        rewardTokenBalance -= _amount;
         CurrencyTransferLib.transferCurrency(rewardToken, address(this), _msgSender(), _amount);
 
         // The withdrawal shouldn't reduce staking token balance. `>=` accounts for any accidental transfers.

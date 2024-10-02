@@ -132,6 +132,7 @@ abstract contract Staking20Base is ReentrancyGuardUpgradeable, IStaking20 {
             revert("Not authorized");
         }
 
+        require(nextConditionId > 0, "No staking conditions set");
         StakingCondition memory condition = stakingConditions[nextConditionId - 1];
         require(
             _numerator != condition.rewardRatioNumerator || _denominator != condition.rewardRatioDenominator,
