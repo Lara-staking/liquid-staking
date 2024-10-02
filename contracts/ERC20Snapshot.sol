@@ -6,7 +6,7 @@ pragma solidity 0.8.20;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Arrays} from "@openzeppelin/contracts/utils/Arrays.sol";
-import {ISnapshot} from "./interfaces/ISnapshot.sol";
+import {ISnapshot} from "@contracts/interfaces/ISnapshot.sol";
 /**
  * @dev This contract extends an ERC20 token with a snapshot mechanism. When a snapshot is created, the balances and
  * total supply at the time are recorded for later access.

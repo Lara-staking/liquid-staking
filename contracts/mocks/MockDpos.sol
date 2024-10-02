@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {MockIDPOS} from "./MockIDPOS.sol";
+import {MockIDPOS} from "@contracts/mocks/MockIDPOS.sol";
 
 contract MockDpos is MockIDPOS {
     struct Undelegation {

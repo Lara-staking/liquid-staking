@@ -5,46 +5,23 @@ on:
       - contracts/**
       - .github/workflows/test.yml
 jobs:
-  test-contracts-hardhat:
+  test:
     runs-on: ubuntu-latest
-    env:
-      ETHERSCAN_API_KEY: ABC123ABC123ABC123ABC123ABC123ABC1
-      ROPSTEN_URL: https://eth-ropsten.alchemyapi.io/v2/<YOUR ALCHEMY KEY>
-      PRIVATE_KEY: 748f68127ee2c855594068bfb23554919719bc8e79804b2806282dd4ae6c5609
-      TARA_MAINNET_URL: https://rpc.mainnet.taraxa.io/
-      TARA_TESTNET_URL: https://rpc.testnet.taraxa.io/
-      TARA_DEVNET_URL: https://rpc.devnet.taraxa.io/
-      TARA_PR_RPC_URL: https://rpc-pr-2404.prnet.taraxa.io/
-      MAINNET_PRIV_KEY: 748f68127ee2c855594068bfb23554919719bc8e79804b2806282dd4ae6c5609
-      PRNET_PRIV_KEY: 748f68127ee2c855594068bfb23554919719bc8e79804b2806282dd4ae6c5609
-      ADDRESS: "0xA0290118D3014F6d9b6f2E9430EAeDe507C949C1"
-      TEST_KEY_1: 4c8e71073821e1029fb5b9cca3c93fbdac265e8af6d08c434776b82b3b377941
-      TEST_KEY_2: 748f68127ee2c855594068bfb23554919719bc8e79804b2806282dd4ae6c5609
-      TEST_KEY_3: 0f5fc5b4cdeefc64f867fd69eed697f70f146367eeee78d073b19b24c5039aee
-      TEST_KEY_4: 9f29fceec65f699209d187478c4d7e293e32bd8a6bfb7e467063973524888167
-      TEST_KEY_5: 472a3f59fe3d81cda76dbb2a64825e46c4b067ae559cd4dfc784869da80bd05e
-      TEST_KEY_6: a2939087d5872960bc3ea08530ba9f7accde6a0af7371cbdf2ddef70d3731692
-      TEST_KEY_7: 85604fd7b8e6b0065c639046f6084a3b46560d90e96c1b56c6cf2fa69268ea4a
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
-
-      - name: foundry-toolchain
-        uses: foundry-rs/foundry-toolchain@v1.0.10
-      - name: Install dependencies
-        run: forge install
-      - name: install Node
+      - name: Install node
         uses: actions/setup-node@v1
         with:
-          node-version: "18.x"
-      - name: Install yarn
-        run: npm install -g yarn
-      - name: install dependencies
-        run: yarn install
+          node-version: 20
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1.0.10
+      - name: Install npm dependencies
+        run: npm install @openzeppelin/upgrades-core
+
+      - name: Install dependencies
+        run: forge install
       - name: Run Foundry tests
-        run: yarn foundry-test
-      - name: Install and Build 🔧 🚚
-        run: yarn
-      - name: Run Hardhat tests
-        run: yarn test
+        run: make test

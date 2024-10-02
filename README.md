@@ -23,7 +23,7 @@ forge install
 To compile the contracts:
 
 ```bash
-yarn compile
+make compile
 ```
 
 or
@@ -35,7 +35,7 @@ forge compile
 To run the tests:
 
 ```bash
-yarn test:all
+make test
 ```
 
 ## Lara Protocol is available on a Taraxa PRnet at the following addresses
