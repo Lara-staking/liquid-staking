@@ -81,13 +81,15 @@ contract LaraStaking is Initializable, OwnableUpgradeable, UUPSUpgradeable, Stak
         return uint8(VERSION);
     }
 
-    /// @dev Lets the contract receive ether to unwrap native tokens.
+    /// @dev Receive function to receive Ether.
     receive() external payable {
-        require(msg.sender == nativeTokenWrapper, "caller not native token wrapper.");
+        revert("Contract does not accept direct Ether transfers");
     }
 
     /// @dev Fallback function to receive Ether.
-    fallback() external payable {}
+    fallback() external payable {
+        revert("Contract does not accept direct Ether transfers");
+    }
 
     function calculateRedeemableAmount(address user, uint64 claimId) public view returns (uint256) {
         Claim memory claim = claims[user][claimId];
@@ -110,7 +112,7 @@ contract LaraStaking is Initializable, OwnableUpgradeable, UUPSUpgradeable, Stak
         return redeemableAmount;
     }
 
-    function redeem(uint64 claimId) external {
+    function redeem(uint64 claimId) external nonReentrant {
         Claim memory claim = claims[msg.sender][claimId];
         require(claim.amount > 0, "No rewards to redeem or already redeemed");
 
@@ -139,13 +141,9 @@ contract LaraStaking is Initializable, OwnableUpgradeable, UUPSUpgradeable, Stak
     function depositRewardTokens(uint256 _amount) external payable nonReentrant {
         require(owner() == _msgSender(), "Not authorized");
 
-        address _rewardToken = rewardToken == CurrencyTransferLib.NATIVE_TOKEN ? nativeTokenWrapper : rewardToken;
-
-        uint256 balanceBefore = ERC20(_rewardToken).balanceOf(address(this));
-        CurrencyTransferLib.transferCurrencyWithWrapper(
-            rewardToken, _msgSender(), address(this), _amount, nativeTokenWrapper
-        );
-        uint256 actualAmount = ERC20(_rewardToken).balanceOf(address(this)) - balanceBefore;
+        uint256 balanceBefore = ERC20(rewardToken).balanceOf(address(this));
+        CurrencyTransferLib.transferCurrency(rewardToken, _msgSender(), address(this), _amount);
+        uint256 actualAmount = ERC20(rewardToken).balanceOf(address(this)) - balanceBefore;
 
         rewardTokenBalance += actualAmount;
 
@@ -159,13 +157,10 @@ contract LaraStaking is Initializable, OwnableUpgradeable, UUPSUpgradeable, Stak
         // to prevent locking of direct-transferred tokens
         rewardTokenBalance = _amount > rewardTokenBalance ? 0 : rewardTokenBalance - _amount;
 
-        CurrencyTransferLib.transferCurrencyWithWrapper(
-            rewardToken, address(this), _msgSender(), _amount, nativeTokenWrapper
-        );
+        CurrencyTransferLib.transferCurrency(rewardToken, address(this), _msgSender(), _amount);
 
         // The withdrawal shouldn't reduce staking token balance. `>=` accounts for any accidental transfers.
-        address _stakingToken = stakingToken == CurrencyTransferLib.NATIVE_TOKEN ? nativeTokenWrapper : stakingToken;
-        require(ERC20(_stakingToken).balanceOf(address(this)) >= stakingTokenBalance, "Staking token balance reduced.");
+        require(ERC20(stakingToken).balanceOf(address(this)) >= stakingTokenBalance, "Staking token balance reduced.");
 
         emit RewardTokensWithdrawnByAdmin(_amount);
     }
@@ -183,9 +178,7 @@ contract LaraStaking is Initializable, OwnableUpgradeable, UUPSUpgradeable, Stak
     function _mintRewards(address _staker, uint256 _rewards) internal override {
         require(_rewards <= rewardTokenBalance, "Not enough reward tokens");
         rewardTokenBalance -= _rewards;
-        CurrencyTransferLib.transferCurrencyWithWrapper(
-            rewardToken, address(this), _staker, _rewards, nativeTokenWrapper
-        );
+        CurrencyTransferLib.transferCurrency(rewardToken, address(this), _staker, _rewards);
     }
 
     /*///////////////////////////////////////////////////////////////
