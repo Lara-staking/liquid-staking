@@ -5,14 +5,11 @@ pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {CurrencyTransferLib} from "@thirdweb-dev/contracts/lib/CurrencyTransferLib.sol";
+import {CurrencyTransferLib} from "@contracts/libs/CurrencyTransferLib.sol";
 
-import {IStaking20} from "@thirdweb-dev/contracts/extension/interface/IStaking20.sol";
-import {SafeMathUpgradeable} from
-    "@thirdweb-dev/contracts/../lib/openzeppelin-contracts-upgradeable/contracts/utils/math/SafeMathUpgradeable.sol";
+import {IStaking20} from "@contracts/interfaces/IStaking20.sol";
 
 abstract contract Staking20Base is ReentrancyGuardUpgradeable, IStaking20 {
-    using SafeMathUpgradeable for uint256;
     /*///////////////////////////////////////////////////////////////
                             State variables / Mappings
     //////////////////////////////////////////////////////////////*/
@@ -290,16 +287,13 @@ abstract contract Staking20Base is ReentrancyGuardUpgradeable, IStaking20 {
             uint256 startTime = i != _stakerConditionId ? condition.startTimestamp : staker.timeOfLastUpdate;
             uint256 endTime = condition.endTimestamp != 0 ? condition.endTimestamp : block.timestamp;
 
-            (bool noOverflowProduct, uint256 rewardsProduct) =
-                SafeMathUpgradeable.tryMul((endTime - startTime) * staker.amountStaked, condition.rewardRatioNumerator);
-            (bool noOverflowSum, uint256 rewardsSum) = SafeMathUpgradeable.tryAdd(
-                _rewards, (rewardsProduct / condition.timeUnit) / condition.rewardRatioDenominator
-            );
+            uint256 rewardsProduct = (endTime - startTime) * staker.amountStaked * condition.rewardRatioNumerator;
+            uint256 rewardsSum = _rewards + (rewardsProduct / condition.timeUnit) / condition.rewardRatioDenominator;
 
-            _rewards = noOverflowProduct && noOverflowSum ? rewardsSum : _rewards;
+            _rewards = rewardsSum;
         }
 
-        (, _rewards) = SafeMathUpgradeable.tryMul(_rewards, 10 ** rewardTokenDecimals);
+        _rewards = _rewards * 10 ** rewardTokenDecimals;
 
         _rewards /= (10 ** stakingTokenDecimals);
     }

@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {
-    Initializable, ITokenStake, CurrencyTransferLib
-} from "@thirdweb-dev/contracts/prebuilts/staking/TokenStake.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-
+import {ITokenStake} from "@contracts/interfaces/ITokenStake.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Staking20Base} from "@contracts/Staking20Base.sol";
+import {CurrencyTransferLib} from "@contracts/libs/CurrencyTransferLib.sol";
 
 contract LaraStaking is Initializable, OwnableUpgradeable, UUPSUpgradeable, Staking20Base, ITokenStake {
     struct Claim {
