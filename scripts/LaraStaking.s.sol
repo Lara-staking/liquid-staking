@@ -6,7 +6,6 @@ import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 import {LaraToken} from "@contracts/LaraToken.sol";
 import {veLara} from "@contracts/veLara.sol";
 import {LaraStaking} from "@contracts/LaraStaking.sol";
-import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 
 contract DeployLaraStaking is Script {
     function run() external {

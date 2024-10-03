@@ -7,7 +7,7 @@ interface IStaking20 {
     /// @dev Emitted when tokens are staked.
     event TokensStaked(address indexed staker, uint256 amount);
 
-    /// @dev Emitted when a tokens are withdrawn.
+    /// @dev Emitted when tokens are withdrawn.
     event TokensWithdrawn(address indexed staker, uint256 amount);
 
     /// @dev Emitted when a staker claims staking rewards.
@@ -16,7 +16,7 @@ interface IStaking20 {
     /// @dev Emitted when contract admin updates timeUnit.
     event UpdatedTimeUnit(uint256 oldTimeUnit, uint256 newTimeUnit);
 
-    /// @dev Emitted when contract admin updates rewardsPerUnitTime.
+    /// @dev Emitted when contract admin updates the reward ratio.
     event UpdatedRewardRatio(
         uint256 oldNumerator, uint256 newNumerator, uint256 oldDenominator, uint256 newDenominator
     );
@@ -36,10 +36,10 @@ interface IStaking20 {
      *  @param conditionIdOflastUpdate  Condition-Id when rewards were last updated for user.
      */
     struct Staker {
-        uint128 timeOfLastUpdate;
-        uint64 conditionIdOflastUpdate;
         uint256 amountStaked;
         uint256 unclaimedRewards;
+        uint128 timeOfLastUpdate;
+        uint64 conditionIdOflastUpdate;
     }
 
     /**
@@ -66,7 +66,7 @@ interface IStaking20 {
     }
 
     /**
-     *  @notice Stake ERC721 Tokens.
+     *  @notice Stake ERC20 Tokens.
      *
      *  @param amount    Amount to stake.
      */
@@ -88,7 +88,7 @@ interface IStaking20 {
     /**
      *  @notice View amount staked and total rewards for a user.
      *
-     *  @param staker    Address for which to calculated rewards.
+     *  @param staker    Address for which to calculate rewards.
      */
     function getStakeInfo(address staker) external view returns (uint256 _tokensStaked, uint256 _rewards);
 }

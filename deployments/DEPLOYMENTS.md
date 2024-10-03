@@ -12,7 +12,7 @@ The `veLARA` + `LaraStaking` contracts are not deployed on mainnet as of now.
 
 ### Lara Protocol
 
-**Note**: There is not official Lara Protocol deployed on mainnet as of now.
+**Note**: There is no official Lara Protocol deployed on mainnet as of now.
 
 ## Testnet
 

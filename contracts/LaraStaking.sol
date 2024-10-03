@@ -50,6 +50,7 @@ contract LaraStaking is Initializable, OwnableUpgradeable, UUPSUpgradeable, Stak
         uint256 _newMaturityBlockCount
     ) public initializer {
         require(_rewardToken != _stakingToken, "Reward Token and Staking Token can't be same.");
+        require(_newMaturityBlockCount > 0, "Maturity block count must be greater than zero.");
         rewardToken = _rewardToken;
 
         uint16 _stakingTokenDecimals = _getTokenDecimals(_stakingToken);

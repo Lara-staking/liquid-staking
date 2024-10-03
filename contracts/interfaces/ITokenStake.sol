@@ -7,7 +7,7 @@ pragma solidity ^0.8.11;
  *
  *  note:
  *  - Reward token and staking token can't be changed after deployment.
- *    Reward token contract can't be same as the staking token contract.
+ *    Reward token contract can't be the same as the staking token contract.
  *
  *  - ERC20 tokens from only the specified contract can be staked.
  *
@@ -19,13 +19,12 @@ pragma solidity ^0.8.11;
  *  - Users must stake tokens using the `stake` function only.
  *    Any direct transfers may cause unintended consequences, such as locking of tokens.
  */
-
 interface ITokenStake {
     /// @dev Emitted when contract admin withdraws reward tokens.
-    event RewardTokensWithdrawnByAdmin(uint256 _amount);
+    event RewardTokensWithdrawnByAdmin(uint256 indexed _amount);
 
     /// @dev Emitted when contract admin deposits reward tokens.
-    event RewardTokensDepositedByAdmin(uint256 _amount);
+    event RewardTokensDepositedByAdmin(uint256 indexed _amount);
 
     /**
      *  @notice Lets a contract admin (account with `DEFAULT_ADMIN_ROLE`) deposit reward-tokens.
@@ -40,7 +39,7 @@ interface ITokenStake {
      *  @notice Lets a contract admin (account with `DEFAULT_ADMIN_ROLE`) withdraw reward-tokens.
      *          Useful for removing excess balance, thus preventing locking of tokens.
      *
-     *  @param _amount     Amount of tokens to deposit.
+     *  @param _amount     Amount of tokens to withdraw.
      */
     function withdrawRewardTokens(uint256 _amount) external;
 }

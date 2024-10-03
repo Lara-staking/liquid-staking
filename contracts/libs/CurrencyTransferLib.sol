@@ -14,7 +14,7 @@ library CurrencyTransferLib {
     error CurrencyTransferLibFailedNativeTransfer(address recipient, uint256 value);
 
     /// @dev The address interpreted as native token of the chain.
-    address public constant NATIVE_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address constant NATIVE_TOKEN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     /// @dev Transfers a given amount of currency.
     function transferCurrency(address _currency, address _from, address _to, uint256 _amount) internal {
