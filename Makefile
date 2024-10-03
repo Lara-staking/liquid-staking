@@ -1,9 +1,9 @@
-.PHONY: compile test-all test foundry-test lint docgen \
-        deploy-apy-testnet deploy-apy-mainnet deploy-stats-mainnet deploy-stats-testnet \
-        deploy-lara-testnet prnet-deploy-lara deploy-only-lara-testnet deploy-lara-devnet \
-        stake-lara-testnet lara-token-devnet lara-token-testnet lara-token-mainnet \
-        lara-token-prnet stake-lara-devnet dpos-devnet update-top100-validators delegate \
-        multicall-deploy
+.PHONY: compile test-all test foundry-test lint docgen deploy help
+
+RPC_TESTNET := https://rpc.testnet.taraxa.io  
+RPC_DEVNET := https://rpc.devnet.taraxa.io  
+RPC_PRNET := https://rpc-pr-2609.prnet.taraxa.io  
+RPC_MAINNET := https://rpc.mainnet.taraxa.io
 
 compile:
 	forge test
@@ -14,38 +14,83 @@ test:
 lint:
 	yarn run eslint . --ext .ts
 
+# Generalized deploy command
+deploy:
+ifndef SCRIPT
+	$(error SCRIPT is not set. Use SCRIPT=<script_name> to specify the script)
+endif
+ifndef ACTION
+	$(error ACTION is not set. Use ACTION=<action_name> to specify the action)
+endif
+ifndef NETWORK
+	$(error NETWORK is not set. Use NETWORK=<network_name> to specify the network)
+endif
+ifndef VERBOSE
+	$(error VERBOSE is not set. Use VERBOSE=<vv|vvvv|vvvv> to specify the verbosity)
+endif
+	forge script scripts/$(SCRIPT).s.sol:$(ACTION) --rpc-url $(RPC_$(NETWORK)) --force --ffi --broadcast --legacy -$(VERBOSE)
+
+# Specific targets using the generalized command
 deploy-lara-testnet:
-	forge script /Users/vargaelod/lara/liquid-staking/scripts/Lara.s.sol:DeployLara --rpc-url https://rpc.testnet.taraxa.io --broadcast --legacy -vvvv --ffi
+	$(MAKE) deploy SCRIPT=Lara ACTION=DeployLara NETWORK=TESTNET
 
 prnet-deploy-lara:
-	forge script /Users/vargaelod/lara/liquid-staking/scripts/Lara.s.sol:DeployLara --rpc-url https://rpc-pr-2609.prnet.taraxa.io --broadcast --legacy -vvvv --ffi
+	$(MAKE) deploy SCRIPT=Lara ACTION=DeployLara NETWORK=PRNET
 
 deploy-only-lara-testnet:
-	forge script /Users/vargaelod/lara/liquid-staking/scripts/OnlyLara.s.sol:DeployLara --rpc-url https://rpc.testnet.taraxa.io --broadcast --legacy -vvvv --ffi
+	$(MAKE) deploy SCRIPT=OnlyLara ACTION=DeployLara NETWORK=TESTNET
 
 deploy-lara-devnet:
-	forge script /Users/vargaelod/lara/liquid-staking/scripts/Lara.s.sol:DeployLara --rpc-url https://rpc.devnet.taraxa.io --broadcast -vvvv --ffi
+	$(MAKE) deploy SCRIPT=Lara ACTION=DeployLara NETWORK=DEVNET
+
+deploy-lara-staking-testnet:
+	$(MAKE) deploy SCRIPT=LaraStaking ACTION=DeployLaraStaking NETWORK=TESTNET
 
 stake-lara-testnet:
-	forge script /Users/vargaelod/lara/liquid-staking/scripts/Delegate.s.sol:Delegate --rpc-url https://rpc.testnet.taraxa.io --broadcast --legacy -vvvv --ffi
+	forge script scripts/Delegate.s.sol:Delegate --rpc-url $(RPC_TESTNET) --broadcast --legacy -vvvv --ffi
 
 lara-token-devnet:
-	forge script /Users/vargaelod/lara/liquid-staking/scripts/TokenLara.s.sol:DeployLaraToken --rpc-url https://rpc.devnet.taraxa.io --broadcast --legacy -vvvv --ffi
+	forge script scripts/TokenLara.s.sol:DeployLaraToken --rpc-url $(RPC_DEVNET) --broadcast --legacy -vvvv --ffi
 
 lara-token-testnet:
-	forge script /Users/vargaelod/lara/liquid-staking/scripts/TokenLara.s.sol:DeployLaraToken --rpc-url https://rpc.testnet.taraxa.io --broadcast --legacy -vv --ffi --slow
+	forge script scripts/TokenLara.s.sol:DeployLaraToken --rpc-url $(RPC_TESTNET) --broadcast --legacy -vv --ffi --slow
 
 lara-token-mainnet:
-	forge script /Users/vargaelod/lara/liquid-staking/scripts/TokenLara.s.sol:DeployLaraToken --rpc-url https://rpc.mainnet.taraxa.io --broadcast --legacy -vvvv --ffi --verify --verifier sourcify
+	forge script scripts/TokenLara.s.sol:DeployLaraToken --rpc-url $(RPC_MAINNET) --broadcast --legacy -vvvv --ffi --verify --verifier sourcify
 
 lara-token-prnet:
-	forge script /Users/vargaelod/lara/liquid-staking/scripts/TokenLara.s.sol:DeployLaraToken --rpc-url https://rpc-pr-2609.prnet.taraxa.io --broadcast --legacy -vvvv --ffi
+	forge script scripts/TokenLara.s.sol:DeployLaraToken --rpc-url $(RPC_PRNET) --broadcast --legacy -vvvv --ffi
 
 stake-lara-devnet:
-	forge script /Users/vargaelod/lara/liquid-staking/scripts/Delegate.s.sol:Delegate --rpc-url https://rpc.devnet.taraxa.io --broadcast --legacy -vvvv --ffi
+	forge script scripts/Delegate.s.sol:Delegate --rpc-url $(RPC_DEVNET) --broadcast --legacy -vvvv --ffi
 
 dpos-devnet:
-	forge script /Users/vargaelod/lara/liquid-staking/scripts/Dpos.s.sol:DposTest --rpc-url https://rpc.devnet.taraxa.io --broadcast --legacy -vvvv --ffi
+	forge script scripts/Dpos.s.sol:DposTest --rpc-url $(RPC_DEVNET) --broadcast --legacy -vvvv --ffi
 
 multicall-deploy:
-	forge script /Users/vargaelod/lara/liquid-staking/scripts/DeployMulticall.s.sol:DeployMulticall --rpc-url https://rpc-pr-2609.prnet.taraxa.io --broadcast --legacy -vvvv --ffi
+	forge script scripts/DeployMulticall.s.sol:DeployMulticall --rpc-url $(RPC_PRNET) --broadcast --legacy -vvvv --ffi
+
+# Help target to print available options
+help:
+	@echo "\033[1;34mUsage:\033[0m make <target>"
+	@echo ""
+	@echo "\033[1;34mTargets:\033[0m"
+	@echo "  \033[1;32mcompile\033[0m                Compile the project"
+	@echo "  \033[1;32mtest\033[0m                   Run tests"
+	@echo "  \033[1;32mlint\033[0m                   Run linter"
+	@echo "  \033[1;32mdeploy\033[0m                 Deploy a script"
+	@echo "    \033[1;33mSCRIPT=<script>\033[0m      Specify the script name (e.g., Lara, TokenLara)"
+	@echo "    \033[1;33mACTION=<action>\033[0m      Specify the action (e.g., DeployLara, DeployLaraToken)"
+	@echo "    \033[1;33mNETWORK=<network>\033[0m    Specify the network (e.g., TESTNET, DEVNET, PRNET, MAINNET)"
+	@echo "  \033[1;32mdeploy-lara-testnet\033[0m    Deploy Lara to TESTNET"
+	@echo "  \033[1;32mprnet-deploy-lara\033[0m      Deploy Lara to PRNET"
+	@echo "  \033[1;32mdeploy-only-lara-testnet\033[0m Deploy OnlyLara to TESTNET"
+	@echo "  \033[1;32mdeploy-lara-devnet\033[0m     Deploy Lara to DEVNET"
+	@echo "  \033[1;32mstake-lara-testnet\033[0m     Stake Lara on TESTNET"
+	@echo "  \033[1;32mlara-token-devnet\033[0m      Deploy Lara Token to DEVNET"
+	@echo "  \033[1;32mlara-token-testnet\033[0m     Deploy Lara Token to TESTNET"
+	@echo "  \033[1;32mlara-token-mainnet\033[0m     Deploy Lara Token to MAINNET"
+	@echo "  \033[1;32mlara-token-prnet\033[0m       Deploy Lara Token to PRNET"
+	@echo "  \033[1;32mstake-lara-devnet\033[0m      Stake Lara on DEVNET"
+	@echo "  \033[1;32mdpos-devnet\033[0m            Deploy DPOS to DEVNET"
+	@echo "  \033[1;32mmulticall-deploy\033[0m       Deploy Multicall to PRNET"

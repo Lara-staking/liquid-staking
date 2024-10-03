@@ -27,7 +27,7 @@ contract LaraStakingContractTest is Test {
     function setUp() public {
         stakingToken = new LaraToken(treasury);
         rewardToken = new veLara(address(stakingToken));
-        assertEq(rewardToken.balanceOf(address(this)), 100000000 ether, "Deployer should have 100M veLARA");
+        assertEq(rewardToken.balanceOf(address(this)), 1000000 ether, "Deployer should have 100M veLARA");
 
         address stakingContractProxy = Upgrades.deployUUPSProxy(
             "LaraStaking.sol",
