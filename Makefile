@@ -14,6 +14,9 @@ test:
 lint:
 	yarn run eslint . --ext .ts
 
+docgen:
+	forge doc --build --out docs
+
 # Generalized deploy command
 deploy:
 ifndef SCRIPT

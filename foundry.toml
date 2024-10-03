@@ -10,4 +10,6 @@ test = 'test'
 script = 'scripts'
 cache_path  = 'cache_forge'
 fs_permissions = [{ access = "read", path = "./"}]
+[doc]
+FOUNDRY_DOC_TITLE="Lara Protocol Overview"
 

@@ -38,6 +38,10 @@ To run the tests:
 make test
 ```
 
+## Complier version
+
+Details can be found in the [Compilers](COMPILERS.md) file.
+
 ## Official Lara Protocol deployments
 
 ### Mainnet
