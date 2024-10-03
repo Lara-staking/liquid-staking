@@ -22,7 +22,7 @@ endif
 ifndef ACTION
 	$(error ACTION is not set. Use ACTION=<action_name> to specify the action)
 endif
-ifndef NETWORK
+ifndef NETWORKfor
 	$(error NETWORK is not set. Use NETWORK=<network_name> to specify the network)
 endif
 ifndef VERBOSE
