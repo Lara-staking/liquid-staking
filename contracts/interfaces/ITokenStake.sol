@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.11;
 
+import {IStaking20} from "@contracts/interfaces/IStaking20.sol";
+
 /**
  *  Thirdweb's TokenStake smart contract allows users to stake their ERC-20 Tokens
  *  and earn rewards in form of a different ERC-20 token.
@@ -19,7 +21,7 @@ pragma solidity ^0.8.11;
  *  - Users must stake tokens using the `stake` function only.
  *    Any direct transfers may cause unintended consequences, such as locking of tokens.
  */
-interface ITokenStake {
+interface ITokenStake is IStaking20 {
     /// @dev Struct to store claim information.
     struct Claim {
         uint256 amount;
