@@ -10,11 +10,6 @@ import {Staking20Base} from "@contracts/Staking20Base.sol";
 import {CurrencyTransferLib} from "@contracts/libs/CurrencyTransferLib.sol";
 
 contract LaraStaking is Initializable, OwnableUpgradeable, UUPSUpgradeable, Staking20Base, ITokenStake {
-    struct Claim {
-        uint256 amount;
-        uint64 blockNumber;
-    }
-
     bytes32 private constant MODULE_TYPE = bytes32("LaraStaking");
     uint256 private constant VERSION = 1;
 
@@ -32,8 +27,6 @@ contract LaraStaking is Initializable, OwnableUpgradeable, UUPSUpgradeable, Stak
 
     /// @dev Gap for future upgrades. In case of new storage variables, they should be added before this gap and the array length should be reduced
     uint256[49] __gap;
-
-    event Redeemed(address indexed user, uint64 indexed claimId, uint256 indexed amount);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {

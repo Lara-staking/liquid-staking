@@ -20,11 +20,20 @@ pragma solidity ^0.8.11;
  *    Any direct transfers may cause unintended consequences, such as locking of tokens.
  */
 interface ITokenStake {
+    /// @dev Struct to store claim information.
+    struct Claim {
+        uint256 amount;
+        uint64 blockNumber;
+    }
+
     /// @dev Emitted when contract admin withdraws reward tokens.
     event RewardTokensWithdrawnByAdmin(uint256 indexed _amount);
 
     /// @dev Emitted when contract admin deposits reward tokens.
     event RewardTokensDepositedByAdmin(uint256 indexed _amount);
+
+    /// @dev Emitted when a user redeems their rewards.
+    event Redeemed(address indexed user, uint64 indexed claimId, uint256 indexed amount);
 
     /**
      *  @notice Lets a contract admin (account with `DEFAULT_ADMIN_ROLE`) deposit reward-tokens.
