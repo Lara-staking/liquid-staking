@@ -34,6 +34,9 @@ contract ApyOracle is IApyOracle, OwnableUpgradeable, UUPSUpgradeable {
     /// @dev Mapping of node data
     mapping(address => IApyOracle.NodeData) public nodes;
 
+    /// @dev Storage gap for future upgrades
+    uint256[49] __gap;
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
