@@ -74,6 +74,7 @@ contract StakedNativeAsset is ERC20Snapshot, Ownable, Pausable, IstTara {
      * @inheritdoc IstTara
      */
     function setLaraAddress(address _lara) external onlyOwner {
+        require(_lara != address(0), "Zero address");
         lara = _lara;
     }
 

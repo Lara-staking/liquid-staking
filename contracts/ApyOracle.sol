@@ -48,6 +48,8 @@ contract ApyOracle is IApyOracle, OwnableUpgradeable, UUPSUpgradeable {
      * @param dpos The address of the DPOS contract.
      */
     function initialize(address dataFeed, address dpos) public initializer {
+        require(dataFeed != address(0) && dpos != address(0), "Zero address");
+
         __Ownable_init(msg.sender);
         __UUPSUpgradeable_init();
         DATA_FEED = dataFeed;
@@ -78,6 +80,7 @@ contract ApyOracle is IApyOracle, OwnableUpgradeable, UUPSUpgradeable {
      * @param _lara The address of the Lara contract.
      */
     function setLara(address _lara) external OnlyDataFeed {
+        require(_lara != address(0), "Zero address");
         lara = _lara;
     }
 
