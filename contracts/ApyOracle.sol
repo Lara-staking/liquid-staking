@@ -34,6 +34,13 @@ contract ApyOracle is IApyOracle, OwnableUpgradeable, UUPSUpgradeable {
     /// @dev Mapping of node data
     mapping(address => IApyOracle.NodeData) public nodes;
 
+    /// @dev Storage gap for future upgrades
+    uint256[50] private __gap; // Reserve 50 storage slots for future upgrades
+
+    // Event declarations
+    event LaraAddressUpdated(address indexed oldLara, address indexed newLara);
+    event NodeCountUpdated(uint256 oldNodeCount, uint256 newNodeCount);
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
@@ -45,6 +52,7 @@ contract ApyOracle is IApyOracle, OwnableUpgradeable, UUPSUpgradeable {
      * @param dpos The address of the DPOS contract.
      */
     function initialize(address dataFeed, address dpos) public initializer {
+        require(dataFeed != address(0) && dpos != address(0), "Zero address");
         __Ownable_init(msg.sender);
         __UUPSUpgradeable_init();
         DATA_FEED = dataFeed;
@@ -75,6 +83,8 @@ contract ApyOracle is IApyOracle, OwnableUpgradeable, UUPSUpgradeable {
      * @param _lara The address of the Lara contract.
      */
     function setLara(address _lara) external OnlyDataFeed {
+        require(_lara != address(0), "Zero address");
+        emit LaraAddressUpdated(lara, _lara);
         lara = _lara;
     }
 
@@ -204,6 +214,7 @@ contract ApyOracle is IApyOracle, OwnableUpgradeable, UUPSUpgradeable {
      * @param count The new node count.
      */
     function updateNodeCount(uint256 count) external override OnlyDataFeed {
+        emit NodeCountUpdated(nodeCount, count);
         nodeCount = count;
     }
 

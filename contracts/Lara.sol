@@ -97,6 +97,15 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
     /// @dev Gap for future upgrades. In case of new storage variables, they should be added before this gap and the array length should be reduced
     uint256[49] __gap;
 
+    // Event declarations
+    event CommissionDiscountUpdated(address indexed staker, uint32 discount);
+    event EpochDurationUpdated(uint256 oldEpochDuration, uint256 newEpochDuration);
+    event MaxValidatorStakeCapacityUpdated(uint256 oldCapacity, uint256 newCapacity);
+    event MinStakeAmountUpdated(uint256 oldMinStakeAmount, uint256 newMinStakeAmount);
+    event UndelegationCancelled(address indexed staker, address indexed validator, uint64 id, uint256 amount);
+    event DelegationSynced(address indexed account, uint256 stake);
+    event ValidatorRatingReset(address indexed account);
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
@@ -113,6 +122,14 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         public
         initializer
     {
+        require(
+            _sttaraToken != address(0) && 
+            _dposContract != address(0) && 
+            _apyOracle != address(0) && 
+            _treasuryAddress != address(0), 
+            "Zero address"
+        );
+
         __ReentrancyGuard_init();
         __UUPSUpgradeable_init();
         __Ownable_init(msg.sender);
@@ -151,6 +168,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
      */
     function setCommissionDiscounts(address staker, uint32 discount) public onlyOwner {
         commissionDiscounts[staker] = discount;
+        emit CommissionDiscountUpdated(staker, discount);
     }
 
     /**
@@ -158,6 +176,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
      */
     function setEpochDuration(uint256 _epochDuration) public onlyOwner {
         epochDuration = _epochDuration;
+        emit EpochDurationUpdated(oldEpochDuration, _epochDuration);
     }
 
     /**
@@ -172,6 +191,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
      * @inheritdoc ILara
      */
     function setTreasuryAddress(address _treasuryAddress) public onlyOwner {
+        require(_treasuryAddress != address(0), "Zero address");
         treasuryAddress = _treasuryAddress;
         emit TreasuryChanged(_treasuryAddress);
     }
@@ -181,6 +201,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
      */
     function setMaxValidatorStakeCapacity(uint256 _maxValidatorStakeCapacity) external onlyOwner {
         maxValidatorStakeCapacity = _maxValidatorStakeCapacity;
+        emit MaxValidatorStakeCapacityUpdated(oldCapacity, _maxValidatorStakeCapacity);
     }
 
     /**
@@ -188,6 +209,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
      */
     function setMinStakeAmount(uint256 _minStakeAmount) external onlyOwner {
         minStakeAmount = _minStakeAmount;
+        emit MinStakeAmountUpdated(oldMinStakeAmount, _minStakeAmount);
     }
 
     /**
@@ -198,12 +220,18 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         if (amount < minStakeAmount) {
             revert StakeAmountTooLow(amount, minStakeAmount);
         }
-        if (msg.value < amount) revert StakeValueTooLow(msg.value, amount);
+        if (msg.value != amount) revert StakeValueTooLow(msg.value, amount);
 
         // Delegate to validators
         uint256 remainingAmount = _delegateToValidators(address(this).balance);
         // Sync delegations
         _syncDelegations();
+
+        // Ensure the remainingAmount is not greater than the user's staked amount
+        if (remainingAmount > amount) {
+            revert("LARA: Remaining amount is greater than staked amount");
+        }
+
         if (protocolStartTimestamp == 0) {
             protocolStartTimestamp = block.timestamp;
         }
@@ -265,7 +293,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         emit AllRewardsClaimed(rewards);
 
         // Calculate epoch commission
-        uint256 epochCommission = (rewards / 100) * commission;
+        uint256 epochCommission = (rewards * commission) / 100;
         uint256 distributableRewards = rewards - epochCommission;
 
         // make stTARA snapshot
@@ -404,6 +432,8 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         catch Error(string memory reason) {
             revert(reason);
         }
+
+        emit UndelegationCancelled(msg.sender, validator, id, amount);
     }
 
     /**
@@ -630,8 +660,13 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         DposInterface.DelegationData[] memory delegations = _getDelegationsFromDpos();
         for (uint256 i = 0; i < delegations.length; i++) {
             protocolTotalStakeAtValidator[delegations[i].account] = delegations[i].delegation.stake;
+
+            emit DelegationSynced(delegations[i].account, delegations[i].delegation.stake);
+
             if (delegations[i].delegation.stake == 0) {
                 protocolValidatorRatingAtDelegation[delegations[i].account] = 0;
+
+                emit ValidatorRatingReset(delegations[i].account);
             }
         }
     }

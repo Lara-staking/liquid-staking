@@ -22,6 +22,8 @@ contract LaraToken is ERC20, ReentrancyGuard {
     mapping(address => uint256) public lastSwapBlock;
 
     event Swapped(address indexed user, uint256 amount);
+    event PresaleStarted(uint256 indexed startBlock);
+    event PresaleEnded(uint256 indexed endBlock, uint256 balanceTransferred);
 
     modifier onlyOnce() {
         require(presaleStartCount == 0, "Presale: start already called");
@@ -58,6 +60,7 @@ contract LaraToken is ERC20, ReentrancyGuard {
         presaleStartBlock = block.number;
         presaleRunning = true;
         presaleStartCount++;
+        emit PresaleStarted(presaleStartBlock);
     }
 
     /**
@@ -79,6 +82,7 @@ contract LaraToken is ERC20, ReentrancyGuard {
         if (balanceOf(address(this)) > 0) {
             _burn(address(this), balanceOf(address(this)));
         }
+        emit PresaleEnded(presaleEndBlock, address(this).balance);
     }
 
     /**
