@@ -271,7 +271,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         emit AllRewardsClaimed(rewards);
 
         // Calculate epoch commission
-        uint256 epochCommission = (rewards / 100) * commission;
+        uint256 epochCommission = (rewards * commission) / 100;
         uint256 distributableRewards = rewards - epochCommission;
 
         // make stTARA snapshot
@@ -309,7 +309,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         }
         uint256 slice = (delegatorBalance * 1e18) / stTARASupply;
         uint256 generalPart = slice * distributableRewards / 1e18;
-        uint256 commissionPart = (generalPart / 100) * commissionDiscounts[staker];
+        uint256 commissionPart = (generalPart * commissionDiscounts[staker]) / 100;
         uint256 delegatorReward = generalPart + commissionPart;
         if (delegatorReward == 0) {
             return;
