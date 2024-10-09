@@ -204,6 +204,12 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         uint256 remainingAmount = _delegateToValidators(address(this).balance);
         // Sync delegations
         _syncDelegations();
+
+        // Ensure the remainingAmount is not greater than the user's staked amount
+        if (remainingAmount > amount) {
+            revert("LARA: Remaining amount is greater than staked amount");
+        }
+
         if (protocolStartTimestamp == 0) {
             protocolStartTimestamp = block.timestamp;
         }
