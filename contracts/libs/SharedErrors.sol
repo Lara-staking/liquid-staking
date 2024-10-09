@@ -14,6 +14,7 @@ error RewardClaimFailed(string reason);
 
 error StakeAmountTooLow(uint256 amount, uint256 minAmount);
 error StakeValueTooLow(uint256 sentAmount, uint256 targetAmount);
+error StakeValueIncorrect(uint256 sentAmount, uint256 targetAmount);
 /**
  * @notice It is returned if the delegation to a certain validator fails.
  */

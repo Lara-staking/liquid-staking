@@ -18,6 +18,7 @@ import {
     RewardClaimFailed,
     StakeAmountTooLow,
     StakeValueTooLow,
+    StakeValueIncorrect,
     DelegationFailed,
     UndelegationFailed,
     RedelegationFailed,
@@ -198,7 +199,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         if (amount < minStakeAmount) {
             revert StakeAmountTooLow(amount, minStakeAmount);
         }
-        if (msg.value < amount) revert StakeValueTooLow(msg.value, amount);
+        if (msg.value != amount) revert StakeValueIncorrect(msg.value, amount);
 
         // Delegate to validators
         uint256 remainingAmount = _delegateToValidators(address(this).balance);
