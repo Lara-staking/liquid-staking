@@ -114,6 +114,11 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         public
         initializer
     {
+        if (
+            _sttaraToken == address(0) || _dposContract == address(0) || _apyOracle == address(0)
+                || _treasuryAddress == address(0)
+        ) revert ZeroAddress();
+
         __ReentrancyGuard_init();
         __UUPSUpgradeable_init();
         __Ownable_init(msg.sender);
@@ -173,6 +178,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
      * @inheritdoc ILara
      */
     function setTreasuryAddress(address _treasuryAddress) public onlyOwner {
+        require(_treasuryAddress != address(0), "Zero address");
         treasuryAddress = _treasuryAddress;
         emit TreasuryChanged(_treasuryAddress);
     }

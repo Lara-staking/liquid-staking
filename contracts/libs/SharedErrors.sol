@@ -76,6 +76,11 @@ error NotLara();
 error ZeroAddress();
 
 /**
+ * @notice It is returned if the caller is not the data feed.
+ */
+error NotDataFeed();
+
+/**
  * @notice It is returned if there is no delegation.
  */
 error NoDelegation();

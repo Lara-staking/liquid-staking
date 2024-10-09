@@ -7,11 +7,12 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 
 import {IApyOracle} from "./interfaces/IApyOracle.sol";
 import {DposInterface} from "./interfaces/IDPOS.sol";
-
+import {ZeroAddress, NotDataFeed, NotLara} from "./libs/SharedErrors.sol";
 /**
  * @title ApyOracle
  * @dev This contract implements the IApyOracle interface and provides methods for managing nodes and delegations.
  */
+
 contract ApyOracle is IApyOracle, OwnableUpgradeable, UUPSUpgradeable {
     /// @dev Maximum stake capacity for a validator
     uint256 public maxValidatorStakeCapacity;
@@ -48,6 +49,8 @@ contract ApyOracle is IApyOracle, OwnableUpgradeable, UUPSUpgradeable {
      * @param dpos The address of the DPOS contract.
      */
     function initialize(address dataFeed, address dpos) public initializer {
+        if (dataFeed == address(0) || dpos == address(0)) revert ZeroAddress();
+
         __Ownable_init(msg.sender);
         __UUPSUpgradeable_init();
         DATA_FEED = dataFeed;
@@ -61,7 +64,7 @@ contract ApyOracle is IApyOracle, OwnableUpgradeable, UUPSUpgradeable {
      * @dev Modifier to make a function callable only by the data feed contract.
      */
     modifier OnlyDataFeed() {
-        require(msg.sender == DATA_FEED, "ApyOracle: caller is not the data feed");
+        if (msg.sender != DATA_FEED) revert NotDataFeed();
         _;
     }
 
@@ -69,7 +72,7 @@ contract ApyOracle is IApyOracle, OwnableUpgradeable, UUPSUpgradeable {
      * @dev Modifier to make a function callable only by the Lara contract.
      */
     modifier OnlyLara() {
-        require(msg.sender == lara, "ApyOracle: caller is not Lara");
+        if (msg.sender != lara) revert NotLara();
         _;
     }
 
@@ -78,6 +81,7 @@ contract ApyOracle is IApyOracle, OwnableUpgradeable, UUPSUpgradeable {
      * @param _lara The address of the Lara contract.
      */
     function setLara(address _lara) external OnlyDataFeed {
+        if (_lara == address(0)) revert ZeroAddress();
         lara = _lara;
     }
 
