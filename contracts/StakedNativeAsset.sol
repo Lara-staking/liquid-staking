@@ -2,13 +2,13 @@
 // Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable2Step, Ownable} from "@openzeppelin/contracts/access/Ownable2Step.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {IstTara, ISnapshot} from "@contracts/interfaces/IstTara.sol";
 import {ZeroAddress} from "@contracts/libs/SharedErrors.sol";
 import {ERC20Snapshot, ERC20} from "@contracts/ERC20Snapshot.sol";
 
-contract StakedNativeAsset is ERC20Snapshot, Ownable, Pausable, IstTara {
+contract StakedNativeAsset is ERC20Snapshot, Ownable2Step, Pausable, IstTara {
     // Thrown when the user does not have sufficient allowance set for Tara to burn
     error InsufficientUserAllowanceForBurn(uint256 amount, uint256 senderBalance, uint256 protocolBalance);
 

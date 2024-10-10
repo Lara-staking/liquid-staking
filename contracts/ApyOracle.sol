@@ -2,7 +2,7 @@
 // Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
 
-import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 import {IApyOracle} from "@contracts/interfaces/IApyOracle.sol";
@@ -12,7 +12,7 @@ import {DposInterface} from "@contracts/interfaces/IDPOS.sol";
  * @title ApyOracle
  * @dev This contract implements the IApyOracle interface and provides methods for managing nodes and delegations.
  */
-contract ApyOracle is IApyOracle, OwnableUpgradeable, UUPSUpgradeable {
+contract ApyOracle is IApyOracle, Ownable2StepUpgradeable, UUPSUpgradeable {
     /// @dev Maximum stake capacity for a validator
     uint256 public maxValidatorStakeCapacity;
 
