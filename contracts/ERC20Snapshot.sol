@@ -224,7 +224,7 @@ abstract contract ERC20Snapshot is ERC20, ISnapshot {
      * @return uint256 the value at the time of the snapshot
      */
     function _valueAt(uint256 snapshotId, Snapshots storage snapshots) private view returns (bool, uint256) {
-        require(snapshotId > 0, "ERC20Snapshot: id is 0");
+        require(snapshotId != 0, "ERC20Snapshot: id is 0");
         require(snapshotId <= _getCurrentSnapshotId(), "ERC20Snapshot: nonexistent id");
 
         // When a valid snapshot is queried, there are three possibilities:
