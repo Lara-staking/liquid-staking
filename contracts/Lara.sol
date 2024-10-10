@@ -380,7 +380,7 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         }
 
         address validator = undelegations[msg.sender][id].undelegation_data.validator;
-        undelegated[msg.sender] -= undelegations[msg.sender][id].undelegation_data.stake;
+        undelegated[msg.sender] = undelegated[msg.sender] - undelegations[msg.sender][id].undelegation_data.stake;
         delete undelegations[msg.sender][id];
         uint256 balanceBefore = address(this).balance;
 
@@ -419,8 +419,8 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         uint256 amount = undelegations[msg.sender][id].undelegation_data.stake;
         address validator = undelegations[msg.sender][id].undelegation_data.validator;
 
-        protocolTotalStakeAtValidator[validator] += amount;
-        undelegated[msg.sender] -= amount;
+        protocolTotalStakeAtValidator[validator] = protocolTotalStakeAtValidator[validator] + amount;
+        undelegated[msg.sender] = undelegated[msg.sender] - amount;
         delete undelegations[msg.sender][id];
 
         (bool success,) =
@@ -540,11 +540,11 @@ contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgr
         emit RedelegationRewardsClaimed(balanceAfter - balanceBefore, from);
         emit TaraSent(treasuryAddress, balanceAfter - balanceBefore);
 
-        protocolTotalStakeAtValidator[from] -= amount;
+        protocolTotalStakeAtValidator[from] = protocolTotalStakeAtValidator[from] - amount;
         if (protocolTotalStakeAtValidator[from] == 0) {
             protocolValidatorRatingAtDelegation[from] = 0;
         }
-        protocolTotalStakeAtValidator[to] += amount;
+        protocolTotalStakeAtValidator[to] = protocolTotalStakeAtValidator[to] + amount;
         protocolValidatorRatingAtDelegation[to] = rating;
     }
 
