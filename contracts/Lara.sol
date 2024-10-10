@@ -2,7 +2,7 @@
 // Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
 
-import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
@@ -36,7 +36,7 @@ import {
  * @title Lara Contract
  * @dev This contract is used for staking and delegating tokens in the protocol.
  */
-contract Lara is OwnableUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgradeable {
+contract Lara is Ownable2StepUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuardUpgradeable {
     /// @dev Reference timestamp for computing systme health
     uint256 public protocolStartTimestamp;
     /// @dev Last snapshot timestamp
