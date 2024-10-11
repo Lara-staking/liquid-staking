@@ -18,6 +18,17 @@ contract RebalanceTest is Test, TestSetup {
         super.setupLara();
     }
 
+    function test_changeOwner2Step() public {
+        address newOwner = address(1234);
+        lara.transferOwnership(newOwner);
+        address ownerBefore = lara.owner();
+        assertEq(ownerBefore, address(this), "Owner should be the same as the caller");
+        vm.prank(newOwner);
+        lara.acceptOwnership();
+        address ownerAfter = lara.owner();
+        assertEq(ownerAfter, newOwner, "Owner should be the new owner");
+    }
+
     function stake(uint256 amount) private {
         vm.assume(amount > 1000 ether);
 
