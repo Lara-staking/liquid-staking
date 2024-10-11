@@ -12,9 +12,16 @@ error NotAuthorized();
  */
 error RewardClaimFailed(string reason);
 
+/**
+ * @notice It is returned if the stake amount is too low.
+ */
 error StakeAmountTooLow(uint256 amount, uint256 minAmount);
-error StakeValueTooLow(uint256 sentAmount, uint256 targetAmount);
+
+/**
+ * @notice It is returned if the stake value is not matching the sent amount.
+ */
 error StakeValueIncorrect(uint256 sentAmount, uint256 targetAmount);
+
 /**
  * @notice It is returned if the delegation to a certain validator fails.
  */

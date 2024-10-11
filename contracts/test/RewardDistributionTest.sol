@@ -11,7 +11,6 @@ import {StakedNativeAsset} from "../StakedNativeAsset.sol";
 import {TestSetup} from "./SetUpTest.sol";
 import {
     StakeAmountTooLow,
-    StakeValueTooLow,
     SnapshotAlreadyClaimed,
     SnapshotNotFound,
     NoDelegation,

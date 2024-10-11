@@ -17,7 +17,6 @@ import {
     EpochDurationNotMet,
     RewardClaimFailed,
     StakeAmountTooLow,
-    StakeValueTooLow,
     StakeValueIncorrect,
     DelegationFailed,
     UndelegationFailed,

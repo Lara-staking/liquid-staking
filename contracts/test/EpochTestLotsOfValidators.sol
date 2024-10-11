@@ -9,7 +9,7 @@ import {ApyOracle} from "../ApyOracle.sol";
 import {MockDpos} from "../mocks/MockDpos.sol";
 import {StakedNativeAsset} from "../StakedNativeAsset.sol";
 import {ManyValidatorsTestSetup} from "./SetUpTestLotsOfValidators.sol";
-import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
+import {StakeAmountTooLow} from "../libs/SharedErrors.sol";
 import {SimpleEpochTest} from "./EpochTest.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 

@@ -12,7 +12,7 @@ import {ApyOracle} from "../ApyOracle.sol";
 import {MockDpos} from "../mocks/MockDpos.sol";
 import {StakedNativeAsset} from "../StakedNativeAsset.sol";
 import {LaraV2Test} from "./LaraV2Test.sol";
-import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
+import {StakeAmountTooLow} from "../libs/SharedErrors.sol";
 
 contract UpgradeTest is Test {
     Lara lara;

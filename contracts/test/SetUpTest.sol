@@ -11,7 +11,7 @@ import {LaraHarness} from "./utils/LaraHarness.sol";
 import {ApyOracle} from "../ApyOracle.sol";
 import {MockDpos} from "../mocks/MockDpos.sol";
 import {StakedNativeAsset} from "../StakedNativeAsset.sol";
-import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
+import {StakeAmountTooLow} from "../libs/SharedErrors.sol";
 
 abstract contract TestSetup is Test {
     LaraHarness lara;
