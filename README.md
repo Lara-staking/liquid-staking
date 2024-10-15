@@ -67,7 +67,7 @@ The `veLARA` + `LaraStaking` contracts are deployed on testnet at the addresses:
 ```bash
   veLara token deployed at address: 0xD0Ab112cEDE5b2D8EEAa8a09dA66Bef2110b3038
   Staking contract deployed at address: 0x0d4dBAeEa3Fd95a73E11724aAB2d2Dc3E969E177
-  Staking implementation deployed at address: 0x9a78148d4022f0150Eb6Eb3Dccf7e2488cE65c31
+  Staking implementation deployed at address: 0x80E4E38C058e3a32ed3A0c38B435097352b7019F
 ```
 
 The Staking contract is funded with 1M veLARA tokens via the `0xe2135516c3d550ff98da77d1fd925aa69ed9cc271346bafdee8c3eafa0cdccb3` transaction .

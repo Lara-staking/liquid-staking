@@ -18,36 +18,37 @@ docgen:
 	forge doc --build --out docs
 
 # Generalized deploy command
-deploy:
+script:
 ifndef SCRIPT
 	$(error SCRIPT is not set. Use SCRIPT=<script_name> to specify the script)
 endif
 ifndef ACTION
 	$(error ACTION is not set. Use ACTION=<action_name> to specify the action)
 endif
-ifndef NETWORKfor
+ifndef NETWORK
 	$(error NETWORK is not set. Use NETWORK=<network_name> to specify the network)
 endif
 ifndef VERBOSE
-	$(error VERBOSE is not set. Use VERBOSE=<vv|vvvv|vvvv> to specify the verbosity)
+	$(warning VERBOSE is not set. Defaulting to VERBOSE=vv)
+	VERBOSE=vv
 endif
 	forge script scripts/$(SCRIPT).s.sol:$(ACTION) --rpc-url $(RPC_$(NETWORK)) --force --ffi --broadcast --legacy -$(VERBOSE)
 
 # Specific targets using the generalized command
 deploy-lara-testnet:
-	$(MAKE) deploy SCRIPT=Lara ACTION=DeployLara NETWORK=TESTNET
+	$(MAKE) script SCRIPT=Lara ACTION=DeployLara NETWORK=TESTNET
 
 prnet-deploy-lara:
-	$(MAKE) deploy SCRIPT=Lara ACTION=DeployLara NETWORK=PRNET
+	$(MAKE) script SCRIPT=Lara ACTION=DeployLara NETWORK=PRNET
 
 deploy-only-lara-testnet:
-	$(MAKE) deploy SCRIPT=OnlyLara ACTION=DeployLara NETWORK=TESTNET
+	$(MAKE) script SCRIPT=OnlyLara ACTION=DeployLara NETWORK=TESTNET
 
 deploy-lara-devnet:
-	$(MAKE) deploy SCRIPT=Lara ACTION=DeployLara NETWORK=DEVNET
+	$(MAKE) script SCRIPT=Lara ACTION=DeployLara NETWORK=DEVNET
 
 deploy-lara-staking-testnet:
-	$(MAKE) deploy SCRIPT=LaraStaking ACTION=DeployLaraStaking NETWORK=TESTNET
+	$(MAKE) script SCRIPT=LaraStaking ACTION=DeployLaraStaking NETWORK=TESTNET
 
 stake-lara-testnet:
 	forge script scripts/Delegate.s.sol:Delegate --rpc-url $(RPC_TESTNET) --broadcast --legacy -vvvv --ffi
@@ -81,10 +82,11 @@ help:
 	@echo "  \033[1;32mcompile\033[0m                Compile the project"
 	@echo "  \033[1;32mtest\033[0m                   Run tests"
 	@echo "  \033[1;32mlint\033[0m                   Run linter"
-	@echo "  \033[1;32mdeploy\033[0m                 Deploy a script"
+	@echo "  \033[1;32mscript\033[0m                 Deploy a script"
 	@echo "    \033[1;33mSCRIPT=<script>\033[0m      Specify the script name (e.g., Lara, TokenLara)"
 	@echo "    \033[1;33mACTION=<action>\033[0m      Specify the action (e.g., DeployLara, DeployLaraToken)"
 	@echo "    \033[1;33mNETWORK=<network>\033[0m    Specify the network (e.g., TESTNET, DEVNET, PRNET, MAINNET)"
+	@echo "    \033[1;33mVERBOSE=<vv|vvvv|vvvv>\033[0m Specify the verbosity (e.g., vv, vvvv, vvvvv)"
 	@echo "  \033[1;32mdeploy-lara-testnet\033[0m    Deploy Lara to TESTNET"
 	@echo "  \033[1;32mprnet-deploy-lara\033[0m      Deploy Lara to PRNET"
 	@echo "  \033[1;32mdeploy-only-lara-testnet\033[0m Deploy OnlyLara to TESTNET"

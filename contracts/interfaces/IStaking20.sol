@@ -11,7 +11,7 @@ interface IStaking20 {
     event TokensWithdrawn(address indexed staker, uint256 amount);
 
     /// @dev Emitted when a staker claims staking rewards.
-    event RewardsClaimed(address indexed staker, uint256 rewardAmount);
+    event RewardsClaimed(uint64 indexed claimId, address indexed staker, uint256 indexed rewardAmount);
 
     /// @dev Emitted when contract admin updates timeUnit.
     event UpdatedTimeUnit(uint256 oldTimeUnit, uint256 newTimeUnit);

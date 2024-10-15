@@ -186,7 +186,7 @@ abstract contract Staking20Base is ReentrancyGuardUpgradeable, IStaking20 {
         }
 
         uint256 balanceBefore = IERC20(_stakingToken).balanceOf(address(this));
-        CurrencyTransferLib.transferCurrency(stakingToken, _stakeMsgSender(), address(this), _amount);
+        CurrencyTransferLib.transferCurrency(_stakingToken, _stakeMsgSender(), address(this), _amount);
         uint256 actualAmount = IERC20(_stakingToken).balanceOf(address(this)) - balanceBefore;
 
         stakers[_stakeMsgSender()].amountStaked += actualAmount;
@@ -233,8 +233,6 @@ abstract contract Staking20Base is ReentrancyGuardUpgradeable, IStaking20 {
         stakers[_stakeMsgSender()].conditionIdOflastUpdate = nextConditionId - 1;
 
         _mintRewards(_stakeMsgSender(), rewards);
-
-        emit RewardsClaimed(_stakeMsgSender(), rewards);
     }
 
     /// @dev View available rewards for a user.

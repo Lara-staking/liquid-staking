@@ -196,5 +196,6 @@ contract LaraStaking is Initializable, OwnableUpgradeable, UUPSUpgradeable, Stak
         CURRENT_CLAIM_ID++;
         claims[msg.sender][claimId] = Claim(rewards, uint64(block.number));
         super._claimRewards();
+        emit RewardsClaimed(claimId, _stakeMsgSender(), rewards);
     }
 }
