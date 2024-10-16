@@ -9,13 +9,24 @@ import {ApyOracle} from "@contracts/ApyOracle.sol";
 import {MockDpos} from "@contracts/mocks/MockDpos.sol";
 import {StakedNativeAsset} from "@contracts/StakedNativeAsset.sol";
 import {TestSetup} from "@contracts/test/SetUp.t.sol";
-import {StakeAmountTooLow, StakeValueTooLow} from "@contracts/libs/SharedErrors.sol";
+import {StakeAmountTooLow} from "@contracts/libs/SharedErrors.sol";
 
 contract RebalanceTest is Test, TestSetup {
     function setUp() public {
         super.setupValidators();
         super.setupApyOracle();
         super.setupLara();
+    }
+
+    function test_changeOwner2Step() public {
+        address newOwner = address(1234);
+        lara.transferOwnership(newOwner);
+        address ownerBefore = lara.owner();
+        assertEq(ownerBefore, address(this), "Owner should be the same as the caller");
+        vm.prank(newOwner);
+        lara.acceptOwnership();
+        address ownerAfter = lara.owner();
+        assertEq(ownerAfter, newOwner, "Owner should be the new owner");
     }
 
     function stake(uint256 amount) private {

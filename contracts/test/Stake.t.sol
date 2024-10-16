@@ -9,7 +9,7 @@ import {ApyOracle} from "@contracts/ApyOracle.sol";
 import {MockDpos} from "@contracts/mocks/MockDpos.sol";
 import {StakedNativeAsset} from "@contracts/StakedNativeAsset.sol";
 import {TestSetup} from "@contracts/test/SetUp.t.sol";
-import {StakeAmountTooLow, StakeValueTooLow} from "@contracts/libs/SharedErrors.sol";
+import {StakeAmountTooLow} from "@contracts/libs/SharedErrors.sol";
 
 contract StakeTest is Test, TestSetup {
     uint256 epochDuration = 0;
@@ -107,9 +107,9 @@ contract StakeTest is Test, TestSetup {
         lara.stake{value: 500 ether}(500 ether);
     }
 
-    function tes_Revert_On_StakeValueTooLow() public {
+    function tes_Revert_On_StakeAmountTooLow() public {
         // Call the function with a value less than the staking amount
-        vm.expectRevert(StakeValueTooLow.selector);
+        vm.expectRevert(StakeAmountTooLow.selector);
         lara.stake{value: 400000 ether}(500000 ether);
     }
 

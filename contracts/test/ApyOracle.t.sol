@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 import {IApyOracle, ApyOracle} from "@contracts/ApyOracle.sol";
 import {MockDpos} from "@contracts/mocks/MockDpos.sol";
 import {TestSetup} from "@contracts/test/SetUp.t.sol";
+import {NotDataFeed} from "@contracts/libs/SharedErrors.sol";
 
 contract ApyOracleTest is TestSetup {
     address public dataFeedAddress = address(this);
@@ -42,7 +43,7 @@ contract ApyOracleTest is TestSetup {
             IApyOracle.NodeData({rank: 1, account: address(0x6), apy: 500, fromBlock: 1000, toBlock: 2000, rating: 997});
 
         vm.prank(secondSignerAddress);
-        vm.expectRevert("ApyOracle: caller is not the data feed");
+        vm.expectRevert(NotDataFeed.selector);
         mockApyOracle.updateNodeData(nodeAddress, updatedNodeData);
     }
 }

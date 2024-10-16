@@ -9,7 +9,7 @@ import {ApyOracle} from "@contracts/ApyOracle.sol";
 import {MockDpos} from "@contracts/mocks/MockDpos.sol";
 import {StakedNativeAsset} from "@contracts/StakedNativeAsset.sol";
 import {ManyValidatorsTestSetup} from "@contracts/test/SetUpLotsOfValidators.t.sol";
-import {StakeAmountTooLow, StakeValueTooLow} from "@contracts/libs/SharedErrors.sol";
+import {StakeAmountTooLow, NotLara} from "@contracts/libs/SharedErrors.sol";
 
 contract GetValidatorsTest is Test, ManyValidatorsTestSetup {
     function setUp() public {
@@ -20,7 +20,7 @@ contract GetValidatorsTest is Test, ManyValidatorsTestSetup {
 
     function test_revertOnNotLara() public {
         // call the function
-        vm.expectRevert("ApyOracle: caller is not Lara");
+        vm.expectRevert(NotLara.selector);
         mockApyOracle.getNodesForDelegation(100000 ether);
     }
 

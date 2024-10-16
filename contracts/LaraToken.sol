@@ -22,6 +22,8 @@ contract LaraToken is ERC20, ReentrancyGuard {
     mapping(address => uint256) public lastSwapBlock;
 
     event Swapped(address indexed user, uint256 amount);
+    event PresaleStarted(uint256 indexed startBlock);
+    event PresaleEnded(uint256 indexed endBlock, uint256 balanceTransferred);
 
     modifier onlyOnce() {
         require(presaleStartCount == 0, "Presale: start already called");
@@ -58,13 +60,14 @@ contract LaraToken is ERC20, ReentrancyGuard {
         presaleStartBlock = block.number;
         presaleRunning = true;
         presaleStartCount++;
+        emit PresaleStarted(presaleStartBlock);
     }
 
     /**
      * @dev End the presale
      */
     function endPresale() external onlyOnceEnd nonReentrant {
-        require(presaleStartBlock > 0, "Presale: presale not started");
+        require(presaleStartBlock != 0, "Presale: presale not started");
         require(presaleRunning, "Presale: presale not running");
         require(block.number >= presaleStartBlock + presaleBlockDuration, "Presale: presale not ended");
         require(presaleEndBlock == 0, "Presale: already ended");
@@ -76,9 +79,10 @@ contract LaraToken is ERC20, ReentrancyGuard {
         if (!success) {
             revert("Presale: transfer failed");
         }
-        if (balanceOf(address(this)) > 0) {
+        if (balanceOf(address(this)) != 0) {
             _burn(address(this), balanceOf(address(this)));
         }
+        emit PresaleEnded(presaleEndBlock, address(this).balance);
     }
 
     /**
@@ -86,7 +90,7 @@ contract LaraToken is ERC20, ReentrancyGuard {
      */
     function swap() external payable nonReentrant {
         require(presaleRunning, "Presale: presale not running");
-        require(presaleStartBlock > 0, "Presale: presale not started");
+        require(presaleStartBlock != 0, "Presale: presale not started");
         require(msg.value >= minSwapAmount, "Presale: amount too low");
         require(balanceOf(address(this)) >= msg.value * presaleRate, "Presale: insufficient balance");
         require(msg.value <= swapUpperLimit, "Presale: you can swap max 1000000 TARA");
