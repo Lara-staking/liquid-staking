@@ -93,15 +93,13 @@ contract LaraStaking is Initializable, OwnableUpgradeable, UUPSUpgradeable, Stak
         // Calculate the percentage of the vesting period that has passed
         uint256 currentBlock = block.number;
         uint256 blocksPassed = currentBlock - claim.blockNumber;
-        uint256 vestingPercentage = 0;
-        if (blocksPassed > MATURITY_BLOCK_COUNT) {
-            vestingPercentage = 1e18;
-        } else {
-            vestingPercentage = (blocksPassed * 1e18) / MATURITY_BLOCK_COUNT;
-        }
-
+        uint256 redeemableAmount;
         // Calculate the vested amount of the underlying Lara tokens
-        uint256 redeemableAmount = (claim.amount * vestingPercentage) / 1e18;
+        if (blocksPassed > MATURITY_BLOCK_COUNT) {
+            redeemableAmount = claim.amount;
+        } else {
+            redeemableAmount = (claim.amount * (blocksPassed * 1e18) / MATURITY_BLOCK_COUNT) / 1e18;
+        }
         return redeemableAmount;
     }
 
@@ -109,13 +107,7 @@ contract LaraStaking is Initializable, OwnableUpgradeable, UUPSUpgradeable, Stak
         Claim memory claim = claims[msg.sender][claimId];
         require(claim.amount > 0, "No rewards to redeem or already redeemed");
 
-        // Transfer the claim's amount of reward tokens to the staking contract
-        CurrencyTransferLib.transferCurrency(rewardToken, msg.sender, address(this), claim.amount);
-
-        // Burn the transferred reward tokens
-        CurrencyTransferLib.transferCurrency(
-            rewardToken, address(this), address(0x000000000000000000000000000000000000dEaD), claim.amount
-        );
+        uint256 claimAmount = claim.amount;
 
         // Calculate the percentage of the vesting period that has passed
         uint256 redeemableAmount = calculateRedeemableAmount(msg.sender, claimId);
@@ -123,6 +115,11 @@ contract LaraStaking is Initializable, OwnableUpgradeable, UUPSUpgradeable, Stak
         // Update the claim to mark it as redeemed
         claim.amount = 0;
         claims[msg.sender][claimId] = claim;
+
+        // Burn the transferred reward tokens
+        CurrencyTransferLib.transferCurrency(
+            rewardToken, msg.sender, address(0x000000000000000000000000000000000000dEaD), claimAmount
+        );
 
         // Transfer the vested amount of Lara tokens to the user
         CurrencyTransferLib.transferCurrency(stakingToken, address(this), msg.sender, redeemableAmount);
