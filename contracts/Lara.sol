@@ -6,10 +6,10 @@ import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/acces
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
-import {IstTara} from "./interfaces/IstTara.sol";
-import {ILara} from "./interfaces/ILara.sol";
-import {DposInterface} from "./interfaces/IDPOS.sol";
-import {IApyOracle} from "./interfaces/IApyOracle.sol";
+import {IstTara} from "@contracts/interfaces/IstTara.sol";
+import {ILara} from "@contracts/interfaces/ILara.sol";
+import {DposInterface} from "@contracts/interfaces/IDPOS.sol";
+import {IApyOracle} from "@contracts/interfaces/IApyOracle.sol";
 
 import {
     NoDelegation,
@@ -29,7 +29,7 @@ import {
     SnapshotNotFound,
     SnapshotAlreadyClaimed,
     ZeroAddress
-} from "./libs/SharedErrors.sol";
+} from "@contracts/libs/SharedErrors.sol";
 
 /**
  * @title Lara Contract
