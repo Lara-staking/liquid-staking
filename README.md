@@ -56,3 +56,8 @@ yarn test:all
 - ChainId: `200`
 - Name: `Taraxa PRnet-2609`
 - Currency: `TARA`
+
+Credits
+
+Developer - Előd Varga (@VargaElod23)
+Owner - Lara Protocol(dao@tlara.xyz)
