@@ -1,4 +1,10 @@
 {
   "filter_paths": "(scripts/|test/|lib/|contracts/test/|contracts/mocks/|contracts/interfaces/IDPOS.sol)",
-  "fail-on": "none"
+  "fail-on": "none",
+  "detectors_to_exclude": ["naming-convention"],
+  "custom": {
+    "security": {
+      "non-reentrant": ["nonReentrant"]
+    }
+  }
 }
