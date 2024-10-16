@@ -128,7 +128,7 @@ describe(ContractNames.lara, function () {
     it("should not allow staking if the value sent is lower than the amount", async () => {
       const amountToStake = ethers.parseEther("1001");
       await expect(lara.stake(amountToStake, { value: ethers.parseEther("2") }))
-        .to.be.revertedWithCustomError(lara, ErrorsNames.StakeValueTooLow)
+        .to.be.revertedWithCustomError(lara, ErrorsNames.StakeValueIncorrect)
         .withArgs(ethers.parseEther("2"), amountToStake);
     });
 

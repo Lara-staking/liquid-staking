@@ -9,7 +9,7 @@ import {ApyOracle} from "../ApyOracle.sol";
 import {MockDpos} from "../mocks/MockDpos.sol";
 import {StakedNativeAsset} from "../StakedNativeAsset.sol";
 import {TestSetup} from "./SetUpTest.sol";
-import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
+import {StakeAmountTooLow} from "../libs/SharedErrors.sol";
 
 contract UndelegateTest is Test, TestSetup {
     function setUp() public {

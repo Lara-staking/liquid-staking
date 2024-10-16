@@ -9,7 +9,7 @@ import {ApyOracle} from "../ApyOracle.sol";
 import {MockDpos} from "../mocks/MockDpos.sol";
 import {StakedNativeAsset} from "../StakedNativeAsset.sol";
 import {ManyValidatorsTestSetup} from "./SetUpTestLotsOfValidators.sol";
-import {StakeAmountTooLow, StakeValueTooLow} from "../libs/SharedErrors.sol";
+import {StakeAmountTooLow} from "../libs/SharedErrors.sol";
 import {SimpleEpochTest} from "./EpochTest.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
@@ -92,7 +92,7 @@ contract ManyValidatorEpochTest is Test, ManyValidatorsTestSetup {
             for (uint32 i = 0; i < stakers.length; i++) {
                 uint256 slice = calculateSlice(balancesBefore[i], totalSupplyBefore);
                 uint256 delegatorReward = slice * rewardsPerSnapshot / 1e18;
-                uint256 commissionDiscount = (delegatorReward / 100) * lara.commissionDiscounts(stakers[i]);
+                uint256 commissionDiscount = (delegatorReward * lara.commissionDiscounts(stakers[i])) / 100;
                 uint256 delegatorRewardWithCommission = delegatorReward + commissionDiscount;
 
                 uint256 currentBalance = stTaraToken.balanceOf(stakers[i]);

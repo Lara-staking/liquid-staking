@@ -11,7 +11,6 @@ import {StakedNativeAsset} from "../StakedNativeAsset.sol";
 import {TestSetup} from "./SetUpTest.sol";
 import {
     StakeAmountTooLow,
-    StakeValueTooLow,
     SnapshotAlreadyClaimed,
     SnapshotNotFound,
     NoDelegation,
@@ -294,7 +293,7 @@ contract RewardDistributionTest is Test, TestSetup {
             emit SliceParts(balanceOfStakerAtSnapshot, totalSupplyAtSnapshot);
             uint256 delegatorReward = slice * rewardsPerSnapshot / 1e18;
             emit GeneralParts(slice, rewardsPerSnapshot);
-            uint256 commissionDiscount = (delegatorReward / 100) * lara.commissionDiscounts(stakers[i]);
+            uint256 commissionDiscount = (delegatorReward * lara.commissionDiscounts(stakers[i])) / 100;
             uint256 delegatorRewardWithCommission = delegatorReward + commissionDiscount;
             emit RewardParts(
                 balanceOfStakerAtSnapshot,

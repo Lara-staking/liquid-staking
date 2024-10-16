@@ -68,6 +68,10 @@ abstract contract ERC20Snapshot is ERC20, ISnapshot {
      * @dev Emitted by {_snapshot} when a snapshot identified by `id` is created.
      */
     event Snapshot(uint256 id);
+    event YieldBearingContractSet(address indexed contractAddress);
+    event AccountSnapshotUpdated(address indexed account, uint256 balance);
+    event TotalSupplySnapshotUpdated(uint256 totalSupply);
+    event ContractSnapshotUpdated(address indexed contractAddress, uint256 contractDeposit);
 
     /**
      * @dev Creates a new snapshot and returns its snapshot id.
@@ -108,6 +112,7 @@ abstract contract ERC20Snapshot is ERC20, ISnapshot {
      */
     function _setYieldBearingContract(address contractAddress) internal virtual {
         _yieldBearingContracts[contractAddress] = true;
+        emit YieldBearingContractSet(contractAddress);
     }
 
     /**
@@ -219,7 +224,7 @@ abstract contract ERC20Snapshot is ERC20, ISnapshot {
      * @return uint256 the value at the time of the snapshot
      */
     function _valueAt(uint256 snapshotId, Snapshots storage snapshots) private view returns (bool, uint256) {
-        require(snapshotId > 0, "ERC20Snapshot: id is 0");
+        require(snapshotId != 0, "ERC20Snapshot: id is 0");
         require(snapshotId <= _getCurrentSnapshotId(), "ERC20Snapshot: nonexistent id");
 
         // When a valid snapshot is queried, there are three possibilities:
@@ -285,6 +290,7 @@ abstract contract ERC20Snapshot is ERC20, ISnapshot {
      */
     function _updateAccountSnapshot(address account) private {
         _updateSnapshot(_accountBalanceSnapshots[account], balanceOf(account), 0);
+        emit AccountSnapshotUpdated(account, balanceOf(account));
     }
 
     /**
@@ -292,6 +298,7 @@ abstract contract ERC20Snapshot is ERC20, ISnapshot {
      */
     function _updateTotalSupplySnapshot() private {
         _updateSnapshot(_totalSupplySnapshots, totalSupply(), 0);
+        emit TotalSupplySnapshotUpdated(totalSupply());
     }
 
     /**
@@ -317,6 +324,7 @@ abstract contract ERC20Snapshot is ERC20, ISnapshot {
      */
     function _updateContractSnapshot(address contractAddress) private {
         _updateSnapshot(_accountBalanceSnapshots[contractAddress], 0, contractDepositOf(contractAddress));
+        emit ContractSnapshotUpdated(contractAddress, contractDepositOf(contractAddress));
     }
 
     /**
