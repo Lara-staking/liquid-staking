@@ -3,6 +3,7 @@ pragma solidity 0.8.20;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {TransferFailed} from "@contracts/libs/SharedErrors.sol";
 
 contract veLara is ERC20, Ownable {
     ERC20 public lara;
@@ -13,7 +14,8 @@ contract veLara is ERC20, Ownable {
     }
 
     function deposit(uint256 amount) external {
-        lara.transferFrom(msg.sender, address(this), amount);
+        bool success = lara.transferFrom(msg.sender, address(this), amount);
+        if (!success) revert TransferFailed(msg.sender, address(this), amount);
         _mint(msg.sender, amount);
     }
 
