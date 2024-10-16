@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // OpenZeppelin Contracts (last updated v4.9.0) (token/ERC20/extensions/ERC20Snapshot.sol)
 // Modified to add yield bearing contracts and contract deposits by Lara Protocol
+// Security contact: dao@tlara.xyz
 
 pragma solidity 0.8.20;
 

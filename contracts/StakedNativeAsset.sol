@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Security contact: elod@apeconsulting.xyz
+// Security contact: dao@tlara.xyz
 pragma solidity 0.8.20;
 
 import {Ownable2Step, Ownable} from "@openzeppelin/contracts/access/Ownable2Step.sol";
