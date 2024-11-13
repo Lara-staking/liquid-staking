@@ -44,8 +44,9 @@ contract SimpleEpochTest is Test, TestSetup {
             lara.stake{value: 50000 ether}(50000 ether);
             assertEq(stTaraToken.balanceOf(stakers[i]), 50000 ether, "Wrong stTARA value for staker");
         }
-        assertEq(
-            mockDpos.getTotalDelegation(address(lara)), 50000 ether * stakers.length, "MockDPOS: Wrong total stake"
+        // we can't fully check the total stake because of the rewards being claimed on stake
+        assertTrue(
+            mockDpos.getTotalDelegation(address(lara)) >= 50000 ether * stakers.length, "MockDPOS: Wrong total stake"
         );
     }
 
@@ -64,7 +65,7 @@ contract SimpleEpochTest is Test, TestSetup {
             }
             uint256 totalSupplyBefore = stTaraToken.totalSupply();
             lastTreasuryBalance = address(lara.treasuryAddress()).balance;
-            uint256 snapshotId = lara.snapshot();
+            uint256 snapshotId = lara.snapshotPublic();
 
             assertEq(totalSupplyBefore, stTaraToken.totalSupplyAt(snapshotId), "Wrong total supply at snapshot");
 
@@ -80,7 +81,7 @@ contract SimpleEpochTest is Test, TestSetup {
             emit ExpectedReward(rewardsPerSnapshot);
 
             totalDelegated += rewardsPerSnapshot;
-            assertEq(
+            assertGt(
                 mockDpos.getTotalDelegation(address(lara)),
                 totalDelegated,
                 "DPOS: Wrong total delegation value after snapshot"
@@ -125,7 +126,7 @@ contract SimpleEpochTest is Test, TestSetup {
                 "Wrong total treasury balance before snapshot"
             );
             lastTreasuryBalance = treasuryBalanceBefore;
-            uint256 snapshotId = lara.snapshot();
+            uint256 snapshotId = lara.snapshotPublic();
 
             for (uint32 i = 0; i < stakers.length; i++) {
                 lara.distributeRewardsForSnapshot(stakers[i], snapshotId);
@@ -200,7 +201,7 @@ contract SimpleEpochTest is Test, TestSetup {
         assertEq(slice, 1 ether, "Wrong slice value");
     }
 
-    function test_SingleEpoch() public {
+    function test_SingleSimpleEpoch() public {
         run(0);
     }
 

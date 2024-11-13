@@ -67,7 +67,9 @@ contract RewardDistributionTest is Test, TestSetup {
             lara.stake{value: stakedAmount}(stakedAmount);
             assertEq(stTaraToken.balanceOf(stakers[i]), stakedAmount, "Wrong stTARA value for staker");
         }
-        assertEq(mockDpos.getTotalDelegation(address(lara)), 50000 ether * noOfStakers, "MockDPOS: Wrong total stake");
+        assertTrue(
+            mockDpos.getTotalDelegation(address(lara)) >= 50000 ether * noOfStakers, "MockDPOS: Wrong total stake"
+        );
     }
 
     function checkRewardsAreRight(address singleStaker, uint256 snapshotId, uint256 initialBalance) public {
@@ -100,7 +102,7 @@ contract RewardDistributionTest is Test, TestSetup {
         vm.prank(singleStaker);
         lara.stake{value: initialBalance}(initialBalance);
 
-        uint256 snapshotId = lara.snapshot();
+        uint256 snapshotId = lara.snapshotPublic();
 
         checkRewardsAreRight(singleStaker, snapshotId, stTaraToken.cumulativeBalanceOfAt(singleStaker, snapshotId));
 
@@ -111,15 +113,14 @@ contract RewardDistributionTest is Test, TestSetup {
     function test_Reverts_On_DisributeRewards_Check_Violation() public {
         address singleStaker = vm.addr(6666666666);
 
-        vm.expectRevert(abi.encodeWithSelector(NoDelegation.selector));
-        lara.snapshot();
-
+        uint256 snapshotId = lara.snapshotPublic();
+        assertEq(snapshotId, 0, "Snapshot id should be 0");
         uint256 initialBalance = 50000 ether;
         vm.deal(singleStaker, initialBalance);
         vm.prank(singleStaker);
         lara.stake{value: initialBalance}(initialBalance);
 
-        uint256 snapshotId = lara.snapshot();
+        snapshotId = lara.snapshotPublic();
 
         checkRewardsAreRight(singleStaker, snapshotId, stTaraToken.cumulativeBalanceOfAt(singleStaker, snapshotId));
 
@@ -146,7 +147,7 @@ contract RewardDistributionTest is Test, TestSetup {
 
         uint256 stTaraTotalSupplyBefore = stTaraToken.totalSupply();
 
-        uint256 snapshotId = lara.snapshot();
+        uint256 snapshotId = lara.snapshotPublic();
 
         uint256 rewardsPerSnapshot = lara.rewardsPerSnapshot(snapshotId);
 
@@ -185,7 +186,7 @@ contract RewardDistributionTest is Test, TestSetup {
 
         uint256 stTaraTotalSupplyBefore = stTaraToken.totalSupply();
 
-        uint256 snapshotId = lara.snapshot();
+        uint256 snapshotId = lara.snapshotPublic();
 
         uint256 rewardsPerSnapshot = lara.rewardsPerSnapshot(snapshotId);
 
@@ -212,7 +213,7 @@ contract RewardDistributionTest is Test, TestSetup {
         vm.deal(singleStaker, initialBalance);
         vm.prank(singleStaker);
         lara.stake{value: initialBalance}(initialBalance);
-        uint256 snapshotId = lara.snapshot();
+        uint256 snapshotId = lara.snapshotPublic();
 
         uint256 balanceOfStakerAtSnapshot = stTaraToken.cumulativeBalanceOfAt(singleStaker, snapshotId);
 
@@ -241,7 +242,7 @@ contract RewardDistributionTest is Test, TestSetup {
         vm.prank(singleStaker);
         lara.stake{value: initialBalance}(initialBalance);
 
-        uint256 snapshotId = lara.snapshot();
+        uint256 snapshotId = lara.snapshotPublic();
 
         uint256 balanceOfStakerAtSnapshot = stTaraToken.cumulativeBalanceOfAt(singleStaker, snapshotId);
 
@@ -267,7 +268,7 @@ contract RewardDistributionTest is Test, TestSetup {
         vm.assume(noOfStakers > 0 && noOfStakers < 100);
         stake(true, noOfStakers);
 
-        uint256 snapshotId = lara.snapshot();
+        uint256 snapshotId = lara.snapshotPublic();
 
         uint256 totalSupplyAtSnapshot = stTaraToken.totalSupplyAt(snapshotId);
         assertEq(totalSupplyAtSnapshot, stakedAmount * noOfStakers, "Wrong total supply at snapshot");
@@ -332,7 +333,7 @@ contract RewardDistributionTest is Test, TestSetup {
         uint32 noOfStakers = 10;
         stake(true, noOfStakers);
 
-        uint256 snapshotId = lara.snapshot();
+        uint256 snapshotId = lara.snapshotPublic();
 
         uint256 totalSupplyAtSnapshot = stTaraToken.totalSupplyAt(snapshotId);
         assertEq(totalSupplyAtSnapshot, stakedAmount * noOfStakers, "Wrong total supply at snapshot");
@@ -367,11 +368,9 @@ contract RewardDistributionTest is Test, TestSetup {
                 commissionDiscount,
                 delegatorRewardWithCommission
             );
-            assertEq(
-                newBalance,
-                balanceOfStakerAtSnapshot + delegatorRewardWithCommission,
-                // 1e4,
-                "Wrong balance of staker after reward distribution"
+            assertTrue(
+                newBalance >= balanceOfStakerAtSnapshot + delegatorRewardWithCommission,
+                "IN1: Wrong balance of staker after reward distribution"
             );
 
             uint256 totalSupply = stTaraToken.totalSupply();

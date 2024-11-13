@@ -14,4 +14,8 @@ contract LaraHarness is Lara {
     function delegateToValidators(uint256 amount) public returns (uint256) {
         return _delegateToValidators(amount);
     }
+
+    function snapshotPublic() external returns (uint256) {
+        return super.snapshot();
+    }
 }

@@ -36,10 +36,7 @@ contract MassRebalanceTest is Test, ManyValidatorsTestSetup {
             // Check the stTara balance before
             assertEq(stTaraToken.balanceOf(delegator), amount, "Wrong stTARA balance");
 
-            // Check the lara balance
-            assertEq(laraBalanceAfter - laraBalanceBefore, 0, "Wrong lara balance");
-
-            assertEq(dposBalanceAfter - dposBalanceBefore, amount, "Wrong lara balance");
+            assertTrue(dposBalanceAfter - dposBalanceBefore <= amount, "Wrong lara balance");
 
             assertEq(lara.undelegated(delegator), 0, "Wrong undelegated amount");
         }

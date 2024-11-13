@@ -34,8 +34,8 @@ abstract contract ManyValidatorsTestSetup is Test {
         }
 
         // Set up the apy oracle with a random data feed address and a mock dpos contract
-        vm.deal(address(mockDpos), 1000000 ether);
-        mockDpos = new MockDpos{value: 12000000 ether}(validators);
+        vm.deal(address(mockDpos), 1000000000 ether);
+        mockDpos = new MockDpos{value: 1000000000 ether}(validators);
 
         // check if MockDPos was initialized successfully
         assertEq(mockDpos.isValidatorRegistered(validators[0]), true, "MockDpos was not initialized successfully");
