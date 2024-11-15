@@ -81,7 +81,7 @@ Lara Protocol is deployed on testnet at the addresses:
   oracleProxy address: 0xd6F1DbeC984e845d6088Ca9de6cdfD6670F2c300
   oracleImplementation address: 0xd527F65aac850285A01b9De45e5d8Ec4A80d9A35
   laraProxy address: 0x2057B7D8Cf6C5750e018F69C49dd65e5454e1016
-  laraImplementation address: 0xb5B845b28d6722710caBFc3b7FA54b170F7D2b2c
+  laraImplementation address: 0x4f1e63eb7F18987D3b046dB98abdA8426C88848d
 ```
 
 ## Compiler versions
