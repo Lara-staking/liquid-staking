@@ -44,7 +44,7 @@ interface ITokenStake is IStaking20 {
      *
      *  @param _amount     Amount of tokens to deposit.
      */
-    function depositRewardTokens(uint256 _amount) external payable;
+    function depositRewardTokens(uint256 _amount) external;
 
     /**
      *  @notice Lets a contract admin (account with `DEFAULT_ADMIN_ROLE`) withdraw reward-tokens.

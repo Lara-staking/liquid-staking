@@ -67,7 +67,7 @@ abstract contract Staking20Base is ReentrancyGuardUpgradeable, IStaking20 {
      *
      *  @param _amount    Amount to stake.
      */
-    function stake(uint256 _amount) external payable nonReentrant {
+    function stake(uint256 _amount) external nonReentrant {
         _stake(_amount);
     }
 
