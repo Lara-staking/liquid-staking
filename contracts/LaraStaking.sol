@@ -128,7 +128,7 @@ contract LaraStaking is Initializable, OwnableUpgradeable, UUPSUpgradeable, Stak
     }
 
     /// @dev Admin deposits reward tokens.
-    function depositRewardTokens(uint256 _amount) external payable nonReentrant {
+    function depositRewardTokens(uint256 _amount) external nonReentrant {
         require(owner() == _msgSender(), "Not authorized");
 
         uint256 balanceBefore = ERC20(rewardToken).balanceOf(address(this));

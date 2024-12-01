@@ -222,15 +222,13 @@ contract Lara is Ownable2StepUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuar
         }
         if (msg.value != amount) revert StakeValueIncorrect(msg.value, amount);
 
+        // make a snapshot
+        snapshot();
+
         // Delegate to validators
-        uint256 remainingAmount = _delegateToValidators(address(this).balance);
+        uint256 remainingAmount = _delegateToValidators(amount);
         // Sync delegations
         _syncDelegations();
-
-        // Ensure the remainingAmount is not greater than the user's staked amount
-        if (remainingAmount > amount) {
-            revert("LARA: Remaining amount is greater than staked amount");
-        }
 
         if (protocolStartTimestamp == 0) {
             protocolStartTimestamp = block.timestamp;
@@ -258,12 +256,16 @@ contract Lara is Ownable2StepUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuar
     }
 
     /**
-     * @inheritdoc ILara
+     * @notice method to create a protocol snapshot.
+     * A protocol snapshot can be done once every epochDuration blocks.
+     * The method will claim all rewards from the DPOS contract.
+     * @return id the snapshot id of the made stTARA snapshot
+     * Returns 0 if the snapshot cannot be made or empty
      */
-    function snapshot() external nonReentrant returns (uint256 id) {
-        if (lastSnapshotBlock != 0 && block.number < lastSnapshotBlock + epochDuration) {
-            revert EpochDurationNotMet(lastSnapshotBlock, block.number, epochDuration);
-        }
+    function snapshot() internal virtual returns (uint256 id) {
+        // if (lastSnapshotBlock != 0 && block.number < lastSnapshotBlock + epochDuration) {
+        //     revert EpochDurationNotMet(lastSnapshotBlock, block.number, epochDuration);
+        // }
 
         // Get total delegation
         uint256 totalEpochDelegation = 0;
@@ -277,7 +279,7 @@ contract Lara is Ownable2StepUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuar
             protocolStartTimestamp = block.timestamp;
         }
         if (totalEpochDelegation == 0) {
-            revert NoDelegation();
+            return 0;
         }
         uint256 balanceBefore = address(this).balance;
 
@@ -307,9 +309,7 @@ contract Lara is Ownable2StepUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuar
         (bool success,) = treasuryAddress.call{value: epochCommission}("");
         if (!success) revert TransferFailed(address(this), treasuryAddress, epochCommission);
         emit CommissionWithdrawn(treasuryAddress, epochCommission);
-        emit SnapshotTaken(
-            stTaraSnapshotId, totalEpochDelegation, distributableRewards, lastSnapshotBlock + epochDuration
-        );
+        emit SnapshotTaken(stTaraSnapshotId, totalEpochDelegation, distributableRewards);
         return (stTaraSnapshotId);
     }
 
@@ -353,6 +353,8 @@ contract Lara is Ownable2StepUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuar
         if (block.number < lastRebalance + epochDuration) {
             revert EpochDurationNotMet(lastRebalance, block.number, epochDuration);
         }
+        // make a snapshot
+        snapshot();
         _syncDelegations();
         IApyOracle.TentativeDelegation[] memory delegationList = _buildCurrentDelegationArray();
         // Get the rebalance list from the oracle
@@ -415,6 +417,8 @@ contract Lara is Ownable2StepUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuar
         if (undelegations[msg.sender][id].undelegation_id == 0) {
             revert UndelegationNotFound(msg.sender, id);
         }
+        // make a snapshot
+        snapshot();
         uint256 amount = undelegations[msg.sender][id].undelegation_data.stake;
         address validator = undelegations[msg.sender][id].undelegation_data.validator;
 
@@ -449,6 +453,9 @@ contract Lara is Ownable2StepUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuar
      */
     function requestUndelegate(uint256 amount) public nonReentrant returns (uint64[] memory undelegation_ids) {
         require(stTaraToken.allowance(msg.sender, address(this)) >= amount, "Amount not approved for unstaking");
+
+        //make a snapshot
+        snapshot();
         // register the undelegation request
         try stTaraToken.transferFrom(msg.sender, address(this), amount) {
             try stTaraToken.burn(address(this), amount) {

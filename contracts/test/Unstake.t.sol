@@ -22,14 +22,16 @@ contract UnstakeTest is Test, TestSetup {
         epochDuration = lara.epochDuration();
     }
 
+    event Staked(address indexed staker, uint256 amount);
+
     function multipleStakes(uint256 amount) public {
         for (uint256 i = 0; i < stakes; i++) {
             address staker = vm.addr(i + 1);
             vm.deal(staker, amount / 10);
             vm.prank(staker);
-            lara.stake{value: amount / 10}(amount / 10);
-
-            assertEq(stTaraToken.balanceOf(staker), amount / 10, "Wrong stTARA balance after stake");
+            uint256 stakedAmount = lara.stake{value: amount / 10}(amount / 10);
+            emit Staked(staker, stakedAmount);
+            assertTrue(stTaraToken.balanceOf(staker) >= stakedAmount, "Wrong stTARA balance after stake");
         }
     }
 

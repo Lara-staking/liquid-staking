@@ -46,7 +46,7 @@ contract RebalanceTest is Test, TestSetup {
         assertEq(dposBalanceAfter - dposBalanceBefore, amount, "Wrong dpos balance");
 
         // start the epoch
-        lara.snapshot();
+        lara.snapshotPublic();
 
         vm.roll(lara.lastSnapshotBlock() + lara.epochDuration());
     }

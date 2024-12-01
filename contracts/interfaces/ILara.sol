@@ -21,14 +21,8 @@ interface ILara {
      * @dev Event emitted when a snapshot was taken
      * @param totalDelegation the total delegation
      * @param totalRewards the total rewards
-     * @param nextSnapshotBlock the block number of the next snapshot
      */
-    event SnapshotTaken(
-        uint256 indexed snapshotId,
-        uint256 indexed totalDelegation,
-        uint256 indexed totalRewards,
-        uint256 nextSnapshotBlock
-    );
+    event SnapshotTaken(uint256 indexed snapshotId, uint256 indexed totalDelegation, uint256 indexed totalRewards);
 
     /**
      * @dev Event emitted when all protocol level rewards are claimed from the DPOS Contract
@@ -210,15 +204,6 @@ interface ILara {
      * @param ids the ids of the undelegations
      */
     function batchCancelUndelegate(uint64[] calldata ids) external;
-
-    /**
-     * @notice method to create a protocol snapshot.
-     * A protocol snapshot can be done once every epochDuration blocks.
-     * The method will claim all rewards from the DPOS contract.
-     * @return the snapshot id of the made stTARA snapshot
-     */
-    function snapshot() external returns (uint256);
-
     /**
      * @dev Function to distribute rewards for a snapshot
      * @param staker the staker address
