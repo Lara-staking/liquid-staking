@@ -107,8 +107,8 @@ abstract contract ERC20Snapshot is ERC20, ISnapshot {
      * @dev Set a yield bearing contract
      * @param contractAddress the contract address
      * Yield-bearing concept is used to track the contract deposits of addresses sending(depositing) tokens to yield bearing contracts
-     * This is used to properly forward yields of the extending rebasing token to the depositors in case of contracts that are not aware of the rebasing token(non yield bearing contracts)
-     * Contracts that are aware of the rebasing token are added to the yield bearing contracts mapping and are reciving the yields from the extending rebasing token
+     * This is used to properly forward yields of the extending rebasing token to the depositors in case of contracts that are not aware of the rebasing token(yield bearing contracts)
+     * Contracts that are aware of the rebasing token are not added to the yield bearing contracts mapping and are reciving the yields from the extending rebasing token
      */
     function _setYieldBearingContract(address contractAddress) internal virtual {
         _yieldBearingContracts[contractAddress] = true;
@@ -205,10 +205,10 @@ abstract contract ERC20Snapshot is ERC20, ISnapshot {
         }
 
         if (_isContract(to)) {
-            if (!isYieldBearingContract(to)) {
+            if (isYieldBearingContract(to)) {
                 _contractDeposits[from] += amount;
             }
-            if (_isContract(from) && !isYieldBearingContract(from)) {
+            if (_isContract(from) && isYieldBearingContract(from)) {
                 _contractDeposits[from] -= amount;
             }
             _updateContractSnapshot(from);

@@ -5,6 +5,7 @@ solc =  "0.8.20"
 evm_version = 'berlin'
 src = 'contracts'
 out = 'out'
+ffi = true
 libs = ['node_modules', 'lib']
 test = 'test'
 script = 'scripts'

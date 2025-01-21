@@ -139,6 +139,7 @@ contract RewardDistributionTest is Test, TestSetup {
         lara.stake{value: initialBalance}(initialBalance);
 
         // Then deposit wstTARA into Uni v3 pool
+        // in this case the Uni v3 pool should get the yielded stTara
         vm.startPrank(singleStaker);
         UniPool uniPool = new UniPool(stTaraToken);
         stTaraToken.approve(address(uniPool), initialBalance);

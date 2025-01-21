@@ -28,11 +28,7 @@ contract LaraStakingTestSuite is Test {
     function setUp() public {
         stakingToken = new LaraToken(treasury);
         rewardToken = new veLara(address(stakingToken));
-        assertEq(
-            rewardToken.balanceOf(address(this)),
-            1000000 ether,
-            "Deployer should have 100M veLARA"
-        );
+        assertEq(rewardToken.balanceOf(address(this)), 1_000_000_000 ether, "Deployer should have 1B veLARA");
 
         address stakingContractProxy = Upgrades.deployUUPSProxy(
             "LaraStaking.sol",
@@ -57,11 +53,7 @@ contract LaraStakingTestSuite is Test {
 
         // send 10M LARA to user
         stakingToken.transfer(user, 10000000 ether);
-        assertEq(
-            stakingToken.balanceOf(user),
-            10000000 ether,
-            "User should have 10M LARA"
-        );
+        assertEq(stakingToken.balanceOf(user), 10000000 ether, "User should have 10M LARA");
     }
 
     /* Unhappy flow */
@@ -136,10 +128,7 @@ contract LaraStakingTestSuite is Test {
         vm.roll(block.number + 1000);
         vm.warp(block.timestamp + 1000 * 4);
 
-        uint256 redeemableAmount = stakingContract.calculateRedeemableAmount(
-            user,
-            1
-        );
+        uint256 redeemableAmount = stakingContract.calculateRedeemableAmount(user, 1);
         console.logUint(redeemableAmount);
 
         stakingContract.redeem(1);
@@ -245,8 +234,7 @@ contract LaraStakingTestSuite is Test {
         vm.warp(block.timestamp + 1000 * 4);
 
         stakingContract.claimRewards();
-        (uint256 amountBefore, uint64 blockNumberBefore) = stakingContract
-            .claims(user, 1);
+        (uint256 amountBefore, uint64 blockNumberBefore) = stakingContract.claims(user, 1);
 
         console.logUint(amountBefore);
         console.logUint(blockNumberBefore);
@@ -255,19 +243,12 @@ contract LaraStakingTestSuite is Test {
         vm.warp(block.timestamp + 2000 * 4);
 
         stakingContract.claimRewards();
-        (uint256 amountAfter, uint64 blockNumberAfter) = stakingContract.claims(
-            user,
-            2
-        );
+        (uint256 amountAfter, uint64 blockNumberAfter) = stakingContract.claims(user, 2);
 
         console.logUint(amountAfter);
         console.logUint(blockNumberAfter);
 
-        assertEq(
-            blockNumberAfter - blockNumberBefore,
-            2000,
-            "Block Number must increase by 2000"
-        );
+        assertEq(blockNumberAfter - blockNumberBefore, 2000, "Block Number must increase by 2000");
 
         vm.roll(block.number + 1000);
         vm.warp(block.timestamp + 1000 * 4);
@@ -280,17 +261,15 @@ contract LaraStakingTestSuite is Test {
         rewardToken.approve(address(stakingContract), amountAfter);
         stakingContract.redeem(2);
 
-        (amountBefore, ) = stakingContract.claims(user, 1);
-        (amountAfter, ) = stakingContract.claims(user, 2);
+        (amountBefore,) = stakingContract.claims(user, 1);
+        (amountAfter,) = stakingContract.claims(user, 2);
         assertEq(amountBefore, 0, "Amout must be zero");
         assertEq(amountAfter, 0, "Amout must be zero");
         vm.stopPrank();
     }
 
     // Fuzz Check the block Number after claim multiple times
-    function testFuzz_CheckBlockNumberAfterClaimMultiple(
-        uint64 randomBlockCount
-    ) public {
+    function testFuzz_CheckBlockNumberAfterClaimMultiple(uint64 randomBlockCount) public {
         vm.assume(randomBlockCount > 0);
         vm.assume(randomBlockCount < 1e8);
         vm.startPrank(user);
@@ -301,8 +280,7 @@ contract LaraStakingTestSuite is Test {
         vm.warp(block.timestamp + 1000 * 4);
 
         stakingContract.claimRewards();
-        (uint256 amountBefore, uint64 blockNumberBefore) = stakingContract
-            .claims(user, 1);
+        (uint256 amountBefore, uint64 blockNumberBefore) = stakingContract.claims(user, 1);
 
         console.logUint(amountBefore);
         console.logUint(blockNumberBefore);
@@ -311,19 +289,12 @@ contract LaraStakingTestSuite is Test {
         vm.warp(block.timestamp + randomBlockCount * 4);
 
         stakingContract.claimRewards();
-        (uint256 amountAfter, uint64 blockNumberAfter) = stakingContract.claims(
-            user,
-            2
-        );
+        (uint256 amountAfter, uint64 blockNumberAfter) = stakingContract.claims(user, 2);
 
         console.logUint(amountAfter);
         console.logUint(blockNumberAfter);
 
-        assertEq(
-            blockNumberAfter - blockNumberBefore,
-            randomBlockCount,
-            "Block Number must increase by random"
-        );
+        assertEq(blockNumberAfter - blockNumberBefore, randomBlockCount, "Block Number must increase by random");
         vm.stopPrank();
     }
 }

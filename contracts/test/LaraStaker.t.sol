@@ -27,7 +27,7 @@ contract LaraStakingContractTest is Test {
     function setUp() public {
         stakingToken = new LaraToken(treasury);
         rewardToken = new veLara(address(stakingToken));
-        assertEq(rewardToken.balanceOf(address(this)), 1000000 ether, "Deployer should have 100M veLARA");
+        assertEq(rewardToken.balanceOf(address(this)), 1_000_000_000 ether, "Deployer should have 100M veLARA");
 
         address stakingContractProxy = Upgrades.deployUUPSProxy(
             "LaraStaking.sol",
@@ -51,8 +51,8 @@ contract LaraStakingContractTest is Test {
         stakingContract.depositRewardTokens(1000000 ether);
 
         // send 10M LARA to user
-        stakingToken.transfer(user, 10000000 ether);
-        assertEq(stakingToken.balanceOf(user), 10000000 ether, "User should have 10M LARA");
+        stakingToken.transfer(user, 10_000_000 ether);
+        assertEq(stakingToken.balanceOf(user), 10_000_000 ether, "User should have 10M LARA");
     }
 
     function test_simpleDeposit_ConvertsLaraToVeLara() public {
@@ -62,7 +62,7 @@ contract LaraStakingContractTest is Test {
         rewardToken.deposit(1000000 ether);
         uint256 veLaraBalanceAfter = rewardToken.balanceOf(address(this));
 
-        assertEq(veLaraBalanceAfter - veLaraBalanceBefore, 1000000 ether, "User should have 1M veLARA");
+        assertEq(veLaraBalanceAfter - veLaraBalanceBefore, 1_000_000 ether, "User should have 1M veLARA");
     }
 
     function simulateSpecificMaturity(uint256 maturityBlockCount) internal {

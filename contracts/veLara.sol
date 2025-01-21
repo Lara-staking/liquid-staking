@@ -10,7 +10,7 @@ contract veLara is ERC20, Ownable {
 
     constructor(address _lara) ERC20("Vested Lara", "veLARA") Ownable(msg.sender) {
         lara = ERC20(_lara);
-        _mint(msg.sender, 1000000000 ether);
+        _mint(msg.sender, 1_000_000_000 ether);
     }
 
     function deposit(uint256 amount) external {

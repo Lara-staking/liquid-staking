@@ -60,7 +60,15 @@ The Staking contract is funded with 1M veLARA tokens via the `0xab85a53edbd800af
 
 #### Lara Protocol
 
-**Note**: There is no official Lara Protocol deployed on mainnet as of now.
+As of 21st of January 2025, the Lara Protocol is deployed on mainnet at the addresses:
+
+```bash
+  stTara address: 0x37Df886BE517F9c75b27Cb70dac0D61432C92FBE
+  oracleProxy address: 0x8299040F890AD1c13Edd4D1381AB862Cc8b4a464
+  oracleImplementation address: 0xdAEc8Ccc5bFb721014370f41735f3BFAcAdd8Af0
+  laraProxy address: 0x45225cd7B294E17d88eb0E62c935Af525d67798F
+  laraImplementation address: 0xC42A77b1CcAe76DAb9d61C8f6a665D35ed2e7f94
+```
 
 ### Testnet
 
