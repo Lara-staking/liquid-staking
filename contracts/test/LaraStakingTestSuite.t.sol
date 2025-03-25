@@ -22,7 +22,7 @@ contract LaraStakingTestSuite is Test {
     uint256 SECONDS_PER_YEAR = 365 * 24 * 60 * 60;
 
     uint256 APY = 13; // 13% APY
-    uint256 MATURITY_BLOCK_COUNT = 426445; // 6 months
+    uint256 MATURITY_BLOCK_COUNT = 3943200; // 6 months
     uint256 STAKED_AMOUNT = 100 ether;
 
     function setUp() public {
