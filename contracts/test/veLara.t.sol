@@ -52,11 +52,12 @@ contract veLaraTest is Test {
         assertEq(veLaraContract.balanceOf(user), depositAmount);
     }
 
-    function testFail_DepositWithoutApproval() public {
+    function testRevert_If_DepositWithoutApproval() public {
         uint256 depositAmount = 100 * 10 ** 18;
 
         // Attempt to deposit without approval
         vm.prank(user);
+        vm.expectRevert();
         veLaraContract.deposit(depositAmount);
     }
 }

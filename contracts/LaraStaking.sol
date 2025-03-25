@@ -74,6 +74,11 @@ contract LaraStaking is Initializable, OwnableUpgradeable, UUPSUpgradeable, Stak
         return uint8(VERSION);
     }
 
+    function setMaturityBlockCount(uint256 _newMaturityBlockCount) external onlyOwner {
+        require(_newMaturityBlockCount > 0, "Maturity block count must be greater than zero.");
+        MATURITY_BLOCK_COUNT = _newMaturityBlockCount;
+    }
+
     /// @dev Receive function to receive Ether.
     receive() external payable {
         revert("Contract does not accept direct Ether transfers");

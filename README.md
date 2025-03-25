@@ -53,7 +53,7 @@ The `veLARA` + `LaraStaking` contracts are deployed on mainnet at the addresses:
 ```bash
   veLara token deployed at address: 0x9c3cEA6d32853D14f0dd641eED2960F1d6D847d8
   Staking contract deployed at address: 0x9B859bEc39B47C8d9C1459046a32d76B1A6883C1
-  Staking implementation deployed at address: 0x1Bc8843cAEFC3c3454A6322aE595a14616Dae645
+  Staking implementation deployed at address: 0xB8923df521D0FED1eBf45BfEEeBc7f4bF925C46f
 ```
 
 The Staking contract is funded with 1M veLARA tokens via the `0xab85a53edbd800af8d6ed3e95c3f253d7c15dd1531f00fefc238a2df0e7337a3` transaction .
@@ -67,7 +67,7 @@ As of 21st of January 2025, the Lara Protocol is deployed on mainnet at the addr
   oracleProxy address: 0x8299040F890AD1c13Edd4D1381AB862Cc8b4a464
   oracleImplementation address: 0xdAEc8Ccc5bFb721014370f41735f3BFAcAdd8Af0
   laraProxy address: 0x45225cd7B294E17d88eb0E62c935Af525d67798F
-  laraImplementation address: 0xC42A77b1CcAe76DAb9d61C8f6a665D35ed2e7f94
+  laraImplementation address: 0x2790D1105367C18C805aA4D2d0AdB5a1EF0e4C0b
 ```
 
 ### Testnet

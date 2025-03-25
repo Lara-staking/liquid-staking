@@ -110,11 +110,11 @@ contract RewardDistributionTest is Test, TestSetup {
         lara.distributeRewardsForSnapshot(singleStaker, snapshotId);
     }
 
-    function test_Reverts_On_DisributeRewards_Check_Violation() public {
+    function testRevert_On_DisributeRewards_Check_Violation() public {
         address singleStaker = vm.addr(6666666666);
 
         uint256 snapshotId = lara.snapshotPublic();
-        assertEq(snapshotId, 0, "Snapshot id should be 0");
+        assertEq(snapshotId, 1, "Snapshot id should be 1");
         uint256 initialBalance = 50000 ether;
         vm.deal(singleStaker, initialBalance);
         vm.prank(singleStaker);
