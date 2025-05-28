@@ -64,10 +64,21 @@ As of 21st of January 2025, the Lara Protocol is deployed on mainnet at the addr
 
 ```bash
   stTara address: 0x37Df886BE517F9c75b27Cb70dac0D61432C92FBE
+  wstTARA address: 0x31E7b8CF625aA83ac77441b7245f97acA25aa4C5
   oracleProxy address: 0x8299040F890AD1c13Edd4D1381AB862Cc8b4a464
   oracleImplementation address: 0xdAEc8Ccc5bFb721014370f41735f3BFAcAdd8Af0
   laraProxy address: 0x45225cd7B294E17d88eb0E62c935Af525d67798F
   laraImplementation address: 0x2790D1105367C18C805aA4D2d0AdB5a1EF0e4C0b
+```
+
+#### Tswap Staking
+
+The `TswapStaking` contract is deployed on mainnet at the address:
+
+```bash
+  veTswap token deployed at address: 0x58285DdCbC30a8EA37A0b82b8a810E10CCe74D2c
+  Staking contract deployed at address: 0x77aC84aC3C0c2aeA674B9fe41c5363D7A0ec9dE4
+  Staking implementation deployed at address: 0x9d2D7968d46B43351DEB6a378dEf72516eEa4471
 ```
 
 ### Testnet
