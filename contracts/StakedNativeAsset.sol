@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+    // SPDX-License-Identifier: MIT
 // Security contact: elod@apeconsulting.xyz
 pragma solidity 0.8.20;
 
@@ -31,11 +31,10 @@ contract StakedNativeAsset is ERC20Snapshot, Ownable2Step, Pausable, IstTara {
     function cumulativeBalanceOf(address user) external view returns (uint256) {
         if (_isContract(user)) {
             if (isYieldBearingContract(user)) {
-                return balanceOf(user);
+                return balanceOf(user) + contractDepositOf(user);
             }
-            return 0;
         }
-        return balanceOf(user) + contractDepositOf(user);
+        return balanceOf(user);
     }
 
     /**
@@ -45,15 +44,13 @@ contract StakedNativeAsset is ERC20Snapshot, Ownable2Step, Pausable, IstTara {
         /// @notice if smart contract, return balanceOfAt() , else, to EOA return balanceOfAt() + wstTARA.balanceOfAt()
         if (_isContract(user)) {
             if (isYieldBearingContract(user)) {
-                return balanceOfAt(user, snapshotId);
+                return balanceOfAt(user, snapshotId) + contractDepositOfAt(user, snapshotId);
             }
-            return 0;
         }
         /// @notice if the user is the wstTARA contract, at any given point the balanceOfAt(address(wstTARA), snapshotId)
         /// must be equal to the totalSupplyAt(snapshotId)
         /// @notice However, for proper reward distribution, we need to return the current balance of the wstTARA contract in wstTARA
-
-        return balanceOfAt(user, snapshotId) + contractDepositOfAt(user, snapshotId);
+        return balanceOfAt(user, snapshotId);
     }
 
     /**

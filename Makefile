@@ -6,7 +6,7 @@ RPC_PRNET := https://rpc-pr-2609.prnet.taraxa.io
 RPC_MAINNET := https://rpc.mainnet.taraxa.io
 
 compile:
-	forge test
+	forge compile --force
 
 test:
 	forge test -vv --ffi --force

@@ -93,7 +93,6 @@ contract Lara is Ownable2StepUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuar
 
     /// @dev Mapping of the staker snapshot claimed status
     mapping(address => mapping(uint256 => bool)) public stakerSnapshotClaimed;
-
     /// @dev Gap for future upgrades. In case of new storage variables, they should be added before this gap and the array length should be reduced
     uint256[49] __gap;
 
@@ -333,7 +332,10 @@ contract Lara is Ownable2StepUpgradeable, UUPSUpgradeable, ILara, ReentrancyGuar
         uint256 generalPart = slice * distributableRewards / 1e18;
         uint256 commissionPart = (generalPart * commissionDiscounts[staker]) / 100;
         uint256 delegatorReward = generalPart + commissionPart;
+
         if (delegatorReward == 0) {
+            stakerSnapshotClaimed[staker][snapshotId] = true;
+            emit RewardsClaimedForSnapshot(snapshotId, staker, delegatorReward, delegatorBalance);
             return;
         }
         // Mint stTARA tokens to staker

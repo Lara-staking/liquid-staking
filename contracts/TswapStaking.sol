@@ -9,8 +9,8 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Staking20Base} from "@contracts/Staking20Base.sol";
 import {CurrencyTransferLib} from "@contracts/libs/CurrencyTransferLib.sol";
 
-contract LaraStaking is Initializable, OwnableUpgradeable, UUPSUpgradeable, Staking20Base, ITokenStake {
-    bytes32 private constant MODULE_TYPE = bytes32("LaraStaking");
+contract TswapStaking is Initializable, OwnableUpgradeable, UUPSUpgradeable, Staking20Base, ITokenStake {
+    bytes32 private constant MODULE_TYPE = bytes32("TswapStaking");
     uint256 private constant VERSION = 1;
 
     /// @dev ERC20 Reward Token address. See {_mintRewards} below.

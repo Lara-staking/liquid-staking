@@ -9,10 +9,10 @@ import {ApyOracle} from "@contracts/ApyOracle.sol";
 
 contract DeployLara is Script {
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("DEPLOYER_KEY");
-        address deployerAddress = vm.envAddress("DEPLOYER_ADDR");
+        uint256 deployerPrivateKey = vm.envUint("MAINNET_DEPLOYER_KEY");
+        address deployerAddress = vm.envAddress("MAINNET_DEPLOYER_ADDR");
         address dposAddress = vm.envAddress("DPOS_ADDRESS");
-        address treasuryAddress = vm.envAddress("TREASURY_ADDRESS");
+        address treasuryAddress = vm.envAddress("MAINNET_TREASURY_ADDRESS");
         vm.startBroadcast(deployerPrivateKey);
 
         StakedNativeAsset stTaraInstance = new StakedNativeAsset();
